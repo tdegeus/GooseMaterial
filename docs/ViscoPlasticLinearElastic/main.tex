@@ -1,0 +1,608 @@
+%!TEX program = xelatex
+\documentclass[times,namecite]{goose-article}
+
+\title{%
+  GooseSolid/ViscoPlasticLinearElastic
+}
+
+\author{T.W.J.~de~Geus}
+
+\contact{%
+  $^*$Contact: %
+  \href{mailto:tom@geus.me}{tom@geus.me} %
+  \hspace{1mm}--\hspace{1mm} %
+  \href{http://www.geus.me}{www.geus.me}%
+  \hspace{1mm}--\hspace{1mm} %
+  \href{https://github.com/tdegeus/GooseSolid}{https://github.com/tdegeus/GooseSolid}%
+}
+
+\hypersetup{pdfauthor={T.W.J. de Geus}}
+
+\header{%
+  \href{https://github.com/tdegeus/GooseSolid}{GooseSolid/ViscoPlasticLinearElastic}%
+}
+
+\newcommand\leftstar[1]{\hspace*{-.3em}~^\star\!#1}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+History dependent visco-plastic material. This corresponds to a linear relationship between the Cauchy stress $\bm{\sigma}$ and the elastic strain $\bm{\varepsilon}_\mathrm{e}$ (which is the symmetric part of the displacement gradient).
+
+% This corresponds to a non-linear relation between the Cauchy stress, $\bm{\sigma}$, and the linear strain increment, $\bm{\varepsilon}_\Delta$, depending on the equivalent plastic strain, $\varepsilon_\mathrm{p}$. I.e.
+% %
+% \begin{equation*}
+%   \bm{\sigma}
+%   =
+%   f ( \bm{\varepsilon}_\Delta , \varepsilon_\mathrm{p} )
+% \end{equation*}
+% %
+% The model is implemented in 3-D, hence it can directly be used for either 3-D or 2-D plane strain problems.
+\end{abstract}
+
+\keywords{visco-plasticity; linear elasticity}
+
+\setcounter{tocdepth}{2}
+\tableofcontents
+
+\vfill\newpage
+\section{Constitutive model}
+
+The model consists of the following ingredients:
+%
+\begin{enumerate}[(i)]
+%
+\item The strain, $\bm{\varepsilon}$, is additively split in an elastic part, $\bm{\varepsilon}_\mathrm{e}$, and a plastic plastic, $\bm{\varepsilon}_\mathrm{p}$. I.e.
+%
+\begin{equation}
+  \bm{\varepsilon}
+  = \bm{\varepsilon}_\mathrm{e}
+  + \bm{\varepsilon}_\mathrm{p}
+\end{equation}
+%
+\item The stress, $\bm{\sigma}$, is set by to the elastic strain, $\bm{\varepsilon}_\mathrm{e}$, through the following linear relation:
+%
+\begin{equation}\label{eq:model:stress-elas}
+  \bm{\sigma}
+  = \mathbb{C}_\mathrm{e} : \bm{\varepsilon}_\mathrm{e}
+\end{equation}
+%
+wherein $\mathbb{C}_\mathrm{e}$ is the elastic stiffness, which reads:
+\begin{align}\label{eq:model:elas}
+  \mathbb{C}_\mathrm{e}
+  &= K \bm{I} \otimes \bm{I}
+   + 2 G (\mathbb{I}_\mathrm{s} - \tfrac{1}{3} \bm{I} \otimes \bm{I} )
+  \\
+  &= K \bm{I} \otimes \bm{I}
+  + 2 G \, \mathbb{I}_\mathrm{d}
+\end{align}
+with $K$ and $G$ the bulk and shear modulus respectively.
+%
+\item Plasticity is governed by Norton's flow rule:
+%
+\begin{equation}\label{eq:model:epdot}
+  \dot{\bm{\varepsilon}}_\mathrm{p}
+  = \dot{\gamma} \, \bm{N}
+  = \dot{\gamma} \, \frac{3}{2} \frac{\bm{\sigma}_\mathrm{d}}{\sigma_\mathrm{eq}}
+\end{equation}
+%
+wherein $\dot{\bm{\varepsilon}}_\mathrm{p}$ is the plastic strain rate. The ratio of the stress deviator, $\bm{\sigma}_\mathrm{d}$, and it's equivalent value, $\sigma_\mathrm{eq}$, determines the direction of plastic flow (the symbol $\bm{N}$ is used to emphasize that only determines a direction, not an amplitude). $\dot{\gamma}$ finally is the plastic multiplier, which is defined as follows:
+%
+\begin{equation}\label{eq:model:gammadot}
+  \dot{\gamma}
+  =
+  \dot{\gamma}_0 \left( \frac{\sigma_\mathrm{eq}}{\sigma_0} \right)^{1/m}
+\end{equation}
+%
+wherein $\dot{\gamma}_0$, $\sigma_0$, and the exponent $m$ are material parameters.
+\end{enumerate}
+
+It can furthermore be useful to define an equivalent plastic strain. Following the definition in \eqref{eq:model:epdot}, it is defined as follows:
+%
+\begin{equation}
+  \varepsilon_\mathrm{p} = \int_0^t \dot{\gamma} \; \mathrm{d}\tau
+\end{equation}
+%
+
+\vfill\newpage
+\section{Numerical implementation: implicit}
+
+For the numerical implementation, first of all a numerical time integration scheme has to be selected. Here, an implicit time discretization is used, which has the favorable property of being unconditionally stable. The numerical implementation of it is done by the commonly used return-map algorithm, in which an increment in strain is first assumed fully elastic (elastic predictor). Then a return-map is utilized to return to a physically admissible state (plastic corrector). The benefit of this scheme as that (i) the evolution of the plasticity (the state variable) can be determined by solving a single, albeit non-linear, equation; and that (ii) the linearization to obtain the consistent tangent operator is relatively straightforward.
+
+\subsection{Elastic predictor}
+
+Given an increment in strain
+\begin{equation}
+  \bm{\varepsilon}_\Delta = \bm{\varepsilon}^{(t + \Delta t)} - \bm{\varepsilon}^{(t)}
+\end{equation}
+and the state variables, evaluate the \emph{elastic trial state}:
+\begin{align}
+  \leftstar{\bm{\varepsilon}}_\mathrm{e}
+  &=
+  \bm{\varepsilon}^{(t)}_\mathrm{e} +
+  \bm{\varepsilon}_\Delta
+  \\
+  \leftstar{\bm{\sigma}}
+  &=
+  \mathbb{C}_\mathrm{e} : \leftstar{\bm{\varepsilon}}_\mathrm{e}
+\end{align}
+where the $\leftstar{(.)}$ has been used to denote a trial value for $(.)^{(t + \Delta t)}$.
+
+\subsection{Return-map}
+
+A return-map is used to return the trial state back to a physically admissible state (for which the plasticity has evolved). From (\ref{eq:model:stress-elas}--\ref{eq:model:epdot}) it follows the actual deviatoric and hydrostatic stress are:
+%
+\begin{align}
+  \label{eq:return:sigma_d}
+  \bm{\sigma}_\mathrm{d}^{(t+\Delta t)}
+  &=
+  \leftstar{\bm{\sigma}}_\mathrm{d} - 2 G \Delta \gamma \;
+  \frac{3}{2}
+  \frac{
+    \leftstar{\bm{\sigma}}_\mathrm{d}
+  }{
+    \leftstar{\sigma}_\mathrm{eq}
+  }
+  \\
+  \sigma_\mathrm{m}^{(t+\Delta t)} &= \leftstar{\sigma}_\mathrm{m}
+\end{align}
+%
+From \eqref{eq:return:sigma_d} it follows that the stress-directions of the trial state are not affect by the return-map, i.e.
+%
+\begin{equation}
+  \frac{
+    \bm{\sigma}_\mathrm{d}^{(t+\Delta t)}
+  }{
+    \sigma_\mathrm{eq}^{(t+\Delta t)}
+  } =
+  \frac{
+    \leftstar{\bm{\sigma}}_\mathrm{d}
+  }{
+    \leftstar{\sigma}_\mathrm{eq}
+  }
+  \qquad\mathrm{or}\qquad
+  \bm{N}^{(t+\Delta t)} = \leftstar{\bm{N}}
+\end{equation}
+%
+This allows the reorganization of the above to
+%
+\begin{equation}
+  \bm{\sigma}_\mathrm{d}^{(t+\Delta t)}
+  =
+  \left(
+    1 -
+    \frac{
+      3 G \; \Delta \gamma
+    }{
+      \leftstar{\sigma}_\mathrm{eq}
+    }
+  \right)
+  \leftstar{\bm{\sigma}}_\mathrm{d}
+\end{equation}
+%
+from which it also follows that
+%
+\begin{equation}
+  \sigma_\mathrm{eq}^{(t+\Delta t)}
+  =
+  \leftstar{\sigma}_\mathrm{eq} - 3 G \; \Delta \gamma
+\end{equation}
+%
+Substitution into \eqref{eq:model:gammadot} yields:
+%
+\begin{equation}\label{eq:return:gammadot}
+  \Delta \gamma
+  =
+  \dot{\gamma}_0 \Delta t \left(
+    \frac{
+      \leftstar{\sigma_\mathrm{eq}} - 3 G \Delta \gamma
+    }{
+      \sigma_0
+    }
+  \right)^{1/m}
+\end{equation}
+%
+which has to be solved for $\Delta \gamma$.
+
+\subsubsection{Special case $m = 1$}
+
+For the special case that $m = 1$, \eqref{eq:return:gammadot} can be solved in closed form. Its solution reads
+%
+\begin{equation}
+\Delta \gamma =
+\leftstar{\sigma}_\mathrm{eq} /
+\left(
+  3 G + \frac{\sigma_0}{\dot{\gamma}_0 \Delta t}
+\right)
+\end{equation}
+%
+
+\subsubsection{Solution using Newton-Raphson}
+
+If $m \neq 1$, \eqref{eq:return:gammadot} can only be solved numerically. To this end Newton-Raphson is used. First, \eqref{eq:return:gammadot} is rewritten in residual form:
+%
+\begin{equation}
+  R ( \Delta \gamma )
+  =
+  \Delta \gamma - \dot{\gamma}_0 \Delta t
+  \left(
+    \frac{
+      \leftstar{\sigma}_\mathrm{eq} - 3 G \Delta \gamma
+    }{
+      \sigma_0
+    }
+  \right)^{1/m}
+  =
+  0
+\end{equation}
+%
+Its derivative then trivially follows
+%
+\begin{equation}
+  \frac{\partial R \hfill}{\partial \Delta \gamma \hfill} =
+  1 + \frac{ 3 G \dot{\gamma}_0 \Delta t }{m}
+  \left(
+    \frac{
+      \leftstar{\sigma}_\mathrm{eq} - 3 G \Delta \gamma
+    }{
+      \sigma_0
+    }
+  \right)^{1/m-1}
+\end{equation}
+%
+The iterative scheme then reads:
+
+\begin{enumerate}
+%
+\item Initial guess
+%
+\begin{equation}
+  R_0 = R ( \Delta \gamma = 0 )
+\end{equation}
+%
+\item While \(R \neq 0\)
+%
+\begin{enumerate}
+%
+\item Calculate the derivative:
+%
+\begin{equation}
+\left.
+    \frac{\partial R \hfill}{\partial \Delta \gamma \hfill}
+    \right|_{\Delta \gamma_i}
+\end{equation}
+%
+\item Update plastic multiplier
+%
+\begin{equation}
+  \Delta \gamma_{i+1} = \Delta \gamma_i -
+  R(\Delta \gamma_i)
+  \left( \left.
+    \frac{\partial R \hfill}{\partial \Delta \gamma \hfill}
+  \right|_{\Delta \gamma_i} \right)^{-1}
+\end{equation}
+%
+\item Calculate new residual
+%
+\begin{equation}
+  R( \Delta \gamma_{i+1} )
+\end{equation}
+%
+\end{enumerate}
+%
+\end{enumerate}
+
+\subsection{Actual state}
+
+Finally, the trial state is updated:
+
+\begin{itemize}
+%
+\item The updated stress tensor
+%
+\begin{equation}
+  \bm{\sigma}^{(t+\Delta t)} = \sigma_\mathrm{m}^{(t+\Delta t)} \bm{I} + \bm{\sigma}_\mathrm{d}^{(t+\Delta t)}
+\end{equation}
+%
+with
+%
+\begin{align}
+  \sigma_\mathrm{m}^{(t+\Delta t)}
+  &=
+  \leftstar{\sigma}_\mathrm{m}
+  \\
+  \bm{\sigma}_\mathrm{d}^{(t+\Delta t)}
+  &=
+  \left( 1 - \frac{3 G \Delta \gamma}{\leftstar{\sigma}_\mathrm{eq}} \right)
+  \leftstar{\bm{\sigma}}_\mathrm{d}
+\end{align}
+%
+\item The updated elastic strain tensor
+%
+\begin{equation}
+  \bm{\varepsilon}_\mathrm{e}^{(t+\Delta t)}
+  =
+  \frac{1}{2G} \, \bm{\sigma}^{(t+\Delta t)}_\mathrm{d} +
+  \tfrac{1}{3} \, \mathrm{tr} (\leftstar{\bm{\varepsilon}}) \bm{I}
+\end{equation}
+%
+\item The updated equivalent plastic strain (for post-processing):
+%
+\begin{equation}
+  \varepsilon_\mathrm{p}^{(t+\Delta t)}
+  =
+  \varepsilon_\mathrm{p}^{(t)} +
+  \Delta \gamma
+\end{equation}
+%
+\end{itemize}
+
+\subsection{Consistent tangent operator}
+
+For the case that the trail state coincides with the actual state (i.e. $\Delta \gamma = 0$, which for this model only occurs in a stress-free state), the constitutive tangent is trivially $\mathbb{C}_\mathrm{e}$. For all other cases, it is equal to
+\begin{equation}
+  \mathbb{C}_\mathrm{ep}
+  =
+  \frac{
+    \partial  \bm{\sigma}^{(t+\Delta t)} \hfill
+  }{
+    \partial \bm{\varepsilon}^{(t+\Delta t)} \hfill
+  }
+\end{equation}
+Above we have seen that
+\begin{equation}
+  \bm{\sigma} = f \left( \bm{\varepsilon}^{(t+\Delta t)}, \bm{\varepsilon}_\mathrm{e}^{(t)}  \right)
+\end{equation}
+or more specifically
+\begin{equation}
+  \bm{\sigma} = f \left( \leftstar{\bm{\varepsilon}}_\mathrm{e}, \bm{\varepsilon}^{(t)}, \bm{\varepsilon}_\mathrm{e}^{(t)}  \right)
+\end{equation}
+The crux here is that both $\bm{\varepsilon}^{(t)}$ and $\bm{\varepsilon}_\mathrm{e}^{(t)}$ are constant during an increment, and thus
+\begin{equation}
+\mathbb{C}_\mathrm{ep}
+=
+\frac{
+  \partial  \bm{\sigma}^{(t+\Delta t)} \hfill
+}{
+  \partial \bm{\varepsilon}^{(t+\Delta t)} \hfill
+} =
+\frac{
+  \partial \, \bm{\sigma}^{(t+\Delta t)} \hfill
+}{
+  \partial \, \leftstar{\bm{\varepsilon}}_\mathrm{e} \hfill
+}
+\end{equation}
+
+To derive the consistent tangent, the first step is to combine the above to an explicit relation between the (actual) stress $\bm{\sigma}^{(t+\Delta t)}$ and the trial elastic strain $\leftstar{\bm{\varepsilon}}_\mathrm{e}$.
+%
+\begin{align}
+  \bm{\sigma}^{(t+\Delta t)}
+  &= \sigma_\mathrm{m}^{(t+\Delta t)} \bm{I} + \bm{\sigma}_\mathrm{d}^{(t+\Delta t)}
+  \\
+  &= \leftstar{\sigma}_\mathrm{m} \bm{I} +
+  \left( 1 - \frac{3 G \Delta \gamma}{\leftstar{\sigma}_\mathrm{eq}} \right) \leftstar{\bm{\sigma}}_\mathrm{d}
+  \\
+  &= \leftstar{\sigma}_\mathrm{m} \bm{I} +
+  \left( 1 - \frac{3 G \Delta \gamma}{\leftstar{\sigma}_\mathrm{eq}} \right) 2 G \; \leftstar{\bm{\varepsilon}}_\mathrm{e}^d
+  \\
+  \label{eq:tangent:stress-strain}
+  &= \left[ \mathbb{C}_\mathrm{e} - \frac{6 G^2 \Delta \gamma}{\leftstar{\sigma}_\mathrm{eq}} \mathbb{I}_\mathrm{d} \right] : \leftstar{\bm{\varepsilon}}_\mathrm{e}
+\end{align}
+%
+The tangent then follows from
+%
+\begin{equation}
+\mathbb{C}_\mathrm{ep}
+=
+\frac{
+  \partial \, \bm{\sigma}^{(t+\Delta t)} \hfill
+}{
+  \partial \, \leftstar{\bm{\varepsilon}}_\mathrm{e} \hfill
+}
+=
+\mathbb{C}_\mathrm{e}
+- \frac{6 G^2 \Delta \gamma}{\leftstar{\sigma}_\mathrm{eq}} \mathbb{I}^d
+- \frac{6 G^2}{\leftstar{\sigma}_\mathrm{eq}} \;
+\left( \frac{
+  \partial \,~\Delta \gamma \hfill
+}{
+  \partial \,\leftstar{\bm{\varepsilon}}_\mathrm{e} \hfill
+} \right) \otimes
+\leftstar{\bm{\varepsilon}}_\mathrm{e}^\mathrm{d}
++ \frac{6 G^2 \Delta \gamma}{\leftstar{\sigma}_\mathrm{eq}^2} \;
+\left( \frac{
+  \partial \,\leftstar{\sigma}_\mathrm{eq} \hfill
+}{
+  \partial \,\leftstar{\bm{\varepsilon}}_\mathrm{e} \hfill
+} \right) \otimes
+\leftstar{\bm{\varepsilon}}_\mathrm{e}^\mathrm{d}
+\end{equation}
+%
+Now apply the following:
+%
+\begin{itemize}
+%
+\item Equivalent stress
+%
+\begin{equation}
+\frac{\partial \sigma_\mathrm{eq}}{\partial \bm{\sigma}}
+  = \frac{
+    \partial \sigma_\mathrm{eq}
+  }{
+    \partial \bm{\sigma}_\mathrm{d}
+  }
+  = \frac{
+    \partial
+  }{
+    \partial \bm{\sigma}_\mathrm{d}
+  } \left(
+    \sqrt{ \tfrac{3}{2} \bm{\sigma}_\mathrm{d} : \bm{\sigma}_\mathrm{d} }
+  \right)
+  = \frac{1}{2 \sigma_\mathrm{eq} }
+  \frac{\partial}{\partial \bm{\sigma}_\mathrm{d}}
+  \left(
+    \tfrac{3}{2} \bm{\sigma}_\mathrm{d} : \bm{\sigma}_\mathrm{d}
+  \right)
+  = \frac{3}{2} \frac{\bm{\sigma}_\mathrm{d}}{\sigma_\mathrm{eq}}
+  = \bm{N} = \leftstar{\bm{N}}
+\end{equation}
+%
+It is trivial to obtain:
+%
+\begin{equation}
+\frac{
+    \partial \;\leftstar{\sigma}_\mathrm{eq}
+  }{
+    \partial \;\leftstar{\bm{\varepsilon}}_\mathrm{e}
+  } =
+  2 G \;\leftstar{\bm{N}}
+\end{equation}
+%
+\item Plastic multiplier
+%
+\begin{align}
+  \frac{
+    \partial \,~\Delta \gamma \hfill
+  }{
+    \partial \,\leftstar{\bm{\varepsilon}}_\mathrm{e}  \hfill
+  }
+  =
+  \left( \frac{
+    \partial ~\leftstar{\sigma}_\mathrm{eq} \hfill
+  }{
+    \partial ~\Delta \gamma      \hfill
+  } \right)^{-1} \;
+  \left( \frac{
+    \partial \,\leftstar{\sigma}_\mathrm{eq} \hfill
+  }{
+    \partial \,\leftstar{\bm{\varepsilon}}_\mathrm{e} \hfill
+  } \right) \;
+\end{align}
+%
+From \eqref{eq:return:gammadot}, it follows that
+%
+\begin{equation}
+\left(
+    \frac{\Delta \gamma}{\dot{\gamma}_0 \Delta t}
+  \right)^m
+  =
+  \frac{
+    \leftstar{\sigma}_\mathrm{eq} - 3 G \Delta \gamma
+  }{
+    \sigma_0
+  }
+  \quad\rightarrow\quad
+  \leftstar{\sigma}_\mathrm{eq}
+  =
+  \sigma_0 \left( \frac{\Delta \gamma}{\dot{\gamma}_0 \Delta t} \right)^m +
+  3 G \Delta \gamma
+\end{equation}
+%
+Hence:
+%
+\begin{equation}
+\frac{
+    \partial ~\leftstar{\sigma}_\mathrm{eq} \hfill
+  }{
+    \partial ~\Delta \gamma      \hfill
+  }
+  =
+  3 G + \frac{m \sigma_0}{\dot{\gamma}_0 \Delta t}
+  \left(
+    \frac{\Delta \gamma}{\dot{\gamma}_0 \Delta t}
+  \right)^{m-1}
+\end{equation}
+%
+\end{itemize}
+%
+The final result then reads:
+%
+\begin{equation}
+\mathbb{C}_\mathrm{ep}
+=
+\mathbb{C}_\mathrm{e} -
+\frac{6 G^2 \Delta \gamma}{\leftstar{\sigma}_\mathrm{eq}} \mathbb{I}_\mathrm{d}
++ 4 G^2
+\left[
+  \frac{\Delta \gamma}{\leftstar{\sigma}_\mathrm{eq}} -
+  \left[
+    3G + \frac{m \sigma_0}{\dot{\gamma}_0 \Delta t}
+    \left(
+      \frac{\Delta \gamma}{\dot{\gamma}_0 \Delta t}
+    \right)^{m-1}
+  \right]^{-1}
+\right]
+\leftstar{\bm{N}} \otimes \leftstar{\bm{N}}
+\end{equation}
+%
+
+\appendix
+\vfill\newpage
+
+\section{Nomenclature}
+
+\begin{itemize}
+%
+\item Dyadic tensor product
+\begin{align}
+  \mathbb{C} &= \bm{A} \otimes \bm{B} \\
+  C_{ijkl}   &= A_{ij} \,      B_{kl}
+\end{align}
+%
+\item Double tensor contraction
+\begin{align}
+  C &= \bm{A} : \bm{B} \\
+    &= A_{ij} \, B_{ji}
+\end{align}
+%
+\item Deviatoric projection tensor
+%
+\begin{equation}
+  \mathbb{I}_\mathrm{d}
+  = \mathbb{I}_\mathrm{s} - \tfrac{1}{3} \bm{I} \otimes \bm{I}
+\end{equation}
+%
+\end{itemize}
+
+\section{Stress measures}
+
+\begin{itemize}
+%
+\item Mean stress
+%
+\begin{equation}
+\sigma_\mathrm{m}
+= \tfrac{1}{3} \, \mathrm{tr} ( \bm{\sigma} )
+= \tfrac{1}{3} \, \bm{\sigma} : \bm{I}
+\end{equation}
+%
+\item Stress deviator
+%
+\begin{equation}
+  \bm{\sigma}_\mathrm{d}
+  = \bm{\sigma} - \sigma_\mathrm{m} \, \bm{I}
+  = \mathbb{I}_\mathrm{d} : \bm{\sigma}
+\end{equation}
+%
+\item Von Mises equivalent stress
+\begin{align}
+\sigma_\mathrm{eq}
+= \sqrt{ \tfrac{3}{2} \, \bm{\sigma}_\mathrm{d} : \bm{\sigma}_\mathrm{d} }
+= \sqrt{ 3 J_2(\bm{\sigma}) }
+\end{align}
+where the second-stress invariant
+\begin{align}
+J_2 = \tfrac{1}{2} \, || \, \bm{\sigma}_\mathrm{d} \, ||^2
+    = \tfrac{1}{2} \, \bm{\sigma}_\mathrm{d} : \bm{\sigma}_\mathrm{d}
+\end{align}
+%
+\end{itemize}
+
+
+
+
+\end{document}
+
+
