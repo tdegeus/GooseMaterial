@@ -1,3 +1,8 @@
+'''
+Illustration of randomized behavior.
+
+(c) T.W.J. de Geus | tom@geus.me | www.geus.me | github.com/tdegeus/GooseSolid
+'''
 
 import numpy as np
 import material_elastic_viscous as mat
@@ -13,8 +18,9 @@ ninc = 100000
 dt   = T/float(ninc)
 
 epsdot = (eps/T)*np.array([
-  [0. , 1.],
-  [1. , 0.],
+  [0. , 1. , 0.],
+  [1. , 0. , 0.],
+  [0. , 0. , 0.],
 ])
 
 tau   = np.zeros((ninc))
@@ -48,7 +54,7 @@ for inc in range(ninc):
 
 fig,ax = plt.subplots()
 
-ax.plot(gamma,tau)
+ax.plot(gamma,tau*np.sqrt(3.))
 
 ax.xaxis.set_ticks(np.linspace(0,10,6))
 ax.yaxis.set_ticks(np.linspace(0,.3,4))
@@ -57,7 +63,7 @@ plt.xlim([-.05,10.05])
 plt.ylim([-.01,0.32])
 
 plt.xlabel(r'$\gamma$')
-plt.ylabel(r'$\tau$')
+plt.ylabel(r'$\tau \sqrt{3}$')
 
 plt.savefig('example_random.svg')
 plt.show()
