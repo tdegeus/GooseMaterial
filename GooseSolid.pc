@@ -1,0 +1,9 @@
+prefix=/data/prog/src/GooseSolid
+exec_prefix=${prefix}
+
+Name: GooseSolid
+Description: Material models in C++
+Requires:
+Version: 0.0.1
+Libs:
+Cflags: -I${prefix}/include

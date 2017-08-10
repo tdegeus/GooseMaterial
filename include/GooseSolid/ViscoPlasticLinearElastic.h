@@ -7,6 +7,7 @@ Overview
 
 class ViscoPlasticLinearElastic
 |- stress
+|- stress_tangent
 |- tangent
 |- increment
 
@@ -43,8 +44,8 @@ private:
   double m_K      ; // material parameter : bulk  modulus
   double m_G      ; // material parameter : shear modulus
   double m_sig0   ; // material parameter : 'yield' stress
-  double m_gamma0 ; // material parameter : 'yield' strain
-  double m_m      ; // material parameter : non-linearity
+  double m_gamma0 ; // material parameter : reference plastic strain rate
+  double m_m      ; // material parameter : rate exponent
   T2s    m_eps    ; // history  parameter : strain tensor
   T2s    m_eps_n  ; // history  parameter : strain tensor at last increment
   T2s    m_epse   ; // history  parameter : elastic strain tensor
@@ -59,8 +60,9 @@ public:
   ViscoPlasticLinearElastic(double K, double G, double sig0, double gamma0, double m=1.);
 
   // compute stress(+tangent) at "eps", depending on the history stored in this class
-  T2s                stress (const T2s &eps, const double dt);
-  std::tuple<T4,T2s> tangent(const T2s &eps, const double dt);
+  T2s                stress        (const T2s &eps, const double dt);
+  std::tuple<T4,T2s> stress_tangent(const T2s &eps, const double dt);
+  T4                 tangent       (const T2s &eps, const double dt);
 
   // update history
   void increment();
@@ -98,7 +100,7 @@ void ViscoPlasticLinearElastic::increment()
 
 // -------------------------------------------------------------------------------------------------
 
-T2s ViscoPlasticLinearElastic::stress(const T2s &eps, const double dt)
+T2s  ViscoPlasticLinearElastic::stress(const T2s &eps, const double dt)
 {
   T2s sig;
   T4  K4;
@@ -110,7 +112,19 @@ T2s ViscoPlasticLinearElastic::stress(const T2s &eps, const double dt)
 
 // -------------------------------------------------------------------------------------------------
 
-std::tuple<T4,T2s> ViscoPlasticLinearElastic::tangent(const T2s &eps, const double dt)
+T4   ViscoPlasticLinearElastic::tangent(const T2s &eps, const double dt)
+{
+  T2s sig;
+  T4  K4;
+
+  std::tie(K4,sig) = this->f_compute(eps,dt,false);
+
+  return K4;
+};
+
+// -------------------------------------------------------------------------------------------------
+
+std::tuple<T4,T2s> ViscoPlasticLinearElastic::stress_tangent(const T2s &eps, const double dt)
 {
   return this->f_compute(eps,dt,false);
 }
@@ -141,7 +155,7 @@ std::tuple<T4,T2s> ViscoPlasticLinearElastic::f_compute(const T2s &eps, const do
   epse_m = m_epse.trace()/3.;
   epse_d = m_epse - epse_m * I;
 
-  // calculate the trial stress: hydrostatic and deviatoric part, and equivalent stress
+  // trial stress: hydrostatic and deviatoric part, and equivalent stress
   sig_m  = 3. * m_K * epse_m;
   sig_d  = 2. * m_G * epse_d;
   sig_eq = std::pow( 1.5 * sig_d.ddot(sig_d) , 0.5 );

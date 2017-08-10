@@ -7,6 +7,7 @@ Overview
 
 class PlasticLinearElastic
 |- stress
+|- stress_tangent
 |- tangent
 |- increment
 
@@ -21,6 +22,7 @@ Suggested references
 
 *   The code + comments below.
 *   docs/PlasticLinearElastic/PlasticLinearElastic.pdf
+*   Former internal code: GooseFEM / mat2002
 
 ================================================================================================= */
 
@@ -58,8 +60,9 @@ public:
   PlasticLinearElastic(double K, double G, double sigy0, double H, double m=1.);
 
   // compute stress(+tangent) at "eps", depending on the history stored in this class
-  T2s                stress (const T2s &eps);
-  std::tuple<T4,T2s> tangent(const T2s &eps);
+  T2s                stress        (const T2s &eps);
+  std::tuple<T4,T2s> stress_tangent(const T2s &eps);
+  T4                 tangent       (const T2s &eps);
 
   // update history
   void increment();
@@ -71,8 +74,8 @@ public:
 // ========================================= IMPLEMENTATION ========================================
 
 PlasticLinearElastic::PlasticLinearElastic(
-  double K, double G, double sigy0  , double H, double m ) :
-  m_K(K)  , m_G(G)  , m_sigy0(sigy0), m_H(H)  , m_m(m)
+  double K, double G, double sigy0, double H, double m ) :
+  m_K(K), m_G(G), m_sigy0(sigy0), m_H(H), m_m(m)
 {
   // resize history tensors
   m_eps   .resize(3);
@@ -97,7 +100,7 @@ void PlasticLinearElastic::increment()
 
 // -------------------------------------------------------------------------------------------------
 
-T2s PlasticLinearElastic::stress(const T2s &eps)
+T2s  PlasticLinearElastic::stress(const T2s &eps)
 {
   T2s sig;
   T4  K4;
@@ -109,7 +112,19 @@ T2s PlasticLinearElastic::stress(const T2s &eps)
 
 // -------------------------------------------------------------------------------------------------
 
-std::tuple<T4,T2s> PlasticLinearElastic::tangent(const T2s &eps)
+T4   PlasticLinearElastic::tangent(const T2s &eps)
+{
+  T2s sig;
+  T4  K4;
+
+  std::tie(K4,sig) = this->f_compute(eps,false);
+
+  return K4;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+std::tuple<T4,T2s> PlasticLinearElastic::stress_tangent(const T2s &eps)
 {
   return this->f_compute(eps,false);
 }
@@ -138,7 +153,7 @@ std::tuple<T4,T2s> PlasticLinearElastic::f_compute(const T2s &eps, bool stress_o
   epse_m = m_epse.trace()/3.;
   epse_d = m_epse - epse_m * I;
 
-  // calculate the trial stress: hydrostatic and deviatoric part, and equivalent stress
+  // trial stress: hydrostatic and deviatoric part, and equivalent stress
   sig_m  = 3. * m_K * epse_m;
   sig_d  = 2. * m_G * epse_d;
   sig_eq = std::pow( 1.5 * sig_d.ddot(sig_d) , 0.5 );
