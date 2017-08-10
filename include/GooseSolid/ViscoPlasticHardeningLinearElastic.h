@@ -21,7 +21,6 @@ Suggested references
 
 *   The code + comments below.
 *   docs/ViscoPlasticLinearElastic/ViscoPlasticLinearElastic.pdf
-*   Former internal code: GooseFEM / mat3202
 
 ================================================================================================= */
 

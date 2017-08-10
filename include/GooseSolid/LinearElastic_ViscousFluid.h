@@ -1,7 +1,40 @@
+/* ========================================== DESCRIPTION ==========================================
 
+(c - GPLv3) T.W.J. de Geus (Tom) | tom@geus.me | www.geus.me | github.com/tdegeus/GooseMesh
+
+Overview
+--------
+
+class LinearElastic_ViscousFluid
+|- stress
+|- increment
+|- setNextSigy
+
+Description
+-----------
+
+Hybrid linear elastic -- viscous fluid model, which follow each based on:
+
+*   Critical stress: elasticity -> fluid
+*   Flow time:       fluid      -> elasticity
+
+The elasticity is based on linear elasticity (i.e. a linear relationship between the linear strain
+and the Cauchy stress).
+
+Suggested references
+--------------------
+
+*   The code + comments below.
+*   docs/LinearElastic_ViscousFluid/LinearElastic_ViscousFluid.pdf
+
+================================================================================================= */
+
+#include <tuple>
 #include <cppmat/tensor.h>
 
-using T2 = cppmat::tensor2<double>;
+using T2  = cppmat::tensor2 <double>;
+using T2s = cppmat::tensor2s<double>;
+using T2d = cppmat::tensor2d<double>;
 
 namespace GooseSolid {
 
@@ -20,8 +53,8 @@ private:
   double m_T         ;  // current time
   double m_T_n       ;  // time of the last increment
   double m_Tyield_n  ;  // time at which the material has yielded last
-  T2     m_sigd      ;  // deviatoric  stress
-  T2     m_sigd_n    ;  // deviatoric  stress at previous time-step
+  T2s    m_sigd      ;  // deviatoric  stress
+  T2s    m_sigd_n    ;  // deviatoric  stress at previous time-step
   double m_sigm      ;  // hydrostatic stress
   double m_sigm_n    ;  // hydrostatic stress at previous time-step
 
@@ -31,7 +64,7 @@ public:
   LinearElastic_ViscousFluid(double K, double G, double sigy, double Tdamp, double Tfluid);
 
   // constitutive response: 'sig ( epsdot, dt )' as a function of the history
-  T2   stress(const T2 &epsdot, const double dt);
+  T2s  stress(const T2s &epsdot, const double dt);
 
   // update history
   void increment();
@@ -60,9 +93,9 @@ LinearElastic_ViscousFluid::LinearElastic_ViscousFluid(
 
   // initialize as elastic
   m_elas = true;
-};
+}
 
-// =================================================================================================
+// -------------------------------------------------------------------------------------------------
 
 void LinearElastic_ViscousFluid::increment()
 {
@@ -71,19 +104,20 @@ void LinearElastic_ViscousFluid::increment()
   m_T      = m_T_n ;
 }
 
-// =================================================================================================
+// -------------------------------------------------------------------------------------------------
 
 void LinearElastic_ViscousFluid::setNextSigy(double next)
 {
   m_sigy_next = next;
 }
 
-// =================================================================================================
+// -------------------------------------------------------------------------------------------------
 
-T2 LinearElastic_ViscousFluid::stress(const T2 &epsdot, double dt)
+T2s LinearElastic_ViscousFluid::stress(const T2s &epsdot, double dt)
 {
   double epsdotm,sigeq;
-  T2 I,epsdotd;
+  T2s epsdotd;
+  T2d I;
 
   // set time
   m_T = m_T_n+dt;
@@ -118,8 +152,8 @@ T2 LinearElastic_ViscousFluid::stress(const T2 &epsdot, double dt)
 
   // return total stress tensor
   return m_sigd+m_sigm*I;
-};
+}
 
-// =================================================================================================
+// -------------------------------------------------------------------------------------------------
 
-};
+}

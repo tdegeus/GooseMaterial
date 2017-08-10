@@ -1,3 +1,24 @@
+/* ========================================== DESCRIPTION ==========================================
+
+(c - GPLv3) T.W.J. de Geus (Tom) | tom@geus.me | www.geus.me | github.com/tdegeus/GooseMesh
+
+Overview
+--------
+
+- ConvertElasticParameters    // convert pairs of elastic parameters
+- VonMisesStress              // compute Von Mises Stress
+
+Description
+-----------
+
+Miscellaneous support functions.
+
+Suggested references
+--------------------
+
+*   The code + comments below.
+
+================================================================================================= */
 
 #include <string>
 #include <tuple>
@@ -14,7 +35,7 @@ namespace GooseSolid {
 std::tuple<double,double> ConvertElasticParameters (
   std::string in, double ipar1, double ipar2, std::string out );
 
-// Von-Mises equivalent stress
+// Von-Mises equivalent stress: sigma_eq = \sqrt{ 3/2 sigma_d : sigma_d }
 double VonMisesStress(const T2 &stress);
 
 // ========================================= IMPLEMENTATION ========================================
@@ -59,7 +80,7 @@ std::tuple<double,double> ConvertElasticParameters (
   throw std::runtime_error("GooseSolid::ConvertElasticParameters -> Unknown output pair");
 }
 
-// =================================================================================================
+// -------------------------------------------------------------------------------------------------
 
 double VonMisesStress(const T2 &S)
 {
@@ -76,4 +97,6 @@ double VonMisesStress(const T2 &S)
   throw std::runtime_error("Unknown stress definition");
 }
 
-};
+// -------------------------------------------------------------------------------------------------
+
+}

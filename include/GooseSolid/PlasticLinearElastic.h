@@ -1,8 +1,36 @@
+/* ========================================== DESCRIPTION ==========================================
 
+(c - GPLv3) T.W.J. de Geus (Tom) | tom@geus.me | www.geus.me | github.com/tdegeus/GooseMesh
+
+Overview
+--------
+
+class PlasticLinearElastic
+|- stress
+|- tangent
+|- increment
+
+Description
+-----------
+
+Elasto-plastic material model, whereby the elasticity is based on linear elasticity (i.e. a linear
+relationship between the linear strain and the Cauchy stress).
+
+Suggested references
+--------------------
+
+*   The code + comments below.
+*   docs/PlasticLinearElastic/PlasticLinearElastic.pdf
+
+================================================================================================= */
+
+#include <tuple>
 #include <cppmat/tensor.h>
 
-using T2 = cppmat::tensor2<double>;
-using T4 = cppmat::tensor4<double>;
+using T2  = cppmat::tensor2 <double>;
+using T2s = cppmat::tensor2s<double>;
+using T2d = cppmat::tensor2d<double>;
+using T4  = cppmat::tensor4 <double>;
 
 namespace GooseSolid {
 
@@ -16,10 +44,10 @@ private:
   double m_sigy0  ; // material parameter : initial yield stress
   double m_H      ; // material parameter : hardening modulus
   double m_m      ; // material parameter : hardening exponent
-  T2     m_eps    ; // history  parameter : strain tensor
-  T2     m_eps_n  ; // history  parameter : strain tensor at last increment
-  T2     m_epse   ; // history  parameter : elastic strain tensor
-  T2     m_epse_n ; // history  parameter : elastic strain tensor at last increment
+  T2s    m_eps    ; // history  parameter : strain tensor
+  T2s    m_eps_n  ; // history  parameter : strain tensor at last increment
+  T2s    m_epse   ; // history  parameter : elastic strain tensor
+  T2s    m_epse_n ; // history  parameter : elastic strain tensor at last increment
   double m_ep     ; // history  parameter : accumulated plastic strain
   double m_ep_n   ; // history  parameter : accumulated plastic strain at last increment
 
@@ -30,14 +58,14 @@ public:
   PlasticLinearElastic(double K, double G, double sigy0, double H, double m=1.);
 
   // compute stress(+tangent) at "eps", depending on the history stored in this class
-  T2                stress (const T2 &eps);
-  std::tuple<T4,T2> tangent(const T2 &eps);
+  T2s                stress (const T2s &eps);
+  std::tuple<T4,T2s> tangent(const T2s &eps);
 
   // update history
   void increment();
 
   // perform actual computations
-  std::tuple<T4,T2> f_compute(const T2 &eps, bool stress_only=false);
+  std::tuple<T4,T2s> f_compute(const T2s &eps, bool stress_only=false);
 };
 
 // ========================================= IMPLEMENTATION ========================================
@@ -56,9 +84,9 @@ PlasticLinearElastic::PlasticLinearElastic(
   m_eps_n .zeros();
   m_epse_n.zeros();
   m_ep_n = 0.0;
-};
+}
 
-// =================================================================================================
+// -------------------------------------------------------------------------------------------------
 
 void PlasticLinearElastic::increment()
 {
@@ -67,33 +95,33 @@ void PlasticLinearElastic::increment()
   m_ep_n   = m_ep  ;
 }
 
-// =================================================================================================
+// -------------------------------------------------------------------------------------------------
 
-T2 PlasticLinearElastic::stress(const T2 &eps)
+T2s PlasticLinearElastic::stress(const T2s &eps)
 {
-  T2 sig;
-  T4 K4;
+  T2s sig;
+  T4  K4;
 
   std::tie(K4,sig) = this->f_compute(eps,true);
 
   return sig;
-};
+}
 
-// =================================================================================================
+// -------------------------------------------------------------------------------------------------
 
-std::tuple<T4,T2> PlasticLinearElastic::tangent(const T2 &eps)
+std::tuple<T4,T2s> PlasticLinearElastic::tangent(const T2s &eps)
 {
   return this->f_compute(eps,false);
 }
 
+// -------------------------------------------------------------------------------------------------
 
-// =================================================================================================
-
-std::tuple<T4,T2> PlasticLinearElastic::f_compute(const T2 &eps, bool stress_only)
+std::tuple<T4,T2s> PlasticLinearElastic::f_compute(const T2s &eps, bool stress_only)
 {
   double dgamma = 0.0;
   double epse_m,sig_m,sig_eq,dH,phi;
-  T2 epse_d,sig_d,sig,N,I;
+  T2s epse_d,sig_d,sig,N;
+  T2d I;
 
   // stress response
   // ---------------
@@ -202,6 +230,6 @@ std::tuple<T4,T2> PlasticLinearElastic::f_compute(const T2 &eps, bool stress_onl
   return std::make_tuple(K4,sig);
 }
 
-// =================================================================================================
+// -------------------------------------------------------------------------------------------------
 
-};
+}
