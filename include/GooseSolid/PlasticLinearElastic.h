@@ -1,6 +1,6 @@
 /* ========================================== DESCRIPTION ==========================================
 
-(c - GPLv3) T.W.J. de Geus (Tom) | tom@geus.me | www.geus.me | github.com/tdegeus/GooseMesh
+(c - GPLv3) T.W.J. de Geus (Tom) | tom@geus.me | www.geus.me | github.com/tdegeus/GooseSolid
 
 Overview
 --------
@@ -68,7 +68,8 @@ public:
   void increment();
 
   // perform actual computations
-  std::tuple<T4,T2s> f_compute(const T2s &eps, bool stress_only=false);
+  std::tuple<T4    ,T2s   > f_compute  (const T2s &eps, bool stress_only=false);
+  std::tuple<double,double> f_returnmap(double phi, double sig_eq);
 };
 
 // ========================================= IMPLEMENTATION ========================================
@@ -150,7 +151,7 @@ std::tuple<T4,T2s> PlasticLinearElastic::f_compute(const T2s &eps, bool stress_o
   m_ep   = m_ep_n;
 
   // decompose trial elastic strain: hydrostatic part, deviatoric part
-  epse_m = m_epse.trace()/3.;
+  epse_m = m_epse.trace() / 3.;
   epse_d = m_epse - epse_m * I;
 
   // trial stress: hydrostatic and deviatoric part, and equivalent stress
@@ -160,50 +161,12 @@ std::tuple<T4,T2s> PlasticLinearElastic::f_compute(const T2s &eps, bool stress_o
 
   // yield surface, initialize return-map variables
   phi    = sig_eq - m_sigy0 - m_H * std::pow( m_ep_n , m_m );
-  dH     = m_H;
-  dgamma = 0.0;
 
   // return map
   if ( phi > 0.0 )
   {
-    // - determine plastic multiplier
-    //   (a) linear hardening
-    if ( std::abs(m_m-1.) < 1.e-6 )
-    {
-      dgamma = phi / ( 3.*m_G + m_H );
-    }
-    //   (b) non-linear hardening
-    else
-    {
-      int    i = 0;
-      double d,R;
-      // -- loop until residual vanishes: do { ... } while ( residual > norm )
-      do
-      {
-        // --- residual
-        R = sig_eq - 3.*m_G*dgamma - m_sigy0 - m_H * std::pow( m_ep_n+dgamma , m_m );
-        // --- hardening slope (avoid zero-division)
-        if ( std::abs( m_ep_n+dgamma ) < 1.e-6 ) {
-          d  = R / ( -3.*m_G );
-        }
-        else {
-          dH = m_m * m_H * std::pow( m_ep_n+dgamma , m_m-1. );
-          d  = R / ( -3.*m_G - dH );
-        }
-        // --- avoid zero devision
-        if ( m_ep_n+dgamma-d <= 0. )
-          d = ( m_ep_n+dgamma )*.9;
-        // --- update plastic multiplier
-        dgamma -= d;
-        // --- limit maximum number of iterations
-        if ( i>20 ) throw std::runtime_error("Return-map not succeeded");
-        ++i;
-      }
-      while ( std::abs(R/m_sigy0) > 1.e-6 );
-      // -- double check physical admissibility
-      if ( dgamma < 0.0 ) throw std::runtime_error("Negative plastic multiplier found");
-    }
-
+    // - determine plastic multiplier (and tangential hardening modulus, for tangent)
+    std::tie( dgamma , dH ) = f_returnmap( phi , sig_eq );
     // - yield surface normal (for tangent)
     N      = 1.5 * sig_d/sig_eq;
     // - correct trial state
@@ -219,12 +182,13 @@ std::tuple<T4,T2s> PlasticLinearElastic::f_compute(const T2s &eps, bool stress_o
   // tangent
   // -------
 
+  // compute only stress: allocate empty tangent (with zero elements), and quit
   if ( stress_only ) {
     T4 K4(0);
     return std::make_tuple(K4,sig);
   }
 
-  // fourth order deviator unit tensor (i.e. A_d = I4d : A)
+  // unit tensors: II = dyadic(I,I) and deviatoric unit tensor I4d (A_d = I4d : A)
   T4 I4d = cppmat::identity4d (3);
   T4 II  = cppmat::identity4II(3);
 
@@ -234,15 +198,78 @@ std::tuple<T4,T2s> PlasticLinearElastic::f_compute(const T2s &eps, bool stress_o
   // plastic part: only when yielding
   if ( phi > 0.0 )
   {
-    // - tangential hardening modulus
-    dH  = m_m * m_H * std::pow( m_ep , m_m-1. );
     // - update the tangent (1/2)
-    K4 -= 6. * std::pow(m_G,2.) * dgamma/sig_eq * I4d;
+    K4 -= 6. * std::pow(m_G,2.) *   dgamma/sig_eq * I4d;
     // - update the tangent (2/2)
     K4 += 4. * std::pow(m_G,2.) * ( dgamma/sig_eq - 1./(3.*m_G+dH) ) * N.dyadic(N);
   }
 
   return std::make_tuple(K4,sig);
+}
+
+// -------------------------------------------------------------------------------------------------
+
+std::tuple<double,double> PlasticLinearElastic::f_returnmap(double phi, double sig_eq)
+{
+  double dgamma = 0.0;
+
+  // linear hardening
+  // ----------------
+
+  if ( std::abs(m_m-1.) < 1.e-6 )
+  {
+    dgamma = phi / ( 3.*m_G + m_H );
+
+    return std::make_tuple( dgamma , m_H );
+  }
+
+  // non-linear hardening
+  // --------------------
+
+  int    i = 0;
+  double d,R,dH;
+
+  // loop until residual vanishes: do { ... } while ( residual > norm )
+  do
+  {
+
+    // - residual
+    R = sig_eq - 3.*m_G*dgamma - m_sigy0 - m_H * std::pow( m_ep_n+dgamma , m_m );
+
+    // - hardening slope
+    if ( std::abs( m_ep_n+dgamma ) < 1.e-8 )
+      dH = 0.0;
+    else
+      dH = m_m * m_H * std::pow( m_ep_n+dgamma , m_m-1. );
+
+    // - iterative update of dgamma
+    d  = R / ( -3.*m_G - dH );
+
+    // - avoid inadmissible state "ep < 0.0"
+    //   (this could happen is the hardening is very non-linear)
+    if ( m_ep_n+dgamma-d <= 0. )
+      d = ( m_ep_n+dgamma )*.9;
+
+    // - update plastic multiplier
+    dgamma -= d;
+
+    // - limit maximum number of iterations
+    if ( i>20 )
+      throw std::runtime_error("Return-map not succeeded");
+
+    // - update the iteration counter
+    ++i;
+
+  }
+  while ( std::abs(R/m_sigy0) > 1.e-6 );
+
+  // double check physical admissibility
+  if ( dgamma < 0.0 )
+    throw std::runtime_error("Negative plastic multiplier found");
+
+  // return result
+  return std::make_tuple( dgamma , dH );
+
 }
 
 // -------------------------------------------------------------------------------------------------
