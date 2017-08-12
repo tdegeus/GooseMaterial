@@ -1,6 +1,6 @@
 /* ========================================== DESCRIPTION ==========================================
 
-(c - GPLv3) T.W.J. de Geus (Tom) | tom@geus.me | www.geus.me | github.com/tdegeus/GooseMesh
+(c - GPLv3) T.W.J. de Geus (Tom) | tom@geus.me | www.geus.me | github.com/tdegeus/GooseSolid
 
 Overview
 --------
@@ -76,8 +76,8 @@ public:
 // ========================================= IMPLEMENTATION ========================================
 
 LinearElastic_ViscousFluid::LinearElastic_ViscousFluid(
-  double K, double G, double sigy , double Tdamp  , double Tfluid    ) :
-  m_K(K)  , m_G(G)  , m_sigy(sigy), m_Tdamp(Tdamp), m_Tfluid(Tfluid)
+  double K, double G, double sigy, double Tdamp, double Tfluid ) :
+  m_K(K), m_G(G), m_sigy(sigy), m_Tdamp(Tdamp), m_Tfluid(Tfluid)
 {
   // set yield stress constant
   m_sigy_next = m_sigy;
@@ -87,12 +87,15 @@ LinearElastic_ViscousFluid::LinearElastic_ViscousFluid(
   m_sigd_n.resize(3);
 
   // zero-initialize history
+  m_sigd  .zeros();
   m_sigd_n.zeros();
+  m_sigm   = 0.0;
   m_sigm_n = 0.0;
+  m_T      = 0.0;
   m_T_n    = 0.0;
 
   // initialize as elastic
-  m_elas = true;
+  m_elas   = true;
 }
 
 // -------------------------------------------------------------------------------------------------

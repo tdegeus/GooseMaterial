@@ -7,15 +7,16 @@ Overview
 
 class PlasticLinearElastic
 |- stress
-|- stress_tangent
+|- tangent_stress
 |- tangent
 |- increment
 
 Description
 -----------
 
-Elasto-plastic material model, whereby the elasticity is based on linear elasticity (i.e. a linear
-relationship between the linear strain and the Cauchy stress).
+Elasto-plastic material model with power-law hardening of the initial yield stress. The elasticity
+is based on linear elasticity (i.e. a linear relationship between the linear strain and the Cauchy
+stress).
 
 Suggested references
 --------------------
@@ -26,6 +27,7 @@ Suggested references
 
 ================================================================================================= */
 
+#include <assert.h>
 #include <tuple>
 #include <cppmat/tensor.h>
 
@@ -41,6 +43,7 @@ namespace GooseSolid {
 class PlasticLinearElastic
 {
 private:
+
   double m_K      ; // material parameter : bulk  modulus
   double m_G      ; // material parameter : shear modulus
   double m_sigy0  ; // material parameter : initial yield stress
@@ -53,7 +56,14 @@ private:
   double m_ep     ; // history  parameter : accumulated plastic strain
   double m_ep_n   ; // history  parameter : accumulated plastic strain at last increment
 
+  // compute the stress (and optionally the tangent)
+  std::tuple<T4,T2s> compute(const T2s &eps, bool tangent);
+
+  // compute the plastic multiplier and tangent hardening modulus for a given trial state
+  std::tuple<double,double> plastic_multiplier(double phi, double sig_eq);
+
 public:
+
   // constructor / destructor
  ~PlasticLinearElastic(){};
   PlasticLinearElastic(){};
@@ -61,15 +71,12 @@ public:
 
   // compute stress(+tangent) at "eps", depending on the history stored in this class
   T2s                stress        (const T2s &eps);
-  std::tuple<T4,T2s> stress_tangent(const T2s &eps);
+  std::tuple<T4,T2s> tangent_stress(const T2s &eps);
   T4                 tangent       (const T2s &eps);
 
   // update history
   void increment();
 
-  // perform actual computations
-  std::tuple<T4    ,T2s   > f_compute  (const T2s &eps, bool stress_only=false);
-  std::tuple<double,double> f_returnmap(double phi, double sig_eq);
 };
 
 // ========================================= IMPLEMENTATION ========================================
@@ -85,8 +92,11 @@ PlasticLinearElastic::PlasticLinearElastic(
   m_epse_n.resize(3);
 
   // initialize stress/strain free state
+  m_eps   .zeros();
   m_eps_n .zeros();
+  m_epse  .zeros();
   m_epse_n.zeros();
+  m_ep   = 0.0;
   m_ep_n = 0.0;
 }
 
@@ -106,7 +116,7 @@ T2s  PlasticLinearElastic::stress(const T2s &eps)
   T2s sig;
   T4  K4;
 
-  std::tie(K4,sig) = this->f_compute(eps,true);
+  std::tie(K4,sig) = compute(eps,false);
 
   return sig;
 }
@@ -118,34 +128,33 @@ T4   PlasticLinearElastic::tangent(const T2s &eps)
   T2s sig;
   T4  K4;
 
-  std::tie(K4,sig) = this->f_compute(eps,false);
+  std::tie(K4,sig) = compute(eps,true);
 
   return K4;
 }
 
 // -------------------------------------------------------------------------------------------------
 
-std::tuple<T4,T2s> PlasticLinearElastic::stress_tangent(const T2s &eps)
+std::tuple<T4,T2s> PlasticLinearElastic::tangent_stress(const T2s &eps)
 {
-  return this->f_compute(eps,false);
+  return compute(eps,true);
 }
 
 // -------------------------------------------------------------------------------------------------
 
-std::tuple<T4,T2s> PlasticLinearElastic::f_compute(const T2s &eps, bool stress_only)
+std::tuple<T4,T2s> PlasticLinearElastic::compute(const T2s &eps, bool tangent)
 {
-  double dgamma = 0.0;
-  double epse_m,sig_m,sig_eq,dH,phi;
+  double epse_m,sig_m,sig_eq,phi,dgamma,dH;
   T2s epse_d,sig_d,sig,N;
   T2d I;
 
-  // stress response
-  // ---------------
+  // stress
+  // ------
 
   // second order identity tensor
   I      = cppmat::identity2(3);
 
-  // total strain, trial elastic strain, and accumulated plastic strain
+  // trial strain: copy total strain, set trial elastic strain and trial accumulated plastic strain
   m_eps  = eps;
   m_epse = m_epse_n + ( eps - m_eps_n );
   m_ep   = m_ep_n;
@@ -154,19 +163,19 @@ std::tuple<T4,T2s> PlasticLinearElastic::f_compute(const T2s &eps, bool stress_o
   epse_m = m_epse.trace() / 3.;
   epse_d = m_epse - epse_m * I;
 
-  // trial stress: hydrostatic and deviatoric part, and equivalent stress
+  // trial stress: hydrostatic and deviatoric part, equivalent stress
   sig_m  = 3. * m_K * epse_m;
   sig_d  = 2. * m_G * epse_d;
   sig_eq = std::pow( 1.5 * sig_d.ddot(sig_d) , 0.5 );
 
-  // yield surface, initialize return-map variables
-  phi    = sig_eq - m_sigy0 - m_H * std::pow( m_ep_n , m_m );
+  // yield surface
+  phi    = sig_eq - ( m_sigy0 + m_H * std::pow( m_ep_n , m_m ) );
 
   // return map
   if ( phi > 0.0 )
   {
-    // - determine plastic multiplier (and tangential hardening modulus, for tangent)
-    std::tie( dgamma , dH ) = f_returnmap( phi , sig_eq );
+    // - plastic multiplier (and tangential hardening modulus, for tangent)
+    std::tie( dgamma , dH ) = plastic_multiplier( phi , sig_eq );
     // - yield surface normal (for tangent)
     N      = 1.5 * sig_d/sig_eq;
     // - correct trial state
@@ -182,8 +191,8 @@ std::tuple<T4,T2s> PlasticLinearElastic::f_compute(const T2s &eps, bool stress_o
   // tangent
   // -------
 
-  // compute only stress: allocate empty tangent (with zero elements), and quit
-  if ( stress_only ) {
+  // compute only stress: allocate empty tangent (without any element), and return
+  if ( ! tangent ) {
     T4 K4(0);
     return std::make_tuple(K4,sig);
   }
@@ -209,49 +218,51 @@ std::tuple<T4,T2s> PlasticLinearElastic::f_compute(const T2s &eps, bool stress_o
 
 // -------------------------------------------------------------------------------------------------
 
-std::tuple<double,double> PlasticLinearElastic::f_returnmap(double phi, double sig_eq)
+std::tuple<double,double> PlasticLinearElastic::plastic_multiplier(double phi, double sig_eq)
 {
-  double dgamma = 0.0;
-
-  // linear hardening
-  // ----------------
+  // linear hardening ( m == 1 )
+  // ---------------------------
 
   if ( std::abs(m_m-1.) < 1.e-6 )
-  {
-    dgamma = phi / ( 3.*m_G + m_H );
+    return std::make_tuple( phi / ( 3.*m_G + m_H ) , m_H );
 
-    return std::make_tuple( dgamma , m_H );
-  }
+  // non-linear hardening ( m != 1 )
+  // -------------------------------
 
-  // non-linear hardening
-  // --------------------
-
-  int    i = 0;
+  int    i      = 0;
+  double dgamma = 0.0;
   double d,R,dH;
 
-  // loop until residual vanishes: do { ... } while ( residual > norm )
-  do
+  // loop until residual vanishes
+  while ( true )
   {
 
     // - residual
     R = sig_eq - 3.*m_G*dgamma - m_sigy0 - m_H * std::pow( m_ep_n+dgamma , m_m );
 
-    // - hardening slope
+    // - hardening slope (avoid zero devision, since often "m_m - 1.0 < 0.0")
     if ( std::abs( m_ep_n+dgamma ) < 1.e-8 )
       dH = 0.0;
     else
       dH = m_m * m_H * std::pow( m_ep_n+dgamma , m_m-1. );
 
-    // - iterative update of dgamma
+    // - actual iterative update of dgamma
     d  = R / ( -3.*m_G - dH );
 
-    // - avoid inadmissible state "ep < 0.0"
+    // - numerical fix: avoid inadmissible state "ep < 0.0"
     //   (this could happen is the hardening is very non-linear)
     if ( m_ep_n+dgamma-d <= 0. )
       d = ( m_ep_n+dgamma )*.9;
 
     // - update plastic multiplier
     dgamma -= d;
+
+    // - check for convergence
+    if ( std::abs(R/m_sigy0) < 1.0e-6 )
+    {
+      assert( dgamma >= 0.0 );
+      return std::make_tuple( dgamma , dH );
+    }
 
     // - limit maximum number of iterations
     if ( i>20 )
@@ -261,15 +272,6 @@ std::tuple<double,double> PlasticLinearElastic::f_returnmap(double phi, double s
     ++i;
 
   }
-  while ( std::abs(R/m_sigy0) > 1.e-6 );
-
-  // double check physical admissibility
-  if ( dgamma < 0.0 )
-    throw std::runtime_error("Negative plastic multiplier found");
-
-  // return result
-  return std::make_tuple( dgamma , dH );
-
 }
 
 // -------------------------------------------------------------------------------------------------

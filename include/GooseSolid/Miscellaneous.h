@@ -1,12 +1,11 @@
 /* ========================================== DESCRIPTION ==========================================
 
-(c - GPLv3) T.W.J. de Geus (Tom) | tom@geus.me | www.geus.me | github.com/tdegeus/GooseMesh
+(c - GPLv3) T.W.J. de Geus (Tom) | tom@geus.me | www.geus.me | github.com/tdegeus/GooseSolid
 
 Overview
 --------
 
 - ConvertElasticParameters    // convert pairs of elastic parameters
-- VonMisesStress              // compute Von Mises Stress
 
 Description
 -----------
@@ -24,8 +23,6 @@ Suggested references
 #include <tuple>
 #include <cppmat/tensor.h>
 
-using T2 = cppmat::tensor2<double>;
-
 namespace GooseSolid {
 
 // ============================================ OVERVIEW ===========================================
@@ -34,9 +31,6 @@ namespace GooseSolid {
 // E.g.: std::tie(K,G) = GooseSolid::ConvertElasticParameters("E,nu",1.,.3,"K,G");
 std::tuple<double,double> ConvertElasticParameters (
   std::string in, double ipar1, double ipar2, std::string out );
-
-// Von-Mises equivalent stress: sigma_eq = \sqrt{ 3/2 sigma_d : sigma_d }
-double VonMisesStress(const T2 &stress);
 
 // ========================================= IMPLEMENTATION ========================================
 
@@ -78,23 +72,6 @@ std::tuple<double,double> ConvertElasticParameters (
   }
 
   throw std::runtime_error("GooseSolid::ConvertElasticParameters -> Unknown output pair");
-}
-
-// -------------------------------------------------------------------------------------------------
-
-double VonMisesStress(const T2 &S)
-{
-  // S        = sigma - trace(sigma)/3
-  // sigma_eq = S_{ij} * S_{ji}
-  if ( S.ndim() == 3 )
-  {
-    return std::pow(
-      .5*( std::pow(S(0,0)-S(1,1),2.) + std::pow(S(1,1)-S(2,2),2.) + std::pow(S(2,2)-S(0,0),2.) ) +
-      3.*( std::pow(S(0,1),2.) + std::pow(S(0,2),2.) + std::pow(S(1,2),2.) )
-    ,0.5);
-  }
-
-  throw std::runtime_error("Unknown stress definition");
 }
 
 // -------------------------------------------------------------------------------------------------

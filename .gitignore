@@ -1,7 +1,3 @@
-# Test functions
-test*
-develop/GooseFEM*
-
 # Python compiled files
 dist/*
 *.egg-info/*
