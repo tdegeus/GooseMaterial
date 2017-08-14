@@ -4,6 +4,7 @@
 \title{%
   GooseSolid/ViscoPlasticLinearElastic
 }
+% Former GooseFEM mat3202
 
 \author{T.W.J.~de~Geus}
 
@@ -23,8 +24,6 @@
 }
 
 \newcommand\leftstar[1]{\hspace*{-.3em}~^\star\!#1}
-
-% Former GooseFEM mat3202
 
 \begin{document}
 
@@ -50,34 +49,30 @@ The model consists of the following ingredients:
 %
 \item The strain, $\bm{\varepsilon}$, is additively split in an elastic part, $\bm{\varepsilon}_\mathrm{e}$, and a plastic plastic, $\bm{\varepsilon}_\mathrm{p}$. I.e.
 \begin{equation}
-  \bm{\varepsilon}
-  = \bm{\varepsilon}_\mathrm{e}
-  + \bm{\varepsilon}_\mathrm{p}
+  \bm{\varepsilon} = \bm{\varepsilon}_\mathrm{e} + \bm{\varepsilon}_\mathrm{p}
 \end{equation}
 %
 \item The stress, $\bm{\sigma}$, is set by to the elastic strain, $\bm{\varepsilon}_\mathrm{e}$, through the following linear relation:
 \begin{equation}\label{eq:model:stress-elas}
-  \bm{\sigma}
-  = \mathbb{C}_\mathrm{e} : \bm{\varepsilon}_\mathrm{e}
+  \bm{\sigma} = \mathbb{C}_\mathrm{e} : \bm{\varepsilon}_\mathrm{e}
 \end{equation}
 wherein $\mathbb{C}_\mathrm{e}$ is the elastic stiffness, which reads:
 \begin{align}\label{eq:model:elas}
   \mathbb{C}_\mathrm{e}
-  &= K \bm{I} \otimes \bm{I}
-   + 2 G (\mathbb{I}_\mathrm{s} - \tfrac{1}{3} \bm{I} \otimes \bm{I} )
+  &= K \bm{I} \otimes \bm{I} + 2 G (  \mathbb{I}_\mathrm{s} - \tfrac{1}{3} \bm{I} \otimes \bm{I} )
   \\
-  &= K \bm{I} \otimes \bm{I}
-  + 2 G \, \mathbb{I}_\mathrm{d}
+  &= K \bm{I} \otimes \bm{I} + 2 G \, \mathbb{I}_\mathrm{d}
 \end{align}
-with $K$ and $G$ the bulk and shear modulus respectively.
+with $K$ and $G$ the bulk and shear modulus respectively. See Appendix~\ref{sec:nomenclature} for nomenclature.
 %
 \item Plasticity is governed by Norton's flow rule:
 \begin{equation}\label{eq:model:epdot}
   \dot{\bm{\varepsilon}}_\mathrm{p}
-  = \dot{\gamma} \, \bm{N}
+  = \dot{\gamma} \, \frac{\partial \Phi}{\partial \bm{\sigma}}
   = \dot{\gamma} \, \frac{3}{2} \frac{\bm{\sigma}_\mathrm{d}}{\sigma_\mathrm{eq}}
+  = \dot{\gamma} \, \bm{N}
 \end{equation}
-wherein $\dot{\bm{\varepsilon}}_\mathrm{p}$ is the plastic strain rate. The ratio of the stress deviator, $\bm{\sigma}_\mathrm{d}$, and it's equivalent value, $\sigma_\mathrm{eq}$, determines the direction of plastic flow (the symbol $\bm{N}$ is used to emphasize that only determines a direction, not an amplitude). $\dot{\gamma}$ finally is the plastic multiplier, which is defined as follows:
+wherein $\dot{\bm{\varepsilon}}_\mathrm{p}$ is the plastic strain rate. The ratio of the stress deviator, $\bm{\sigma}_\mathrm{d}$, and it's equivalent value, $\sigma_\mathrm{eq}$, determines the direction of plastic flow (the symbol $\bm{N}$ is used to emphasize that only determines a direction, not an amplitude). The evolution of the plastic multiplier, $\dot{\gamma}$, is finally defined as follows:
 \begin{equation}\label{eq:model:gammadot}
   \dot{\gamma}
   =
@@ -95,89 +90,71 @@ It can furthermore be useful to define an equivalent plastic strain. Following t
 \vfill\newpage
 \section{Numerical implementation: implicit}
 
-For the numerical implementation, first of all a numerical time integration scheme has to be selected. Here, an implicit time discretization is used, which has the favorable property of being unconditionally stable. The numerical implementation of it is done by the commonly used return-map algorithm, in which an increment in strain is first assumed fully elastic (elastic predictor). Then a return-map is utilized to return to a physically admissible state (plastic corrector). The benefit of this scheme as that (i) the evolution of the plasticity (the state variable) can be determined by solving a single, albeit non-linear, equation; and that (ii) the linearization to obtain the consistent tangent operator is relatively straightforward.
+For the numerical implementation, first of all a numerical time integration scheme has to be selected. Here, an implicit time discretization is used, which has the favorable property of being unconditionally stable. To this end, the commonly used return-map algorithm is used. An increment in strain is first assumed fully elastic (elastic predictor). Then, if needed, a return-map is utilized to return to a physically admissible state (plastic corrector). The benefit of this scheme as that (i) the evolution of the plasticity (the state variable) can be determined by solving a single, albeit non-linear, equation; and that (ii) the linearization to obtain the consistent tangent operator is relatively straightforward.
 
 \subsection{Elastic predictor}
 
 Given an increment in strain
 \begin{equation}
   \bm{\varepsilon}_\Delta = \bm{\varepsilon}^{(t + \Delta t)} - \bm{\varepsilon}^{(t)}
+  \label{eq:strain-increment}
 \end{equation}
-and the state variables, evaluate the \emph{elastic trial state}:
+and the state variables, the \emph{elastic trial state} reads:
 \begin{align}
   \leftstar{\bm{\varepsilon}}_\mathrm{e}
   &=
-  \bm{\varepsilon}^{(t)}_\mathrm{e} +
-  \bm{\varepsilon}_\Delta
-  \\
+  \bm{\varepsilon}^{(t)}_\mathrm{e} + \bm{\varepsilon}_\Delta \label{eq:trial-strain}
+  \\[1ex]
   \leftstar{\bm{\sigma}}
   &=
   \mathbb{C}_\mathrm{e} : \leftstar{\bm{\varepsilon}}_\mathrm{e}
 \end{align}
-where the $\leftstar{(.)}$ has been used to denote a trial value for $(.)^{(t + \Delta t)}$.
+where the notation $\leftstar{(.)}$ has been used to denote a trial value for $(.)^{(t + \Delta t)}$.
 
 \subsection{Return-map}
 
-A return-map is used to return the trial state back to a physically admissible state (for which the plasticity has evolved). From (\ref{eq:model:stress-elas}--\ref{eq:model:epdot}) it follows the actual deviatoric and hydrostatic stress are:
-\begin{align}
-  \label{eq:return:sigma_d}
-  \bm{\sigma}_\mathrm{d}^{(t+\Delta t)}
-  &=
-  \leftstar{\bm{\sigma}}_\mathrm{d} - 2 G \Delta \gamma \;
-  \frac{3}{2}
-  \frac{
-    \leftstar{\bm{\sigma}}_\mathrm{d}
-  }{
-    \leftstar{\sigma}_\mathrm{eq}
-  }
-  \\
-  \sigma_\mathrm{m}^{(t+\Delta t)} &= \leftstar{\sigma}_\mathrm{m}
-\end{align}
-From \eqref{eq:return:sigma_d} it follows that the stress-directions of the trial state are not affect by the return-map, i.e.
+A return-map is used to return the trial state back to a physically admissible state (for which the plasticity has evolved). It follows from
 \begin{equation}
-  \frac{
-    \bm{\sigma}_\mathrm{d}^{(t+\Delta t)}
-  }{
-    \sigma_\mathrm{eq}^{(t+\Delta t)}
-  } =
-  \frac{
-    \leftstar{\bm{\sigma}}_\mathrm{d}
-  }{
-    \leftstar{\sigma}_\mathrm{eq}
-  }
-  \qquad\mathrm{or}\qquad
+\bm{\varepsilon}_\mathrm{e}^{(t+\Delta t)}
+  = \leftstar\bm{\varepsilon}_\mathrm{e}
+  - \Delta \gamma \; \bm{N}^{(t+\Delta t)}
+\end{equation}
+
+This can be reduced by using that
+\begin{align}
+  \bm{\sigma}_\mathrm{d}^{(t+\Delta t)}
+  &= \leftstar{\bm{\sigma}}_\mathrm{d} - 2 G \Delta \gamma \; \bm{N}^{(t+\Delta t)}
+  \\
+  &= \leftstar{\bm{\sigma}}_\mathrm{d} - 3 G \Delta \gamma \;
+   \frac{ \bm{\sigma}_\mathrm{d}^{(t+\Delta t)} }{ \sigma_\mathrm{eq}^{(t+\Delta t)} }
+\end{align}
+i.e.\ the trial and updated deviatoric stresses are \emph{co-linear}. This implies that
+\begin{equation}
+  \frac{ \bm{\sigma}_\mathrm{d}^{(t+\Delta t)} }{ \sigma_\mathrm{eq}^{(t+\Delta t)} }
+  =
+  \frac{ \leftstar{\bm{\sigma}}_\mathrm{d} }{ \leftstar{\sigma}_\mathrm{eq} }
+  \qquad
+  \mathrm{or}
+  \qquad
   \bm{N}^{(t+\Delta t)} = \leftstar{\bm{N}}
 \end{equation}
 This allows the reorganization of the above to
 \begin{equation}
   \bm{\sigma}_\mathrm{d}^{(t+\Delta t)}
   =
-  \left(
-    1 -
-    \frac{
-      3 G \; \Delta \gamma
-    }{
-      \leftstar{\sigma}_\mathrm{eq}
-    }
-  \right)
+  \left(1 - \frac{ 3 G \; \Delta \gamma }{ \leftstar{\sigma}_\mathrm{eq} } \right)
   \leftstar{\bm{\sigma}}_\mathrm{d}
 \end{equation}
 from which it also follows that
 \begin{equation}
-  \sigma_\mathrm{eq}^{(t+\Delta t)}
-  =
-  \leftstar{\sigma}_\mathrm{eq} - 3 G \; \Delta \gamma
+  \sigma_\mathrm{eq}^{(t+\Delta t)} = \leftstar{\sigma}_\mathrm{eq} - 3 G \; \Delta \gamma
 \end{equation}
 Substitution into \eqref{eq:model:gammadot} yields:
 \begin{equation}\label{eq:return:gammadot}
   \Delta \gamma
   =
   \dot{\gamma}_0 \Delta t \left(
-    \frac{
-      \leftstar{\sigma_\mathrm{eq}} - 3 G \Delta \gamma
-    }{
-      \sigma_0
-    }
+    \frac{ \leftstar{\sigma_\mathrm{eq}} - 3 G \Delta \gamma }{ \sigma_0 }
   \right)^{\frac{1}{m}}
 \end{equation}
 which has to be solved for $\Delta \gamma$.
@@ -263,12 +240,12 @@ The iterative scheme then reads:
 \subsection{Actual state}
 
 Finally, the trial state is updated:
-
 \begin{itemize}
 %
 \item The updated stress tensor
 \begin{equation}
-  \bm{\sigma}^{(t+\Delta t)} = \sigma_\mathrm{m}^{(t+\Delta t)} \bm{I} + \bm{\sigma}_\mathrm{d}^{(t+\Delta t)}
+  \bm{\sigma}^{(t+\Delta t)}
+  = \sigma_\mathrm{m}^{(t+\Delta t)} \bm{I} + \bm{\sigma}_\mathrm{d}^{(t+\Delta t)}
 \end{equation}
 with
 \begin{align}
@@ -287,57 +264,54 @@ with
   \bm{\varepsilon}_\mathrm{e}^{(t+\Delta t)}
   =
   \frac{1}{2G} \, \bm{\sigma}^{(t+\Delta t)}_\mathrm{d} +
-  \tfrac{1}{3} \, \mathrm{tr} (\leftstar{\bm{\varepsilon}}) \bm{I}
+  \frac{1}{3} \, \mathrm{tr} (\leftstar{\bm{\varepsilon}}_\mathrm{e}) \, \bm{I}
 \end{equation}
 %
 \item The updated equivalent plastic strain (for post-processing):
 \begin{equation}
-  \varepsilon_\mathrm{p}^{(t+\Delta t)}
-  =
-  \varepsilon_\mathrm{p}^{(t)} +
-  \Delta \gamma
+  \varepsilon_\mathrm{p}^{(t+\Delta t)} = \varepsilon_\mathrm{p}^{(t)} + \Delta \gamma
 \end{equation}
 %
 \end{itemize}
 
 \subsection{Consistent tangent operator}
 
-For the case that the trail state coincides with the actual state (i.e. $\Delta \gamma = 0$, which for this model only occurs in a stress-free state), the constitutive tangent is trivially $\mathbb{C}_\mathrm{e}$. For all other cases, it is equal to
+The consistent constitutive tangent operator is defined as
 \begin{equation}
   \mathbb{C}_\mathrm{ep}
   =
   \frac{
-    \partial  \bm{\sigma}^{(t+\Delta t)} \hfill
+    \partial\, \bm{\sigma}^{(t+\Delta t)} \hfill
   }{
-    \partial \bm{\varepsilon}^{(t+\Delta t)} \hfill
+    \partial\, \bm{\varepsilon}^{(t+\Delta t)} \hfill
   }
 \end{equation}
-It can be obtained from
+For the case that the trail state coincides with the actual state (i.e. $\leftstar{\Phi} \leq 0$), $\mathbb{C}_\mathrm{ep} = \mathbb{C}_\mathrm{e}$. Otherwise, it can be obtained from\footnote{To show this one has to employ (\ref{eq:strain-increment},\ref{eq:trial-strain}) and realize that $\bm{\varepsilon}^{(t)}$ and $\bm{\varepsilon}_\mathrm{e}^{(t)}$ are constant during the increment. I.e.\ $\displaystyle \frac{\partial \; \leftstar{\bm{\varepsilon}}_\mathrm{e} \hfill}{\partial ~\bm{\varepsilon}^{(t+\Delta t)} \hfill} = \displaystyle \frac{\partial ~\bm{\varepsilon}^{(t+\Delta t)} \hfill}{\partial ~\bm{\varepsilon}^{(t+\Delta t)} \hfill} = \mathbb{I}$.}
 \begin{equation}
   \mathbb{C}_\mathrm{ep}
   =
   \frac{
-    \partial  \bm{\sigma}^{(t+\Delta t)} \hfill
+    \partial\, \bm{\sigma}^{(t+\Delta t)} \hfill
   }{
-    \partial \bm{\varepsilon}^{(t+\Delta t)} \hfill
+    \partial\, \bm{\varepsilon}^{(t+\Delta t)} \hfill
   }
   =
   \frac{
-    \partial ~\bm{\sigma}^{(t+\Delta t)} \hfill
+    \partial~  \bm{\sigma}^{(t+\Delta t)} \hfill
   }{
-    \partial \;\leftstar{\bm{\varepsilon}}_\mathrm{e} \hfill
+    \partial\; \leftstar{\bm{\varepsilon}}_\mathrm{e} \hfill
   }
   :
   \frac{
-    \partial \;\leftstar{\bm{\varepsilon}}_\mathrm{e} \hfill
+    \partial\; \leftstar{\bm{\varepsilon}}_\mathrm{e} \hfill
   }{
-    \partial ~\bm{\varepsilon}^{(t+\Delta t)}
+    \partial~  \bm{\varepsilon}^{(t+\Delta t)}
   }
   =
   \frac{
-    \partial ~\bm{\sigma}^{(t+\Delta t)} \hfill
+    \partial~  \bm{\sigma}^{(t+\Delta t)} \hfill
   }{
-    \partial \;\leftstar{\bm{\varepsilon}}_\mathrm{e} \hfill
+    \partial\; \leftstar{\bm{\varepsilon}}_\mathrm{e} \hfill
   }
   :
   \mathbb{I}
@@ -348,7 +322,7 @@ It can be obtained from
     \partial \;\leftstar{\bm{\varepsilon}}_\mathrm{e} \hfill
   }
 \end{equation}
-To derive the consistent tangent, the first step is to combine the above to an explicit relation between the (actual) stress $\bm{\sigma}^{(t+\Delta t)}$ and the trial elastic strain $\leftstar{\bm{\varepsilon}}_\mathrm{e}$.
+To proceed, the first step is write an explicit relation between the (actual) stress $\bm{\sigma}^{(t+\Delta t)}$ and the trial elastic strain~$\leftstar{\bm{\varepsilon}}_\mathrm{e}$:
 \begin{align}
   \bm{\sigma}^{(t+\Delta t)}
   &= \sigma_\mathrm{m}^{(t+\Delta t)} \bm{I} + \bm{\sigma}_\mathrm{d}^{(t+\Delta t)}
@@ -376,7 +350,7 @@ The tangent then follows from
 - \frac{6 G^2 \Delta \gamma}{\leftstar{\sigma}_\mathrm{eq}} \mathbb{I}^d
 - \frac{6 G^2}{\leftstar{\sigma}_\mathrm{eq}} \;
 \left( \frac{
-  \partial \,~\Delta \gamma \hfill
+  \partial \Delta \gamma \hfill
 }{
   \partial \,\leftstar{\bm{\varepsilon}}_\mathrm{e} \hfill
 } \right) \otimes
@@ -394,33 +368,33 @@ Now apply the following:
 %
 \item Equivalent stress
 \begin{equation}
-\frac{\partial \sigma_\mathrm{eq}}{\partial \bm{\sigma}}
+\frac{\partial\, \sigma_\mathrm{eq} \hfill}{\partial\, \bm{\sigma} \hfill}
   = \frac{
-    \partial \sigma_\mathrm{eq}
+    \partial\, \sigma_\mathrm{eq} \hfill
   }{
-    \partial \bm{\sigma}_\mathrm{d}
+    \partial\, \bm{\sigma}_\mathrm{d} \hfill
   }
   = \frac{
     \partial
   }{
-    \partial \bm{\sigma}_\mathrm{d}
+    \partial\, \bm{\sigma}_\mathrm{d}
   } \left(
     \sqrt{ \tfrac{3}{2} \bm{\sigma}_\mathrm{d} : \bm{\sigma}_\mathrm{d} }
   \right)
-  = \frac{1}{2 \sigma_\mathrm{eq} }
-  \frac{\partial}{\partial \bm{\sigma}_\mathrm{d}}
+  = \frac{1}{2 \, \sigma_\mathrm{eq} }
+  \frac{\partial}{\partial\, \bm{\sigma}_\mathrm{d}}
   \left(
     \tfrac{3}{2} \bm{\sigma}_\mathrm{d} : \bm{\sigma}_\mathrm{d}
   \right)
   = \frac{3}{2} \frac{\bm{\sigma}_\mathrm{d}}{\sigma_\mathrm{eq}}
   = \bm{N} = \leftstar{\bm{N}}
 \end{equation}
-It is trivial to obtain:
+Hence:
 \begin{equation}
 \frac{
-    \partial \;\leftstar{\sigma}_\mathrm{eq}
+    \partial \;\leftstar{\sigma}_\mathrm{eq} \hfill
   }{
-    \partial \;\leftstar{\bm{\varepsilon}}_\mathrm{e}
+    \partial \;\leftstar{\bm{\varepsilon}}_\mathrm{e} \hfill
   } =
   2 G \;\leftstar{\bm{N}}
 \end{equation}
@@ -428,7 +402,7 @@ It is trivial to obtain:
 \item Plastic multiplier
 \begin{align}
   \frac{
-    \partial \,~\Delta \gamma \hfill
+    \partial \,\Delta \gamma \hfill
   }{
     \partial \,\leftstar{\bm{\varepsilon}}_\mathrm{e}  \hfill
   }
@@ -500,6 +474,7 @@ The final result then reads:
 \vfill\newpage
 
 \section{Nomenclature}
+\label{sec:nomenclature}
 
 \begin{itemize}
 %
@@ -525,6 +500,7 @@ The final result then reads:
 \end{itemize}
 
 \section{Stress measures}
+\label{sec:ap:stress}
 
 \begin{itemize}
 %

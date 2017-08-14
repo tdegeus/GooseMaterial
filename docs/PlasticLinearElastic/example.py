@@ -4,7 +4,7 @@ Example of linear and non-linear hardening.
 (c) T.W.J. de Geus | tom@geus.me | www.geus.me | github.com/tdegeus/GooseSolid
 '''
 
-import numpy as np
+import numpy      as np
 import GooseSolid as gs
 
 import matplotlib.pyplot as plt

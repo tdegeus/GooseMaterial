@@ -1,0 +1,265 @@
+%!TEX program = xelatex
+\documentclass[times,namecite]{goose-article}
+
+\title{%
+  GooseSolid/NonLinearElastic
+}
+% Former GooseFEM mat1101
+
+\author{T.W.J.~de~Geus}
+
+\contact{%
+  $^*$Contact: %
+  \href{mailto:tom@geus.me}{tom@geus.me} %
+  \hspace{1mm}--\hspace{1mm} %
+  \href{http://www.geus.me}{www.geus.me}%
+  \hspace{1mm}--\hspace{1mm} %
+  \href{https://github.com/tdegeus/GooseSolid}{https://github.com/tdegeus/GooseSolid}%
+}
+
+\hypersetup{pdfauthor={T.W.J. de Geus}}
+
+\header{%
+  \href{https://github.com/tdegeus/GooseSolid}{GooseSolid/NonLinearElastic}%
+}
+
+\newcommand\leftstar[1]{\hspace*{-.3em}~^\star\!#1}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This constitutive model encompasses a non-linear, but history independent, relation between the Cauchy stress, $\bm{\sigma}$, and the linear strain tensor, $\bm{\varepsilon}$, i.e.:
+\begin{equation*}
+  \bm{\sigma} = f \left( \bm{\varepsilon} \right)
+\end{equation*}
+
+The model is implemented in 3-D, hence it can directly be used for either 3-D or 2-D plane strain problems.
+\end{abstract}
+
+\keywords{non-linear elasticity}
+
+\setcounter{tocdepth}{2}
+\tableofcontents
+
+\vfill\newpage
+\section{Constitutive model}
+
+The following strain-energy is defined:
+%
+\begin{equation}
+  W ( \bm{\varepsilon} )
+  = \frac{9}{2} K \varepsilon_\mathrm{m}
+  + \frac{ \sigma_0 \, \varepsilon_0 }{ n+1 }
+    \left( \frac{\varepsilon_\mathrm{eq}}{\mathrm{\varepsilon_0}} \right)^{n+1}
+\end{equation}
+%
+where $K$ is the bulk modulus, $\varepsilon_0$ and $\sigma_0$ are a reference strain and stress respectively, and $n$ is an exponent that sets the degree of non-linearity. Finally $\varepsilon_\mathrm{m}$ and $\varepsilon_\mathrm{eq}$ are the hydrostatic and equivalent strains (see Appendix~\ref{sec:ap:strain}).
+
+This leads to the following stress--strain relation:
+%
+\begin{equation}
+\label{eq:stress}
+  \bm{\sigma}
+  = \frac{\partial W}{\partial \bm{\varepsilon}}
+  = 3 K \varepsilon_\mathrm{m} \, \bm{I}
+  + \frac{2}{3} \frac{\sigma_0}{\varepsilon_0^n} \,
+    \varepsilon_\mathrm{eq}^{n-1} \, \bm{\varepsilon}_\mathrm{d}
+\end{equation}
+%
+see Appendix~\ref{sec:ap:nomenclature} for nomenclature.
+
+\section{Consistent tangent}
+
+The consistent tangent maps a variation in strain, $\delta \bm{\varepsilon}$, to a variation in stress, $\delta \bm{\sigma}$, as follows
+%
+\begin{equation}
+  \delta \bm{\sigma} = \mathbb{C} : \delta \bm{\varepsilon}
+\end{equation}
+%
+The tangent, $\mathbb{C}$, thus corresponds to the derivative of \eqref{eq:stress} w.r.t.\ strain. For this, the chain rule is employed:
+%
+\begin{equation}
+  \mathbb{C}
+  = \frac{\partial}{\partial \bm{\varepsilon}}
+    \bigg[\;
+      3 K \varepsilon_\mathrm{m} \, \bm{I}
+    \;\bigg]
+  + \frac{\partial}{\partial \bm{\varepsilon}_\mathrm{d}}
+    \bigg[\;
+      \frac{2}{3} \frac{\sigma_0}{\varepsilon_0^n} \,
+      \varepsilon_\mathrm{eq}^{n-1} \, \bm{\varepsilon}_\mathrm{d}
+    \;\bigg]
+  : \frac{\partial \bm{\varepsilon}_\mathrm{d}}{\partial \bm{\varepsilon}}
+\end{equation}
+%
+Where:
+\begin{itemize}
+%
+\item the derivative of the volumetric part reads
+%
+\begin{equation}
+  \frac{\partial}{\partial \bm{\varepsilon}}
+  \bigg[\;
+    3 K \varepsilon_\mathrm{m} \, \bm{I}
+  \;\bigg]
+  = K \bm{I} \otimes \bm{I}
+\end{equation}
+%
+\item the chain rule for the deviatoric part reads
+%
+\begin{align}
+  \frac{\partial}{\partial \bm{\varepsilon}_\mathrm{d}}
+  \bigg[\;
+    \varepsilon_\mathrm{eq}^{n-1} \, \bm{\varepsilon}_\mathrm{d}
+  \;\bigg]
+  &=
+  \frac{
+    \partial \big[ \varepsilon_\mathrm{eq}^{n-1} \big]
+  }{
+    \partial \bm{\varepsilon}_\mathrm{d}
+  } \otimes \bm{\varepsilon}_\mathrm{d}
+  + \varepsilon_\mathrm{eq}^{n-1}
+  \frac{
+    \partial \bm{\varepsilon}_\mathrm{d}
+  }{
+    \partial \bm{\varepsilon}_\mathrm{d}
+  }
+  \\
+  &=
+  \tfrac{2}{3} (n-1) \, \varepsilon_\mathrm{eq}^{n-3} \,
+  \bm{\varepsilon}_\mathrm{d} \otimes \bm{\varepsilon}_\mathrm{d}
+  + \varepsilon_\mathrm{eq}^{n-1} \, \mathbb{I}
+\end{align}
+%
+\item and it has been used that
+%
+\begin{align}
+  \frac{\partial}{\partial \bm{\varepsilon}_\mathrm{d}}
+  \bigg[\;
+    \varepsilon_\mathrm{eq}^{n-1}
+  \;\bigg]
+  &= (n-1)\, \varepsilon_\mathrm{eq}^{n-2} \,
+  \frac{2}{3} \frac{\bm{\varepsilon}_\mathrm{d}}{\varepsilon_\mathrm{eq}}
+  \\
+  &= \tfrac{2}{3} (n-1) \,
+    \varepsilon_\mathrm{eq}^{n-3} \, \bm{\varepsilon}_\mathrm{d}
+\end{align}
+%
+\end{itemize}
+%
+
+Combining the above yields:
+\begin{align}
+\mathbb{C}
+&= K \bm{I} \otimes \bm{I} +
+\frac{2}{3} \frac{\sigma_0}{\varepsilon_0^n}
+\bigg(
+  \tfrac{2}{3} (n-1) \, \varepsilon_\mathrm{eq}^{n-3}
+  \bm{\varepsilon}_\mathrm{d} \otimes \bm{\varepsilon}_\mathrm{d}
+  + \varepsilon_\mathrm{eq}^{n-1} \mathbb{I}
+\bigg) : \mathbb{I}_\mathrm{d} \\
+&= K \bm{I} \otimes \bm{I} +
+\frac{2}{3} \frac{\sigma_0}{\varepsilon_0^n}
+\bigg(
+  \tfrac{2}{3} (n-1) \, \varepsilon_\mathrm{eq}^{n-3}
+  \bm{\varepsilon}_\mathrm{d} \otimes \bm{\varepsilon}_\mathrm{d}
+  + \varepsilon_\mathrm{eq}^{n-1} \, \mathbb{I}_\mathrm{d}
+\bigg)
+\end{align}
+
+\appendix
+\vfill\newpage
+
+\section{Nomenclature}
+\label{sec:ap:nomenclature}
+
+\begin{itemize}
+%
+\item Dyadic tensor product
+\begin{align}
+  \mathbb{C} &= \bm{A} \otimes \bm{B} \\
+  C_{ijkl}   &= A_{ij} \,      B_{kl}
+\end{align}
+%
+\item Double tensor contraction
+\begin{align}
+  C &= \bm{A} : \bm{B} \\
+    &= A_{ij} \, B_{ji}
+\end{align}
+%
+\item Deviatoric projection tensor
+\begin{equation}
+  \mathbb{I}_\mathrm{d}
+  = \mathbb{I}_\mathrm{s} - \tfrac{1}{3} \bm{I} \otimes \bm{I}
+\end{equation}
+%
+\end{itemize}
+
+\section{Strain measures}
+\label{sec:ap:strain}
+
+\begin{itemize}
+%
+\item Mean strain
+\begin{equation}
+  \varepsilon_\mathrm{m}
+  = \tfrac{1}{3} \, \mathrm{tr} ( \bm{\varepsilon} )
+  = \tfrac{1}{3} \, \bm{\varepsilon} : \bm{I}
+\end{equation}
+%
+\item Strain deviator
+\begin{equation}
+  \bm{\varepsilon}_\mathrm{d}
+  = \bm{\varepsilon} - \varepsilon_\mathrm{m} \, \bm{I}
+  = \mathbb{I}_\mathrm{d} : \bm{\varepsilon}
+\end{equation}
+%
+\item Equivalent strain
+\begin{equation}
+  \varepsilon_\mathrm{eq}
+  = \; \sqrt{
+    \tfrac{2}{3} \, \bm{\varepsilon}_\mathrm{d} : \bm{\varepsilon}_\mathrm{d}
+  }
+\end{equation}
+%
+\end{itemize}
+
+\section{Variations}
+\label{sec:ap:variations}
+
+\begin{itemize}
+%
+\item Strain deviator
+\begin{equation}
+  \delta \bm{\varepsilon}_\mathrm{d}
+  = \left( \mathbb{I}_\mathrm{s} - \tfrac{1}{3} \bm{I} \otimes \bm{I} \right) :
+    \delta \bm{\varepsilon}
+  = \mathbb{I}_\mathrm{d} : \delta \bm{\varepsilon}
+\end{equation}
+%
+\item Mean equivalent strain
+\begin{equation}
+  \delta \varepsilon_\mathrm{m}
+  = \tfrac{1}{3} \bm{I} : \delta \bm{\varepsilon}
+\end{equation}
+%
+\item Von Mises equivalent strain
+\begin{align}
+  \delta \varepsilon_\mathrm{eq}
+  &= \frac{1}{3} \frac{1}{\varepsilon_\mathrm{eq}}
+     \left( \bm{\varepsilon}_\mathrm{d} : \delta \bm{\varepsilon}_\mathrm{d} +
+     \delta \bm{\varepsilon}_\mathrm{d} : \bm{\varepsilon}_\mathrm{d} \right) \\
+  &= \frac{2}{3} \frac{1}{\varepsilon_\mathrm{eq}}
+     \left( \bm{\varepsilon}_\mathrm{d} : \delta \bm{\varepsilon}_\mathrm{d} \right) \\
+  &= \frac{2}{3} \frac{\bm{\varepsilon}_\mathrm{d}}{\varepsilon_\mathrm{eq}} :
+     \delta \bm{\varepsilon}_\mathrm{d}
+\end{align}
+%
+\end{itemize}
+
+
+% \bibliography{library}
+
+\end{document}

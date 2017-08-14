@@ -25,7 +25,7 @@ int main()
   eps(1,1) = .03;
   eps(2,2) = .04;
 
-  std::tie(K4,sig) = mat.stress_tangent(eps,dt);
+  std::tie(K4,sig) = mat.tangent_stress(eps,dt);
 
   if ( std::abs( sig(0,0    ) - (  5.3846329960412831e-2 ) ) > 1.e-7 ) std::cout << "sig(0,0    ) failed" << std::endl;
   if ( std::abs( sig(0,1    ) - (  7.6921861574501663e-2 ) ) > 1.e-7 ) std::cout << "sig(0,1    ) failed" << std::endl;

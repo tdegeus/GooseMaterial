@@ -43,20 +43,20 @@ namespace GooseSolid {
 class LinearElastic_ViscousFluid
 {
 private:
-  bool   m_elas      ;  // elastic/viscous switch: true <-> elastic
-  double m_K         ;  // bulk  modulus
-  double m_G         ;  // shear modulus
-  double m_sigy      ;  // yield stress
-  double m_sigy_next ;  // 'next' yield stress applied directly after yielding
-  double m_Tdamp     ;  // characteristic time scale damping
-  double m_Tfluid    ;  // time duration that the material remains viscous after yielding
-  double m_T         ;  // current time
-  double m_T_n       ;  // time of the last increment
-  double m_Tyield_n  ;  // time at which the material has yielded last
-  T2s    m_sigd      ;  // deviatoric  stress
-  T2s    m_sigd_n    ;  // deviatoric  stress at previous time-step
-  double m_sigm      ;  // hydrostatic stress
-  double m_sigm_n    ;  // hydrostatic stress at previous time-step
+  bool   m_elas;      // elastic/viscous switch: true <-> elastic
+  double m_K;         // bulk  modulus
+  double m_G;         // shear modulus
+  double m_sigy;      // yield stress
+  double m_sigy_next; // 'next' yield stress applied directly after yielding
+  double m_Tdamp;     // characteristic time scale damping
+  double m_Tfluid;    // time duration that the material remains viscous after yielding
+  double m_T;         // current time
+  double m_T_n;       // time of the last increment
+  double m_Tyield_n;  // time at which the material has yielded last
+  T2s    m_sigd;      // deviatoric  stress
+  T2s    m_sigd_n;    // deviatoric  stress at previous time-step
+  double m_sigm;      // hydrostatic stress
+  double m_sigm_n;    // hydrostatic stress at previous time-step
 
 public:
  ~LinearElastic_ViscousFluid(){};

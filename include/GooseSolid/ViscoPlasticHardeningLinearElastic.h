@@ -44,19 +44,19 @@ class ViscoPlasticHardeningLinearElastic
 {
 private:
 
-  double m_K      ; // material parameter : bulk  modulus
-  double m_G      ; // material parameter : shear modulus
-  double m_gamma0 ; // material parameter : reference plastic strain rate
-  double m_n      ; // material parameter : rate exponent
-  double m_sigy0  ; // material parameter : initial yield stress
-  double m_H      ; // material parameter : hardening modulus
-  double m_m      ; // material parameter : hardening exponent
-  T2s    m_eps    ; // history  parameter : strain tensor
-  T2s    m_eps_n  ; // history  parameter : strain tensor at last increment
-  T2s    m_epse   ; // history  parameter : elastic strain tensor
-  T2s    m_epse_n ; // history  parameter : elastic strain tensor at last increment
-  double m_ep     ; // history  parameter : accumulated plastic strain
-  double m_ep_n   ; // history  parameter : accumulated plastic strain at last increment
+  double m_K;      // material parameter : bulk  modulus
+  double m_G;      // material parameter : shear modulus
+  double m_gamma0; // material parameter : reference plastic strain rate
+  double m_n;      // material parameter : rate exponent
+  double m_sigy0;  // material parameter : initial yield stress
+  double m_H;      // material parameter : hardening modulus
+  double m_m;      // material parameter : hardening exponent
+  T2s    m_eps;    // history  parameter : strain tensor
+  T2s    m_eps_n;  // history  parameter : strain tensor at last increment
+  T2s    m_epse;   // history  parameter : elastic strain tensor
+  T2s    m_epse_n; // history  parameter : elastic strain tensor at last increment
+  double m_ep;     // history  parameter : accumulated plastic strain
+  double m_ep_n;   // history  parameter : accumulated plastic strain at last increment
 
   // compute the stress (and optionally the tangent)
   std::tuple<T4,T2s> compute(const T2s &eps, const double dt, bool tangent);

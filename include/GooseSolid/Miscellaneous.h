@@ -27,8 +27,10 @@ namespace GooseSolid {
 
 // ============================================ OVERVIEW ===========================================
 
-// Convert a pair of elastic parameters to another pair: "E,nu", "K,G", "lambda,mu"
-// E.g.: std::tie(K,G) = GooseSolid::ConvertElasticParameters("E,nu",1.,.3,"K,G");
+// Convert a pair of elastic parameters to another pair: "E,nu", "K,G", "lambda,mu". For example:
+//
+//    std::tie(K,G) = GooseSolid::ConvertElasticParameters("E,nu",1.,.3,"K,G");
+
 std::tuple<double,double> ConvertElasticParameters (
   std::string in, double ipar1, double ipar2, std::string out );
 

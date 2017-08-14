@@ -2,6 +2,8 @@
 #include <cppmat/tensor.h>
 #include <cppmat/pybind11_tensor.h>
 
+#include "include/GooseSolid/LinearElastic.h"
+#include "include/GooseSolid/NonLinearElastic.h"
 #include "include/GooseSolid/PlasticLinearElastic.h"
 #include "include/GooseSolid/ViscoPlasticLinearElastic.h"
 #include "include/GooseSolid/ViscoPlasticHardeningLinearElastic.h"
@@ -14,6 +16,40 @@ namespace GS = GooseSolid;
 PYBIND11_PLUGIN(GooseSolid) {
 
 py::module m("GooseSolid","Library with material models");
+
+// -------------------------------------------------------------------------------------------------
+
+py::class_<GS::LinearElastic>(m,"LinearElastic")
+
+.def(py::init<double,double>(),
+  py::arg("K"     ),
+  py::arg("G"     )
+)
+
+.def("stress"        , &GS::LinearElastic::stress        , py::arg("eps"))
+.def("tangent_stress", &GS::LinearElastic::tangent_stress, py::arg("eps"))
+.def("tangent"       , &GS::LinearElastic::tangent       , py::arg("eps"))
+
+.def("__repr__",[](const GS::LinearElastic &a)
+  {return "<GooseSolid.LinearElastic>";});
+
+// -------------------------------------------------------------------------------------------------
+
+py::class_<GS::NonLinearElastic>(m,"NonLinearElastic")
+
+.def(py::init<double,double,double,double>(),
+  py::arg("K"     ),
+  py::arg("sig0"  ),
+  py::arg("eps0"  ),
+  py::arg("n"     )=1.
+)
+
+.def("stress"        , &GS::NonLinearElastic::stress        , py::arg("eps"))
+.def("tangent_stress", &GS::NonLinearElastic::tangent_stress, py::arg("eps"))
+.def("tangent"       , &GS::NonLinearElastic::tangent       , py::arg("eps"))
+
+.def("__repr__",[](const GS::NonLinearElastic &a)
+  {return "<GooseSolid.NonLinearElastic>";});
 
 // -------------------------------------------------------------------------------------------------
 
