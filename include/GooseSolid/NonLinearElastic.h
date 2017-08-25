@@ -106,8 +106,9 @@ std::tuple<T4,T2s> NonLinearElastic::tangent_stress(const T2s &eps)
 std::tuple<T4,T2s> NonLinearElastic::compute(const T2s &eps, bool tangent)
 {
   double eps_m,sig_m,eps_eq;
-  T2s eps_d,sig_d,sig;
+  T2s eps_d,sig;
   T2d I;
+  T2s sig_d(3, 0.0);
 
   // stress
   // ------
@@ -126,11 +127,9 @@ std::tuple<T4,T2s> NonLinearElastic::compute(const T2s &eps, bool tangent)
   // deviatoric stress
   if ( eps_eq != 0.0 )
     sig_d = 2./3. * m_sig0/std::pow(m_eps0,m_n) * std::pow(eps_eq,m_n-1.) * eps_d;
-  else
-    sig_d.zeros();
 
   // combine volumetric and deviatoric stress
-  sig = sig_m  * I + sig_d ;
+  sig = sig_m * I + sig_d ;
 
   // tangent
   // -------
