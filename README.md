@@ -10,6 +10,12 @@ This library includes several material models of solids, to be used for example 
 
 <!-- /MarkdownTOC -->
 
+>   This program is free to use. Any additions are very much appreciated, in terms of suggested functionality, code, documentation, testimonials, word of mouth advertisement, .... As always, the code comes with no guarantee. None of the developers can be held responsible for possible mistakes or misuse.
+>   
+>   Bug reports or feature requests can be filed on GitHub.
+>   
+>   (c - GPLv3) T.W.J. de Geus (Tom) | tom@geus.me | www.geus.me | github.com/tdegeus/GooseSolid
+
 ## Materials
 
 The following materials have been implemented:
