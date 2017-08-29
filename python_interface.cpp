@@ -7,6 +7,7 @@
 #include "include/GooseSolid/PlasticLinearElastic.h"
 #include "include/GooseSolid/ViscoPlasticLinearElastic.h"
 #include "include/GooseSolid/ViscoPlasticHardeningLinearElastic.h"
+#include "include/GooseSolid/ElasticPlasticPotential.h"
 #include "include/GooseSolid/LinearElastic_ViscousFluid.h"
 #include "include/GooseSolid/Miscellaneous.h"
 
@@ -132,6 +133,22 @@ py::class_<GS::LinearElastic_ViscousFluid>(m,"LinearElastic_ViscousFluid")
 
 .def("__repr__",[](const GS::LinearElastic_ViscousFluid &a)
   {return "<GooseSolid.LinearElastic_ViscousFluid>";});
+
+// -------------------------------------------------------------------------------------------------
+
+py::class_<GS::ElasticPlasticPotential>(m,"ElasticPlasticPotential")
+
+.def(py::init<double,double,const std::vector<double> &,bool>(),
+  py::arg("K"     ),
+  py::arg("G"     ),
+  py::arg("a"     ),
+  py::arg("smooth")=true
+)
+
+.def("stress", &GS::ElasticPlasticPotential::stress, py::arg("eps"))
+
+.def("__repr__",[](const GS::ElasticPlasticPotential &a)
+  {return "<GooseSolid.ElasticPlasticPotential>";});
 
 // -------------------------------------------------------------------------------------------------
 

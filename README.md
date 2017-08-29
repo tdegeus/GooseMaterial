@@ -2,6 +2,8 @@
 
 This library includes several material models of solids, to be used for example in FEM programs. The idea is that each material model is included in a separate header-only C++ library, which is completely independent. As a rule of principle the different material model follow the same structure and use [<cppmat/tensor.h>](https://github.com/tdegeus/cppmat) as tensor library, but the details may vary from material to material. 
 
+**Contents**
+
 <!-- MarkdownTOC -->
 
 - [Materials](#materials)
@@ -14,7 +16,7 @@ This library includes several material models of solids, to be used for example 
 >   
 >   Bug reports or feature requests can be filed on GitHub.
 >   
->   (c - GPLv3) T.W.J. de Geus (Tom) | tom@geus.me | www.geus.me | github.com/tdegeus/GooseSolid
+>   (c - GPLv3) T.W.J. de Geus (Tom) | tom@geus.me | www.geus.me | [github.com/tdegeus/GooseSolid](http://github.com/tdegeus/GooseSolid)
 
 ## Materials
 
