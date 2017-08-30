@@ -138,11 +138,12 @@ py::class_<GS::LinearElastic_ViscousFluid>(m,"LinearElastic_ViscousFluid")
 
 py::class_<GS::ElasticPlasticPotential>(m,"ElasticPlasticPotential")
 
-.def(py::init<double,double,const std::vector<double> &,bool>(),
-  py::arg("K"     ),
-  py::arg("G"     ),
-  py::arg("a"     ),
-  py::arg("smooth")=true
+.def(py::init<double,double,const std::vector<double> &,bool,bool>(),
+  py::arg("K"           ),
+  py::arg("G"           ),
+  py::arg("a"           ),
+  py::arg("init_elastic")=true,
+  py::arg("smooth"      )=true
 )
 
 .def("stress", &GS::ElasticPlasticPotential::stress, py::arg("eps"))

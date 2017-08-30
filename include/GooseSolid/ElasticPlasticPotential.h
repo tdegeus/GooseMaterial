@@ -52,7 +52,8 @@ public:
   // constructor / destructor
  ~ElasticPlasticPotential(){};
   ElasticPlasticPotential(){};
-  ElasticPlasticPotential(double K, double G, const std::vector<double> &epsy, bool smooth=true);
+  ElasticPlasticPotential(double K, double G,
+    const std::vector<double> &epsy, bool init_elastic=true, bool smooth=true);
 
   // compute stress at "eps"
   T2s stress(const T2s &eps);
@@ -69,24 +70,40 @@ public:
 // ========================================= IMPLEMENTATION ========================================
 
 ElasticPlasticPotential::ElasticPlasticPotential(
-  double K, double G, const std::vector<double> &epsy, bool smooth )
+  double K, double G, const std::vector<double> &epsy, bool init_elastic, bool smooth )
 {
   m_K      = K;
   m_G      = G;
   m_smooth = smooth;
 
+  // copy input
+  std::vector<double> vec = epsy;
+  // sort input
+  std::sort( vec.begin() , vec.end() );
+
+  // check to add item to have an initial elastic response
+  if ( init_elastic )
+    if ( vec[0] == -vec[1] )
+      init_elastic = false;
+
+  // copy input
+  // - counters
+  size_t N = vec.size();
+  size_t i = 0;
+  // - add yield stress to have an initial elastic response
+  if ( init_elastic ) ++N;
+  // - allocate
+  m_epsy.resize(N);
+  // - add yield stress to have an initial elastic response
+  if ( init_elastic ) { m_epsy[i] = -vec[0]; ++i; }
+  // - copy the rest
+  for ( auto &j : vec ) {
+    m_epsy[i] = j; ++i;
+  }
+
   // check the number of yield strains
-  if ( epsy.size() < 2 )
+  if ( m_epsy.size() < 2 )
     throw std::runtime_error("Specify at least two yield strains 'eps_y'");
-
-  // allocate local list
-  m_epsy.resize(epsy.size());
-
-  // copy from input
-  for ( size_t i = 0 ; i < epsy.size() ; ++i ) m_epsy[i] = epsy[i];
-
-  // sort (otherwise the search fails)
-  std::sort( m_epsy.begin() , m_epsy.end() );
 }
 
 // -------------------------------------------------------------------------------------------------
