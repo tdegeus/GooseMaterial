@@ -75,21 +75,51 @@ ElasticPlasticPotential::ElasticPlasticPotential(
   m_G      = G;
   m_smooth = smooth;
 
+  // check the number of yield strains
+  if ( epsy.size() < 2 )
+    throw std::runtime_error("Specify at least two yield strains 'eps_y'");
+
+  // allocate local list
   m_epsy.resize(epsy.size());
 
-  for ( size_t i = 0 ; i < epsy.size() ; ++i )
-    m_epsy[i] = epsy[i];
+  // copy from input
+  for ( size_t i = 0 ; i < epsy.size() ; ++i ) m_epsy[i] = epsy[i];
+
+  // sort (otherwise the search fails)
+  std::sort( m_epsy.begin() , m_epsy.end() );
 }
 
 // -------------------------------------------------------------------------------------------------
 
 size_t ElasticPlasticPotential::find(double eps_eq)
 {
-  for ( size_t i = 0 ; i < m_epsy.size()-1 ; ++i )
-    if ( eps_eq >= m_epsy[i] && eps_eq < m_epsy[i+1] )
-      return i;
+  // check extremes
+  if ( eps_eq < m_epsy.front() or eps_eq >= m_epsy.back() )
+    throw std::runtime_error("Insufficient 'eps_y'");
 
-  throw std::runtime_error("Insufficient 'eps_y'");
+  // set initial search bounds and index
+  size_t n = m_epsy.size()-1;  // upper-bound
+  size_t z = 1;                // lower-bound
+  size_t l = 0;                // left-bound
+  size_t r = n;                // right-bound
+  size_t i = r / 2;            // average
+
+  // loop until found
+  while ( true )
+  {
+    // check if found, unroll once to speed-up
+    if ( eps_eq >= m_epsy[i-1] and eps_eq < m_epsy[i  ] ) return i-1;
+    if ( eps_eq >= m_epsy[i  ] and eps_eq < m_epsy[i+1] ) return i;
+    if ( eps_eq >= m_epsy[i+1] and eps_eq < m_epsy[i+2] ) return i+1;
+
+    // correct the left- and right-bound
+    if ( eps_eq >= m_epsy[i] ) l = i;
+    else                       r = i;
+
+    // set new search index
+    i = ( r + l ) / 2;
+    i = std::max(i,z);
+  }
 }
 
 // -------------------------------------------------------------------------------------------------
