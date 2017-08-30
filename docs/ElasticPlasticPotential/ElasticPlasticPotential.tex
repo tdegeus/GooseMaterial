@@ -1,8 +1,6 @@
 %!TEX program = xelatex
 \documentclass[times,namecite]{goose-article}
 
-\usepackage{subcaption}
-
 \title{%
   GooseSolid/ElasticPlasticPotential
 }
@@ -31,7 +29,7 @@
 \maketitle
 
 \begin{abstract}
-A microscopic model of plasticity in amorphous solids is proposed. This model uses a strain energy with multiple minima to capture the effect of plasticity. This model is taken from the work of \citet{Jagla2017}.
+A microscopic continuum model of plasticity in amorphous solids is proposed. This model uses a strain energy with multiple minima to capture the effect of plasticity. This model is taken from the work of \citet{Jagla2017}.
 \end{abstract}
 
 \keywords{elasto-plasticity; linear elasticity}
@@ -65,7 +63,7 @@ Our nomenclature can be found in Appendix~\ref{sec:nomenclature} and the definit
   \frac{2}{3}
   \frac{\bm{\varepsilon}_d}{\varepsilon_\mathrm{eq}}
 \end{equation}
-From which we can identity the hydrostatic stress
+From which we can identity the hydrostatic stress (see Appendix~\ref{sec:stress})
 \begin{equation}
   \sigma_\mathrm{m} = \frac{1}{3} \frac{\partial U}{\partial \varepsilon_\mathrm{m}}
 \end{equation}
@@ -147,7 +145,7 @@ where $\mathbb{C}$ is the fourth-order the elastic stiffness tensor, defined as
 
 \subsection{Plastic potential}
 
-We now extend the model to account for plasticity. For this we strive for a model that is volumetrically purely elastic, while in shear, the model is governed by multiple minima. These minima have the effect that when the material reaches a certain yield stress it jumps to the next minimum. Around this minimum the elasticity is always the same. When loading is continued the the material again jumps to a new minimum when a yield stress is reached. The magnitudes of the jumps and of the yield stress are thereby related.
+We now extend the model to account for plasticity. For this we strive for a model that is volumetrically purely elastic, while in shear, the model is governed by multiple minima. These minima have the effect that when the material reaches a certain yield stress it jumps to the next minimum. Around this minimum the elasticity is always the same. When loading is continued the the material again jumps to a new minimum when the next yield stress is reached. The magnitudes of the jumps and of the yield stress are thereby related.
 
 \begin{figure}[htp]
   \centering
@@ -165,33 +163,42 @@ We now extend the model to account for plasticity. For this we strive for a mode
     \subcaption{Smooth multi-parabolic shear strain energy}
     \label{fig:V-plas-smooth}
   \end{minipage}
-  \caption{The multi-minima shear strain energy, $V ( \varepsilon_\mathrm{eq} )$, that models the effect of plasticity. The multi-parabolic strain energy is shown in (a), while its smoothened equivalent is shown in (b).}
+  \caption{The multi-minima shear strain energy, $V ( \varepsilon_\mathrm{eq} )$, that models the effect of plasticity. The multi-parabolic shear strain energy is shown in (a), while its smoothened equivalent is shown in (b).}
 \end{figure}
 
 \paragraph{Parabolic potential with multiple minima}
 
-As described, the volumetric behavior is give by Eq.~\eqref{eq:U} and plotted in Fig.~\ref{fig:U}. To attain the desired behavior in shear we divide the equivalent strain space in a finite number of yield strains $\varepsilon_\mathrm{y}^{(0)}, \varepsilon_\mathrm{y}^{(1)}, \varepsilon_\mathrm{y}^{(2)}, ...$ and set the shear strain energy to
+As described, the volumetric behavior is give by Eq.~\eqref{eq:U} and plotted in Fig.~\ref{fig:U}. To attain the desired behavior in shear we divide the equivalent strain space in a finite number of yield strains $\varepsilon_\mathrm{y}^{(0)}, \varepsilon_\mathrm{y}^{(1)}, \varepsilon_\mathrm{y}^{(2)}, ...$ and define a parabolic potential between each pair ($[ \varepsilon_\mathrm{y}^{(0)}, \varepsilon_\mathrm{y}^{(1)} )$, $[ \varepsilon_\mathrm{y}^{(1)}, \varepsilon_\mathrm{y}^{(2)} )$, ...). The shear strain energy is then composed of a manifold of quadratic contributions
 \begin{equation}\label{eq:V-plas}
-  V ( \varepsilon_\mathrm{eq} )
+  V \big(
+    \varepsilon_\mathrm{y}^{(i)} \leq \varepsilon_\mathrm{eq} < \varepsilon_\mathrm{y}^{(i+1)}
+  \big)
   =
-  \frac{3}{2} \, G \, \bigg[\, \Big[\, \varepsilon_\mathrm{eq} - \varepsilon_\mathrm{min}^{(i)} \,\Big]^2 - \Big[\, \Delta \varepsilon_\mathrm{y}^{(i)} \,\Big]^2 \,\bigg]
+  V^{(i)}
+  =
+  \frac{3}{2} \, G \, \bigg[\,
+    \Big[\, \varepsilon_\mathrm{eq} - \varepsilon_\mathrm{min}^{(i)} \,\Big]^2
+    -
+    \Big[\, \Delta \varepsilon_\mathrm{y}^{(i)} \,\Big]^2
+  \,\bigg]
 \end{equation}
-which is plotted in Fig.~\ref{fig:V-plas}. As indicated in the Figure, the potential is set by the two maxima $\varepsilon_\mathrm{y}^{(i)}$ and $\varepsilon_\mathrm{y}^{(i+1)}$ that satisfy $\varepsilon_\mathrm{y}^{(i)} \leq \varepsilon_\mathrm{eq} < \varepsilon_\mathrm{y}^{(i+1)}$. In particular, it set by their mean
+where the mean of $\varepsilon_\mathrm{y}^{(i)}$ and $\varepsilon_\mathrm{y}^{(i+1)}$ is
 \begin{equation}
   \varepsilon_\mathrm{min}^{(i)}
   =
   \frac{1}{2} \Big[\, \varepsilon_\mathrm{y}^{(i+1)} + \varepsilon_\mathrm{y}^{(i)} \,\Big]
 \end{equation}
-and the distance between the minima and their mean
+which is also the equivalent strain at which the shear strain energy reaches its minimum; and the distance to $\varepsilon_\mathrm{y}^{(i)}$ and $\varepsilon_\mathrm{y}^{(i+1)}$ is
 \begin{equation}
   \Delta \varepsilon_\mathrm{y}^{(i)}
   =
   \frac{1}{2} \Big[\, \varepsilon_\mathrm{y}^{(i+1)} - \varepsilon_\mathrm{y}^{(i)} \,\Big]
 \end{equation}
+The resulting shear strain energy is plotted in Fig.~\ref{fig:V-plas}
 
 To compute the stress we need
 \begin{equation}\label{eq:dV-plas}
-  \frac{\partial V}{\partial \varepsilon_\mathrm{eq}}
+  \frac{\partial V^{(i)}}{\partial \varepsilon_\mathrm{eq}}
   =
   3 \, G \, \Big[\, \varepsilon_\mathrm{eq} - \varepsilon_\mathrm{min}^{(i)} \,\Big]
 \end{equation}
@@ -203,14 +210,22 @@ For which we can observe that around $\varepsilon_\mathrm{min}^{(i)}$ the elasti
   +
   2 \, G \, \Big[\, 1 - \varepsilon_\mathrm{min}^{(i)} / \varepsilon_\mathrm{eq} \,\Big] \;
   \bm{\varepsilon}_\mathrm{d}
+  \qquad
+  \mathrm{for}
+  \qquad
+  \varepsilon_\mathrm{y}^{(i)} \leq \varepsilon_\mathrm{eq} < \varepsilon_\mathrm{y}^{(i+1)}
 \end{equation}
-whereby we make the assumption that when $\varepsilon_\mathrm{eq} = 0$ also $\bm{\sigma}_\mathrm{d} = \bm{0}$.
+whereby we make the assumption that when $\varepsilon_\mathrm{eq} = 0$ also $\bm{\sigma}_\mathrm{d} = \bm{0}$ in order to avoid zero-devision.
 
 \paragraph{Smooth parabolic potential with multiple minima}
 
 Next to this we also define a smoothened equivalent of Eq.~\eqref{eq:V-plas}:
 \begin{equation}\label{eq:V-plas-smooth}
-  V ( \varepsilon_\mathrm{eq} )
+  V \big(
+    \varepsilon_\mathrm{y}^{(i)} \leq \varepsilon_\mathrm{eq} < \varepsilon_\mathrm{y}^{(i+1)}
+  \big)
+  =
+  V^{(i)}
   =
   - 3 \, G \,
   \left[ \frac{\Delta \varepsilon_\mathrm{y}^{(i)}}{\pi} \right]^2
@@ -225,7 +240,7 @@ Next to this we also define a smoothened equivalent of Eq.~\eqref{eq:V-plas}:
 \end{equation}
 which is plotted in Fig.~\ref{fig:V-plas-smooth}. In this case we obtain
 \begin{equation}\label{eq:dV-plas-smooth}
-  \frac{\partial V}{\partial \varepsilon_\mathrm{eq}}
+  \frac{\partial V^{(i)}}{\partial \varepsilon_\mathrm{eq}}
   =
   3 \, G \,
   \left[ \frac{\Delta \varepsilon_\mathrm{y}^{(i)}}{\pi} \right]
@@ -236,7 +251,7 @@ which is plotted in Fig.~\ref{fig:V-plas-smooth}. In this case we obtain
 \end{equation}
 Which is to the first order equal to linear elasticity around its minimum $\varepsilon_\mathrm{min}^{(i)}$. Indeed, the first order Taylor series of Eq.~\eqref{eq:dV-plas-smooth} around $\varepsilon_\mathrm{eq} = \varepsilon_\mathrm{min}^{(i)}$,
 \begin{equation}
-  \frac{\partial V}{\partial \varepsilon_\mathrm{eq}}
+  \frac{\partial V^{(i)}}{\partial \varepsilon_\mathrm{eq}}
   \approx
   3 \, G \, \Big[\, \varepsilon_\mathrm{eq} - \varepsilon_\mathrm{min}^{(i)} \,\Big]
 \end{equation}
@@ -255,6 +270,10 @@ For completeness also in case the stress tensor
     \Big[\, \varepsilon_\mathrm{eq} - \varepsilon_\mathrm{min}^{(i)} \,\Big]
   \right)
   \frac{\bm{\varepsilon}_\mathrm{d}}{\varepsilon_\mathrm{eq}}
+  \qquad
+  \mathrm{for}
+  \qquad
+  \varepsilon_\mathrm{y}^{(i)} \leq \varepsilon_\mathrm{eq} < \varepsilon_\mathrm{y}^{(i+1)}
 \end{equation}
 whereby we again make the assumption that when $\varepsilon_\mathrm{eq} = 0$ also $\bm{\sigma}_\mathrm{d} = \bm{0}$.
 
@@ -353,6 +372,34 @@ To obtain the stress response we start from the derivative of the shear strain e
   = \; \sqrt{
     \tfrac{2}{3} \, \bm{\varepsilon}_\mathrm{d} : \bm{\varepsilon}_\mathrm{d}
   }
+\end{equation}
+%
+\end{itemize}
+
+\section{Stress measures}
+\label{sec:stress}
+
+\begin{itemize}
+%
+\item Mean stress
+%
+\begin{equation}
+\sigma_\mathrm{m}
+= \tfrac{1}{3} \, \mathrm{tr} ( \bm{\sigma} )
+= \tfrac{1}{3} \, \bm{\sigma} : \bm{I}
+\end{equation}
+%
+\item Stress deviator
+%
+\begin{equation}
+  \bm{\sigma}_\mathrm{d}
+  = \bm{\sigma} - \sigma_\mathrm{m} \, \bm{I}
+  = \mathbb{I}_\mathrm{d} : \bm{\sigma}
+\end{equation}
+%
+\item Von Mises equivalent stress
+\begin{equation}
+\sigma_\mathrm{eq} = \sqrt{ \tfrac{3}{2} \, \bm{\sigma}_\mathrm{d} : \bm{\sigma}_\mathrm{d} }
 \end{equation}
 %
 \end{itemize}

@@ -75,6 +75,7 @@
 
 \RequirePackage{fix-cm}
 \RequirePackage{graphicx}
+\RequirePackage[labelformat=simple]{subcaption}
 \RequirePackage{amssymb,amsfonts,bm,cancel}
 \RequirePackage{enumerate}
 \RequirePackage[fleqn]{amsmath}
@@ -83,6 +84,8 @@
 \RequirePackage[dvipsnames]{xcolor}
 \RequirePackage{authblk}
 \RequirePackage{hyperref}
+
+\renewcommand\thesubfigure{(\alph{subfigure})}
 
 % ==============================================================================
 % Citation style
