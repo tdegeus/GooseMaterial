@@ -21,7 +21,7 @@ Suggested references
 
 #include <string>
 #include <tuple>
-#include <cppmat/tensor.h>
+#include <cppmat/tensor3.h>
 
 namespace GooseSolid {
 

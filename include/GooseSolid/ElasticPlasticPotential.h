@@ -27,12 +27,11 @@ Suggested references
 
 #include <tuple>
 #include <math.h>
-#include <cppmat/tensor.h>
+#include <cppmat/tensor3.h>
 
-using T2  = cppmat::tensor2 <double>;
-using T2s = cppmat::tensor2s<double>;
-using T2d = cppmat::tensor2d<double>;
-using T4  = cppmat::tensor4 <double>;
+using T2  = cppmat::tensor3_2 <double>;
+using T2s = cppmat::tensor3_2s<double>;
+using T2d = cppmat::tensor3_2d<double>;
 
 namespace GooseSolid {
 
@@ -148,7 +147,7 @@ size_t ElasticPlasticPotential::find(const T2s &eps)
   T2d I;
 
   // second order identity tensor
-  I      = cppmat::identity2(3);
+  I      = cppmat::identity3_2();
 
   // decompose strain: hydrostatic part, deviatoric part
   eps_m  = eps.trace() / 3.;
@@ -177,7 +176,7 @@ T2s  ElasticPlasticPotential::stress(const T2s &eps)
   T2d I;
 
   // second order identity tensor
-  I      = cppmat::identity2(3);
+  I      = cppmat::identity3_2();
 
   // decompose strain: hydrostatic part, deviatoric part
   eps_m  = eps.trace() / 3.;

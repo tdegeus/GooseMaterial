@@ -30,11 +30,11 @@ Suggested references
 ================================================================================================= */
 
 #include <tuple>
-#include <cppmat/tensor.h>
+#include <cppmat/tensor3.h>
 
-using T2  = cppmat::tensor2 <double>;
-using T2s = cppmat::tensor2s<double>;
-using T2d = cppmat::tensor2d<double>;
+using T2  = cppmat::tensor3_2 <double>;
+using T2s = cppmat::tensor3_2s<double>;
+using T2d = cppmat::tensor3_2d<double>;
 
 namespace GooseSolid {
 
@@ -82,10 +82,6 @@ LinearElastic_ViscousFluid::LinearElastic_ViscousFluid(
   // set yield stress constant
   m_sigy_next = m_sigy;
 
-  // resize tensors to "3" dimensions
-  m_sigd  .resize(3);
-  m_sigd_n.resize(3);
-
   // zero-initialize history
   m_sigd  .zeros();
   m_sigd_n.zeros();
@@ -126,7 +122,7 @@ T2s LinearElastic_ViscousFluid::stress(const T2s &epsdot, double dt)
   m_T = m_T_n+dt;
 
   // decompose the strain in a hydrostatic and a deviatoric part
-  I       = cppmat::identity2(3);
+  I       = cppmat::identity3_2();
   epsdotm = epsdot.trace()/3.;
   epsdotd = epsdot - epsdotm*I;
 

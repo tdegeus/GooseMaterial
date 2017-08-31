@@ -25,12 +25,12 @@ Suggested references
 ================================================================================================= */
 
 #include <tuple>
-#include <cppmat/tensor.h>
+#include <cppmat/tensor3.h>
 
-using T2  = cppmat::tensor2 <double>;
-using T2s = cppmat::tensor2s<double>;
-using T2d = cppmat::tensor2d<double>;
-using T4  = cppmat::tensor4 <double>;
+using T2  = cppmat::tensor3_2 <double>;
+using T2s = cppmat::tensor3_2s<double>;
+using T2d = cppmat::tensor3_2d<double>;
+using T4  = cppmat::tensor3_4 <double>;
 
 namespace GooseSolid {
 
@@ -56,7 +56,6 @@ public:
   // compute stress(+tangent) at "eps"
   T2s                stress        (const T2s &eps);
   std::tuple<T4,T2s> tangent_stress(const T2s &eps);
-  T4                 tangent       (const T2s &eps);
 
 };
 
@@ -70,46 +69,12 @@ LinearElastic::LinearElastic( double K, double G ) : m_K(K), m_G(G)
 
 T2s  LinearElastic::stress(const T2s &eps)
 {
-  T2s sig;
-  T4  K4;
-
-  std::tie(K4,sig) = compute(eps,false);
-
-  return sig;
-}
-
-// -------------------------------------------------------------------------------------------------
-
-T4   LinearElastic::tangent(const T2s &eps)
-{
-  T2s sig;
-  T4  K4;
-
-  std::tie(K4,sig) = compute(eps,true);
-
-  return K4;
-}
-
-// -------------------------------------------------------------------------------------------------
-
-std::tuple<T4,T2s> LinearElastic::tangent_stress(const T2s &eps)
-{
-  return compute(eps,true);
-}
-
-// -------------------------------------------------------------------------------------------------
-
-std::tuple<T4,T2s> LinearElastic::compute(const T2s &eps, bool tangent)
-{
   double eps_m,sig_m;
-  T2s eps_d,sig_d,sig;
+  T2s eps_d,sig_d;
   T2d I;
 
-  // stress
-  // ------
-
   // second order identity tensor
-  I      = cppmat::identity2(3);
+  I      = cppmat::identity3_2();
 
   // decompose strain: hydrostatic part, deviatoric part
   eps_m  = eps.trace() / 3.;
@@ -120,20 +85,40 @@ std::tuple<T4,T2s> LinearElastic::compute(const T2s &eps, bool tangent)
   sig_d  = 2. * m_G * eps_d;
 
   // combine volumetric and deviatoric stress
-  sig    = sig_m  * I + sig_d ;
+  return sig_m * I + sig_d ;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+std::tuple<T4,T2s> LinearElastic::tangent_stress(const T2s &eps)
+{
+  double eps_m,sig_m;
+  T2s eps_d,sig_d,sig;
+  T2d I;
+
+  // stress
+  // ------
+
+  // second order identity tensor
+  I      = cppmat::identity3_2();
+
+  // decompose strain: hydrostatic part, deviatoric part
+  eps_m  = eps.trace() / 3.;
+  eps_d  = eps - eps_m * I;
+
+  // constitutive response
+  sig_m  = 3. * m_K * eps_m;
+  sig_d  = 2. * m_G * eps_d;
+
+  // combine volumetric and deviatoric stress
+  sig    = sig_m * I + sig_d ;
 
   // tangent
   // -------
 
-  // compute only stress: allocate empty tangent (without any element), and return
-  if ( ! tangent ) {
-    T4 K4(0);
-    return std::make_tuple(K4,sig);
-  }
-
   // unit tensors: II = dyadic(I,I) and deviatoric unit tensor I4d (A_d = I4d : A)
-  T4 I4d = cppmat::identity4d (3);
-  T4 II  = cppmat::identity4II(3);
+  T4 I4d = cppmat::identity3_4d();
+  T4 II  = cppmat::identity3_II();
 
   // initialize tangent as the elasticity tensor
   T4 K4  = m_K * II + 2. * m_G * I4d;

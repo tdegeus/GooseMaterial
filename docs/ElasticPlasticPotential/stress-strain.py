@@ -27,8 +27,6 @@ for i,d in enumerate(np.linspace(0,10.*np.sqrt(3.)/2.,ninc)):
   sig_eq[i] = np.sqrt(3./2.*gt.ddot22(sig,sig))
   eps_eq[i] = np.sqrt(2./3.*gt.ddot22(eps,eps))
 
-plt.style.use(['goose','goose-latex'])
-
 fig,ax = plt.subplots()
 
 ax.plot(eps_eq,sig_eq)

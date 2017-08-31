@@ -1,6 +1,6 @@
 
-#include <cppmat/tensor.h>
-#include <cppmat/pybind11_tensor.h>
+#include <cppmat/tensor3.h>
+#include <cppmat/pybind11_tensor3.h>
 
 #include "include/GooseSolid/LinearElastic.h"
 #include "include/GooseSolid/NonLinearElastic.h"
@@ -29,7 +29,6 @@ py::class_<GS::LinearElastic>(m,"LinearElastic")
 
 .def("stress"        , &GS::LinearElastic::stress        , py::arg("eps"))
 .def("tangent_stress", &GS::LinearElastic::tangent_stress, py::arg("eps"))
-.def("tangent"       , &GS::LinearElastic::tangent       , py::arg("eps"))
 
 .def("__repr__",[](const GS::LinearElastic &a)
   {return "<GooseSolid.LinearElastic>";});
@@ -47,7 +46,6 @@ py::class_<GS::NonLinearElastic>(m,"NonLinearElastic")
 
 .def("stress"        , &GS::NonLinearElastic::stress        , py::arg("eps"))
 .def("tangent_stress", &GS::NonLinearElastic::tangent_stress, py::arg("eps"))
-.def("tangent"       , &GS::NonLinearElastic::tangent       , py::arg("eps"))
 
 .def("__repr__",[](const GS::NonLinearElastic &a)
   {return "<GooseSolid.NonLinearElastic>";});
@@ -66,7 +64,6 @@ py::class_<GS::PlasticLinearElastic>(m,"PlasticLinearElastic")
 
 .def("stress"        , &GS::PlasticLinearElastic::stress        , py::arg("eps"))
 .def("tangent_stress", &GS::PlasticLinearElastic::tangent_stress, py::arg("eps"))
-.def("tangent"       , &GS::PlasticLinearElastic::tangent       , py::arg("eps"))
 .def("increment"     , &GS::PlasticLinearElastic::increment                     )
 
 .def("__repr__",[](const GS::PlasticLinearElastic &a)
@@ -86,7 +83,6 @@ py::class_<GS::ViscoPlasticLinearElastic>(m,"ViscoPlasticLinearElastic")
 
 .def("stress"        , &GS::ViscoPlasticLinearElastic::stress        , py::arg("eps"), py::arg("dt"))
 .def("tangent_stress", &GS::ViscoPlasticLinearElastic::tangent_stress, py::arg("eps"), py::arg("dt"))
-.def("tangent"       , &GS::ViscoPlasticLinearElastic::tangent       , py::arg("eps"), py::arg("dt"))
 .def("increment"     , &GS::ViscoPlasticLinearElastic::increment                                    )
 
 .def("__repr__",[](const GS::ViscoPlasticLinearElastic &a)
@@ -108,7 +104,6 @@ py::class_<GS::ViscoPlasticHardeningLinearElastic>(m,"ViscoPlasticHardeningLinea
 
 .def("stress"        , &GS::ViscoPlasticHardeningLinearElastic::stress        , py::arg("eps"), py::arg("dt"))
 .def("tangent_stress", &GS::ViscoPlasticHardeningLinearElastic::tangent_stress, py::arg("eps"), py::arg("dt"))
-.def("tangent"       , &GS::ViscoPlasticHardeningLinearElastic::tangent       , py::arg("eps"), py::arg("dt"))
 .def("increment"     , &GS::ViscoPlasticHardeningLinearElastic::increment                                    )
 
 .def("__repr__",[](const GS::ViscoPlasticHardeningLinearElastic &a)
