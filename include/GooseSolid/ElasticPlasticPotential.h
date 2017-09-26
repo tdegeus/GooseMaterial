@@ -2,14 +2,6 @@
 
 (c - GPLv3) T.W.J. de Geus (Tom) | tom@geus.me | www.geus.me | github.com/tdegeus/GooseSolid
 
-Overview
---------
-
-class ElasticPlasticPotential
-|- stress
-|- find
-|- eps_y
-
 Description
 -----------
 
@@ -43,7 +35,7 @@ private:
 
   double              m_K;      // bulk  modulus
   double              m_G;      // shear modulus
-  std::vector<double> m_epsy;      // yield strains
+  std::vector<double> m_epsy;   // yield strains
   bool                m_smooth; // set potential smooth or not
 
 public:
@@ -52,7 +44,7 @@ public:
  ~ElasticPlasticPotential(){};
   ElasticPlasticPotential(){};
   ElasticPlasticPotential(double K, double G,
-    const std::vector<double> &epsy, bool init_elastic=true, bool smooth=true);
+    const std::vector<double> &epsy={}, bool init_elastic=true, bool smooth=true);
 
   // compute stress at "eps"
   T2s stress(const T2s &eps);
@@ -64,6 +56,12 @@ public:
   double eps_y(size_t i);
   // - return equivalent strain
   double eps_eq(const T2s &eps);
+  // - return hydrostatic stress
+  double sig_m(const T2s &sig);
+  // - return equivalent stress
+  double sig_eq(const T2s &sig);
+  // - return the strain energy related to the equivalent strains
+  double energy_eq(const T2s &eps);
 
 };
 
@@ -78,6 +76,8 @@ ElasticPlasticPotential::ElasticPlasticPotential(
 
   // copy input
   std::vector<double> vec = epsy;
+  // initialize
+  if ( vec.size() == 0 ) vec = { 1000. };
   // sort input
   std::sort( vec.begin() , vec.end() );
 
@@ -143,19 +143,75 @@ size_t ElasticPlasticPotential::find(double epseq)
 
 double ElasticPlasticPotential::eps_eq(const T2s &eps)
 {
-  double eps_m;
-  T2s eps_d;
+  double epsm;
+  T2s epsd;
+  T2d I;
+
+  // second order identity tensor
+  I    = cppmat::identity3_2();
+
+  // decompose strain: hydrostatic part, deviatoric part
+  epsm = eps.trace() / 3.;
+  epsd = eps - epsm * I;
+
+  // equivalent strain
+  return std::pow( 2./3. * epsd.ddot(epsd) , 0.5 );
+}
+
+// -------------------------------------------------------------------------------------------------
+
+double ElasticPlasticPotential::sig_m(const T2s &sig)
+{
+  return sig.trace() / 3.;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+double ElasticPlasticPotential::sig_eq(const T2s &sig)
+{
+  double sigm;
+  T2s sigd;
+  T2d I;
+
+  // second order identity tensor
+  I    = cppmat::identity3_2();
+
+  // decompose stress: hydrostatic part, deviatoric part
+  sigm = sig.trace() / 3.;
+  sigd = sig - sigm * I;
+
+  // equivalent stress
+  return std::pow( 3./2. * sigd.ddot(sigd) , 0.5 );
+}
+
+// -------------------------------------------------------------------------------------------------
+
+double ElasticPlasticPotential::energy_eq(const T2s &eps)
+{
+  double epsm,epseq;
+  T2s epsd;
   T2d I;
 
   // second order identity tensor
   I     = cppmat::identity3_2();
 
   // decompose strain: hydrostatic part, deviatoric part
-  eps_m = eps.trace() / 3.;
-  eps_d = eps - eps_m * I;
+  epsm  = eps.trace() / 3.;
+  epsd  = eps - epsm * I;
 
   // equivalent strain
-  return std::pow( 2./3. * eps_d.ddot(eps_d) , 0.5 );
+  epseq = std::pow( 2./3. * epsd.ddot(epsd) , 0.5 );
+
+  // read current yield strains
+  size_t i       = find(epseq);
+  double eps_min = ( m_epsy[i+1] + m_epsy[i] ) / 2.;
+  double deps_y  = ( m_epsy[i+1] - m_epsy[i] ) / 2.;
+
+  // energy
+  if ( ! m_smooth )
+    return 1.5 * m_G * ( std::pow( epseq-eps_min , 2. ) - std::pow( deps_y , 2. ) );
+  else
+    return -3. * m_G * std::pow( deps_y/M_PI , 2. ) * ( 1. + cos( M_PI/deps_y * (epseq-eps_min) ) );
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -169,25 +225,25 @@ double ElasticPlasticPotential::eps_y(size_t i)
 
 T2s  ElasticPlasticPotential::stress(const T2s &eps)
 {
-  double eps_m,sig_m,epseq;
-  T2s eps_d,sig_d,sig;
+  double epsm,sigm,epseq;
+  T2s epsd,sigd,sig;
   T2d I;
 
   // second order identity tensor
   I     = cppmat::identity3_2();
 
   // decompose strain: hydrostatic part, deviatoric part
-  eps_m = eps.trace() / 3.;
-  eps_d = eps - eps_m * I;
+  epsm  = eps.trace() / 3.;
+  epsd  = eps - epsm * I;
 
   // equivalent strain
-  epseq = std::pow( 2./3. * eps_d.ddot(eps_d) , 0.5 );
+  epseq = std::pow( 2./3. * epsd.ddot(epsd) , 0.5 );
 
   // constitutive response - hydrostatic part
-  sig_m = 3. * m_K * eps_m;
+  sigm  = 3. * m_K * epsm;
 
   // equivalent strain zero -> zero deviatoric stress
-  if ( epseq <= 0. ) return sig_m * I;
+  if ( epseq <= 0. ) return sigm * I;
 
   // read current yield strains
   size_t i       = find(epseq);
@@ -196,12 +252,12 @@ T2s  ElasticPlasticPotential::stress(const T2s &eps)
 
   // constitutive response - deviatoric part
   if ( ! m_smooth )
-    sig_d = 2.*m_G * ( 1. - eps_min/epseq ) * eps_d;
+    sigd = 2.*m_G * ( 1. - eps_min/epseq ) * epsd;
   else
-    sig_d = 2.*m_G * ( deps_y/M_PI ) * sin ( M_PI/deps_y * ( epseq - eps_min ) ) * eps_d / epseq;
+    sigd = 2.*m_G * ( deps_y/M_PI ) * sin ( M_PI/deps_y * ( epseq - eps_min ) ) * epsd / epseq;
 
   // return full strain tensor
-  return sig_m * I + sig_d;
+  return sigm * I + sigd;
 }
 
 // -------------------------------------------------------------------------------------------------

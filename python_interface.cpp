@@ -14,9 +14,10 @@
 namespace py = pybind11;
 namespace GS = GooseSolid;
 
-PYBIND11_PLUGIN(GooseSolid) {
+PYBIND11_MODULE(GooseSolid, m)
+{
 
-py::module m("GooseSolid","Library with material models");
+m.doc() = "Library with material models";
 
 // -------------------------------------------------------------------------------------------------
 
@@ -141,7 +142,8 @@ py::class_<GS::ElasticPlasticPotential>(m,"ElasticPlasticPotential")
   py::arg("smooth"      )=true
 )
 
-.def("stress", &GS::ElasticPlasticPotential::stress, py::arg("eps"))
+.def("stress"   , &GS::ElasticPlasticPotential::stress   , py::arg("eps"))
+.def("energy_eq", &GS::ElasticPlasticPotential::energy_eq, py::arg("eps"))
 
 .def("__repr__",[](const GS::ElasticPlasticPotential &a)
   {return "<GooseSolid.ElasticPlasticPotential>";});
@@ -151,7 +153,5 @@ py::class_<GS::ElasticPlasticPotential>(m,"ElasticPlasticPotential")
 m.def("ConvertElasticParameters",&GS::ConvertElasticParameters);
 
 // -------------------------------------------------------------------------------------------------
-
-return m.ptr();
 
 } // PYBIND11_PLUGIN
