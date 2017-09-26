@@ -1,6 +1,10 @@
 # test crap
 test*
 
+# local configuration files
+GooseSolidConfig.cmake
+GooseSolid.pc
+
 # Python compiled files
 dist/*
 *.egg-info/*
