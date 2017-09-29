@@ -1,14 +1,6 @@
 /* ========================================== DESCRIPTION ==========================================
 
-(c - GPLv3) T.W.J. de Geus (Tom) | tom@geus.me | www.geus.me | github.com/tdegeus/GooseSolid
-
-Overview
---------
-
-class LinearElastic
-|- stress
-|- tangent_stress
-|- tangent
+(c - GPLv3) T.W.J. de Geus (Tom) | tom@geus.me | www.geus.me | github.com/tdegeus/GooseMaterial
 
 Description
 -----------
@@ -19,7 +11,7 @@ Suggested references
 --------------------
 
 *   The code + comments below.
-*   docs/LinearElastic/LinearElastic.pdf
+*   docs/Metal/LinearStrain/Elastic/readme.pdf
 *   Former internal code: GooseFEM / mat1001
 
 ================================================================================================= */
@@ -27,16 +19,21 @@ Suggested references
 #include <tuple>
 #include <cppmat/tensor3.h>
 
+#warning "GooseMaterial/Metal/LinearStrain/Elastic/Cartesian3d.h : first usage, careful check then remove this message"
+
+namespace GooseMaterial {
+namespace Metal {
+namespace LinearStrain {
+namespace Elastic {
+
 using T2  = cppmat::tensor3_2 <double>;
 using T2s = cppmat::tensor3_2s<double>;
 using T2d = cppmat::tensor3_2d<double>;
 using T4  = cppmat::tensor3_4 <double>;
 
-namespace GooseSolid {
-
 // ============================================ OVERVIEW ===========================================
 
-class LinearElastic
+class Material
 {
 private:
 
@@ -49,9 +46,9 @@ private:
 public:
 
   // constructor / destructor
- ~LinearElastic(){};
-  LinearElastic(){};
-  LinearElastic(double K, double G);
+ ~Material(){};
+  Material(){};
+  Material(double K, double G);
 
   // compute stress(+tangent) at "eps"
   T2s                stress        (const T2s &eps);
@@ -59,15 +56,20 @@ public:
 
 };
 
+// =================================================================================================
+
+std::tuple<double,double> ConvertParameters (
+  std::string in, double ipar1, double ipar2, std::string out );
+
 // ========================================= IMPLEMENTATION ========================================
 
-LinearElastic::LinearElastic( double K, double G ) : m_K(K), m_G(G)
+Material::Material( double K, double G ) : m_K(K), m_G(G)
 {
 }
 
 // -------------------------------------------------------------------------------------------------
 
-T2s  LinearElastic::stress(const T2s &eps)
+T2s  Material::stress(const T2s &eps)
 {
   double eps_m,sig_m;
   T2s eps_d,sig_d;
@@ -90,7 +92,7 @@ T2s  LinearElastic::stress(const T2s &eps)
 
 // -------------------------------------------------------------------------------------------------
 
-std::tuple<T4,T2s> LinearElastic::tangent_stress(const T2s &eps)
+std::tuple<T4,T2s> Material::tangent_stress(const T2s &eps)
 {
   double eps_m,sig_m;
   T2s eps_d,sig_d,sig;
@@ -126,6 +128,51 @@ std::tuple<T4,T2s> LinearElastic::tangent_stress(const T2s &eps)
   return std::make_tuple(K4,sig);
 }
 
-// -------------------------------------------------------------------------------------------------
+// =================================================================================================
 
+std::tuple<double,double> ConvertParameters (
+  std::string in, double ipar1, double ipar2, std::string out )
+{
+  double E,nu,K,G;
+
+  // convert input to "K" and "G"
+  if      ( in == "E,nu" ) {
+    E  = ipar1;
+    nu = ipar2;
+    K  = E / ( 3.*(1.-2.*nu) );
+    G  = E / ( 2.*(1.+   nu) );
+  }
+  else if ( in == "lambda,mu" ) {
+    K  = ipar1 + 2./3.*ipar2;
+    G  = ipar2;
+  }
+  else if ( in == "K,G" ) {
+    K  = ipar1;
+    G  = ipar2;
+  }
+  else {
+    throw std::runtime_error("ConvertParameters -> Unknown input pair");
+  }
+
+  // return requested pair
+  if ( out == "K,G" )
+    return std::make_tuple(K,G);
+
+  if ( out == "lambda,mu" )
+    return std::make_tuple(K-2./3.*G,G);
+
+  if ( out == "E,nu" ) {
+    E  = ( 9.*K   *G ) / (     3.*K+G  );
+    nu = ( 3.*K-2.*G ) / ( 2.*(3.*K+G) );
+    return std::make_tuple(E,nu);
+  }
+
+  throw std::runtime_error("ConvertParameters -> Unknown output pair");
 }
+
+// =================================================================================================
+
+} // namespace ...
+} // namespace ...
+} // namespace ...
+} // namespace ...

@@ -1,14 +1,6 @@
 /* ========================================== DESCRIPTION ==========================================
 
-(c - GPLv3) T.W.J. de Geus (Tom) | tom@geus.me | www.geus.me | github.com/tdegeus/GooseSolid
-
-Overview
---------
-
-class NonLinearElastic
-|- stress
-|- tangent_stress
-|- tangent
+(c - GPLv3) T.W.J. de Geus (Tom) | tom@geus.me | www.geus.me | github.com/tdegeus/GooseMaterial
 
 Description
 -----------
@@ -20,7 +12,7 @@ Suggested references
 --------------------
 
 *   The code + comments below.
-*   docs/NonLinearElastic/NonLinearElastic.pdf
+*   docs/Metal/LinearStrain/NonLinearElastic/readme.pdf
 *   Former internal code: GooseFEM / mat1101
 
 ================================================================================================= */
@@ -28,16 +20,21 @@ Suggested references
 #include <tuple>
 #include <cppmat/tensor3.h>
 
+#warning "GooseMaterial/Metal/LinearStrain/NonLinearElastic/Cartesian3d.h : first usage, careful check then remove this message"
+
+namespace GooseMaterial {
+namespace Metal {
+namespace LinearStrain {
+namespace NonLinearElastic {
+
 using T2  = cppmat::tensor3_2 <double>;
 using T2s = cppmat::tensor3_2s<double>;
 using T2d = cppmat::tensor3_2d<double>;
 using T4  = cppmat::tensor3_4 <double>;
 
-namespace GooseSolid {
-
 // ============================================ OVERVIEW ===========================================
 
-class NonLinearElastic
+class Material
 {
 private:
 
@@ -52,9 +49,9 @@ private:
 public:
 
   // constructor / destructor
- ~NonLinearElastic(){};
-  NonLinearElastic(){};
-  NonLinearElastic(double K, double sig0, double eps0, double m=1.);
+ ~Material(){};
+  Material(){};
+  Material(double K, double sig0, double eps0, double m=1.);
 
   // compute stress(+tangent) at "eps"
   T2s                stress        (const T2s &eps);
@@ -64,14 +61,14 @@ public:
 
 // ========================================= IMPLEMENTATION ========================================
 
-NonLinearElastic::NonLinearElastic( double K, double sig0, double eps0, double m ) :
+Material::Material( double K, double sig0, double eps0, double m ) :
   m_K(K), m_sig0(sig0), m_eps0(eps0), m_n(m)
 {
 }
 
 // -------------------------------------------------------------------------------------------------
 
-T2s  NonLinearElastic::stress(const T2s &eps)
+T2s  Material::stress(const T2s &eps)
 {
   double eps_m,sig_m,eps_eq;
   T2s eps_d;
@@ -99,7 +96,7 @@ T2s  NonLinearElastic::stress(const T2s &eps)
 
 // -------------------------------------------------------------------------------------------------
 
-std::tuple<T4,T2s> NonLinearElastic::tangent_stress(const T2s &eps)
+std::tuple<T4,T2s> Material::tangent_stress(const T2s &eps)
 {
   double eps_m,sig_m,eps_eq;
   T2s eps_d,sig;
@@ -147,6 +144,9 @@ std::tuple<T4,T2s> NonLinearElastic::tangent_stress(const T2s &eps)
   return std::make_tuple(K4,sig);
 }
 
-// -------------------------------------------------------------------------------------------------
+// =================================================================================================
 
-}
+} // namespace ...
+} // namespace ...
+} // namespace ...
+} // namespace ...

@@ -1,14 +1,6 @@
 /* ========================================== DESCRIPTION ==========================================
 
-(c - GPLv3) T.W.J. de Geus (Tom) | tom@geus.me | www.geus.me | github.com/tdegeus/GooseSolid
-
-Overview
---------
-
-class LinearElastic_ViscousFluid
-|- stress
-|- increment
-|- setNextSigy
+(c - GPLv3) T.W.J. de Geus (Tom) | tom@geus.me | www.geus.me | github.com/tdegeus/GooseMaterial
 
 Description
 -----------
@@ -25,22 +17,27 @@ Suggested references
 --------------------
 
 *   The code + comments below.
-*   docs/LinearElastic_ViscousFluid/LinearElastic_ViscousFluid.pdf
+*   docs/AmorphousSolid/LinearStrain/ElasticLiquid/readme.pdf
 
 ================================================================================================= */
 
 #include <tuple>
 #include <cppmat/tensor3.h>
 
+#warning "GooseMaterial/AmorphousSolid/LinearStrain/ElasticLiquid/Cartesian3d.h : first usage, careful check then remove this message"
+
+namespace GooseMaterial {
+namespace AmorphousSolid {
+namespace LinearStrain {
+namespace ElasticLiquid {
+
 using T2  = cppmat::tensor3_2 <double>;
 using T2s = cppmat::tensor3_2s<double>;
 using T2d = cppmat::tensor3_2d<double>;
 
-namespace GooseSolid {
-
 // ============================================ OVERVIEW ===========================================
 
-class LinearElastic_ViscousFluid
+class Material
 {
 private:
   bool   m_elas;      // elastic/viscous switch: true <-> elastic
@@ -59,9 +56,9 @@ private:
   double m_sigm_n;    // hydrostatic stress at previous time-step
 
 public:
- ~LinearElastic_ViscousFluid(){};
-  LinearElastic_ViscousFluid(){};
-  LinearElastic_ViscousFluid(double K, double G, double sigy, double Tdamp, double Tfluid);
+ ~Material(){};
+  Material(){};
+  Material(double K, double G, double sigy, double Tdamp, double Tfluid);
 
   // constitutive response: 'sig ( epsdot, dt )' as a function of the history
   T2s  stress(const T2s &epsdot, const double dt);
@@ -75,7 +72,7 @@ public:
 
 // ========================================= IMPLEMENTATION ========================================
 
-LinearElastic_ViscousFluid::LinearElastic_ViscousFluid(
+Material::Material(
   double K, double G, double sigy, double Tdamp, double Tfluid ) :
   m_K(K), m_G(G), m_sigy(sigy), m_Tdamp(Tdamp), m_Tfluid(Tfluid)
 {
@@ -96,7 +93,7 @@ LinearElastic_ViscousFluid::LinearElastic_ViscousFluid(
 
 // -------------------------------------------------------------------------------------------------
 
-void LinearElastic_ViscousFluid::increment()
+void Material::increment()
 {
   m_sigd_n = m_sigd;
   m_sigm_n = m_sigm;
@@ -105,14 +102,14 @@ void LinearElastic_ViscousFluid::increment()
 
 // -------------------------------------------------------------------------------------------------
 
-void LinearElastic_ViscousFluid::setNextSigy(double next)
+void Material::setNextSigy(double next)
 {
   m_sigy_next = next;
 }
 
 // -------------------------------------------------------------------------------------------------
 
-T2s LinearElastic_ViscousFluid::stress(const T2s &epsdot, double dt)
+T2s Material::stress(const T2s &epsdot, double dt)
 {
   double epsdotm,sigeq;
   T2s epsdotd;
@@ -153,6 +150,9 @@ T2s LinearElastic_ViscousFluid::stress(const T2s &epsdot, double dt)
   return m_sigd+m_sigm*I;
 }
 
-// -------------------------------------------------------------------------------------------------
+// =================================================================================================
 
-}
+} // namespace ..
+} // namespace ..
+} // namespace ..
+} // namespace ..

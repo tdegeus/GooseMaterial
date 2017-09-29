@@ -1,15 +1,6 @@
 /* ========================================== DESCRIPTION ==========================================
 
-(c - GPLv3) T.W.J. de Geus (Tom) | tom@geus.me | www.geus.me | github.com/tdegeus/GooseSolid
-
-Overview
---------
-
-class ViscoPlasticLinearElastic
-|- stress
-|- tangent_stress
-|- tangent
-|- increment
+(c - GPLv3) T.W.J. de Geus (Tom) | tom@geus.me | www.geus.me | github.com/tdegeus/GooseMaterial
 
 Description
 -----------
@@ -21,7 +12,7 @@ Suggested references
 --------------------
 
 *   The code + comments below.
-*   docs/ViscoPlasticLinearElastic/ViscoPlasticLinearElastic.pdf
+*   docs/Metal/LinearStrain/ElastoViscoPlastic/readme.pdf
 *   Former internal code: GooseFEM / mat3202
 
 ================================================================================================= */
@@ -30,16 +21,21 @@ Suggested references
 #include <tuple>
 #include <cppmat/tensor3.h>
 
+#warning "GooseMaterial/Metal/LinearStrain/ElastoViscoPlastic/Cartesian3d.h : first usage, careful check then remove this message"
+
+namespace GooseMaterial {
+namespace Metal {
+namespace LinearStrain {
+namespace ElastoViscoPlastic {
+
 using T2  = cppmat::tensor3_2 <double>;
 using T2s = cppmat::tensor3_2s<double>;
 using T2d = cppmat::tensor3_2d<double>;
 using T4  = cppmat::tensor3_4 <double>;
 
-namespace GooseSolid {
-
 // ============================================ OVERVIEW ===========================================
 
-class ViscoPlasticLinearElastic
+class Material
 {
 private:
 
@@ -64,9 +60,9 @@ private:
 public:
 
   // constructor / destructor
- ~ViscoPlasticLinearElastic(){};
-  ViscoPlasticLinearElastic(){};
-  ViscoPlasticLinearElastic(double K, double G, double sig0, double gamma0, double m=1.);
+ ~Material(){};
+  Material(){};
+  Material(double K, double G, double sig0, double gamma0, double m=1.);
 
   // compute stress(+tangent) at "eps", depending on the history stored in this class
   T2s                stress        (const T2s &eps, const double dt);
@@ -79,7 +75,7 @@ public:
 
 // ========================================= IMPLEMENTATION ========================================
 
-ViscoPlasticLinearElastic::ViscoPlasticLinearElastic(
+Material::Material(
   double K, double G, double sig0, double gamma0, double m ) :
   m_K(K), m_G(G), m_sig0(sig0), m_gamma0(gamma0), m_m(m)
 {
@@ -94,7 +90,7 @@ ViscoPlasticLinearElastic::ViscoPlasticLinearElastic(
 
 // -------------------------------------------------------------------------------------------------
 
-void ViscoPlasticLinearElastic::increment()
+void Material::increment()
 {
   m_eps_n  = m_eps ;
   m_epse_n = m_epse;
@@ -103,7 +99,7 @@ void ViscoPlasticLinearElastic::increment()
 
 // -------------------------------------------------------------------------------------------------
 
-T2s  ViscoPlasticLinearElastic::stress(const T2s &eps, const double dt)
+T2s  Material::stress(const T2s &eps, const double dt)
 {
   double epse_m,sig_m,sig_eq,dgamma;
   T2s epse_d,sig_d;
@@ -146,7 +142,7 @@ T2s  ViscoPlasticLinearElastic::stress(const T2s &eps, const double dt)
 
 // -------------------------------------------------------------------------------------------------
 
-std::tuple<T4,T2s> ViscoPlasticLinearElastic::tangent_stress(const T2s &eps, const double dt)
+std::tuple<T4,T2s> Material::tangent_stress(const T2s &eps, const double dt)
 {
   double epse_m,sig_m,sig_eq,dgamma;
   T2s epse_d,sig_d,sig,N;
@@ -215,7 +211,7 @@ std::tuple<T4,T2s> ViscoPlasticLinearElastic::tangent_stress(const T2s &eps, con
 
 // -------------------------------------------------------------------------------------------------
 
-double ViscoPlasticLinearElastic::plastic_multiplier(double sig_eq, double dt)
+double Material::plastic_multiplier(double sig_eq, double dt)
 {
   // linear stress sensitivity ( m == 1 )
   // ------------------------------------
@@ -260,6 +256,9 @@ double ViscoPlasticLinearElastic::plastic_multiplier(double sig_eq, double dt)
   }
 }
 
-// -------------------------------------------------------------------------------------------------
+// =================================================================================================
 
-}
+} // namespace ...
+} // namespace ...
+} // namespace ...
+} // namespace ...

@@ -1,7 +1,7 @@
 
 # define project information
-project(GooseSolid)
-set(GOOSESOLID_VERSION_NUMBER 0.0.2)
+project(GooseMaterial)
+set(GOOSEMATERIAL_VERSION_NUMBER 0.0.2)
 
 # required to specify the c++ standard
 cmake_minimum_required(VERSION 3.0)
@@ -17,55 +17,55 @@ if(NOT CMAKE_CXX_STANDARD OR CMAKE_CXX_STANDARD LESS 14)
   set(CMAKE_CXX_STANDARD 14)
 endif()
 
-# set paths where 'GooseSolid' will be installed
+# set paths where 'GooseMaterial' will be installed
 # - root
-set(GOOSESOLID_ROOT_DIR ${CMAKE_INSTALL_PREFIX})
+set(GOOSEMATERIAL_ROOT_DIR ${CMAKE_INSTALL_PREFIX})
 # - headers
-set(GOOSESOLID_INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}/${INCLUDE_INSTALL_DIR}")
+set(GOOSEMATERIAL_INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}/${INCLUDE_INSTALL_DIR}")
 # - headers
 set(INCLUDE_INSTALL_DIR
-  "${CMAKE_INSTALL_INCLUDEDIR}/GooseSolid"
-  CACHE PATH "Path, relative to CMAKE_PREFIX_PATH, where the GooseSolid header files are installed"
+  "${CMAKE_INSTALL_INCLUDEDIR}/GooseMaterial"
+  CACHE PATH "Path, relative to CMAKE_PREFIX_PATH, where the GooseMaterial header files are installed"
 )
 # - CMake configuration
 set(CMAKEPACKAGE_INSTALL_DIR
-  "${CMAKE_INSTALL_DATADIR}/GooseSolid"
-  CACHE PATH "Path where GooseSolidConfig.cmake is installed"
+  "${CMAKE_INSTALL_DATADIR}/GooseMaterial"
+  CACHE PATH "Path where GooseMaterialConfig.cmake is installed"
 )
 # - pkg-config
 set(PKGCONFIG_INSTALL_DIR
   "${CMAKE_INSTALL_DATADIR}/pkgconfig"
-  CACHE PATH "Path where GooseSolid.pc is installed"
+  CACHE PATH "Path where GooseMaterial.pc is installed"
 )
 
 # list all header files
-set(GOOSESOLID_HEADERS
-  GooseSolid/ElasticPlasticPotential.h
-  GooseSolid/LinearElastic.h
-  GooseSolid/LinearElastic_ViscousFluid.h
-  GooseSolid/Miscellaneous.h
-  GooseSolid/NonLinearElastic.h
-  GooseSolid/PlasticLinearElastic.h
-  GooseSolid/ViscoPlasticHardeningLinearElastic.h
-  GooseSolid/ViscoPlasticLinearElastic.h
+set(GOOSEMATERIAL_HEADERS
+  GooseMaterial/ElasticPlasticPotential.h
+  GooseMaterial/LinearElastic.h
+  GooseMaterial/LinearElastic_ViscousFluid.h
+  GooseMaterial/Miscellaneous.h
+  GooseMaterial/NonLinearElastic.h
+  GooseMaterial/PlasticLinearElastic.h
+  GooseMaterial/ViscoPlasticHardeningLinearElastic.h
+  GooseMaterial/ViscoPlasticLinearElastic.h
 )
 
 # Disable pkg-config for native Windows builds
 if(NOT WIN32 OR NOT CMAKE_HOST_SYSTEM_NAME MATCHES Windows)
-  option(GOOSESOLID_BUILD_PKGCONFIG "Build pkg-config .pc file for GooseSolid" ON)
+  option(GOOSEMATERIAL_BUILD_PKGCONFIG "Build pkg-config .pc file for GooseMaterial" ON)
 endif()
 
 # build pkg-config file -> fill in relevant values
-if(GOOSESOLID_BUILD_PKGCONFIG)
-  configure_file(GooseSolid.pc.in GooseSolid.pc @ONLY)
-  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/GooseSolid.pc DESTINATION ${PKGCONFIG_INSTALL_DIR})
+if(GOOSEMATERIAL_BUILD_PKGCONFIG)
+  configure_file(GooseMaterial.pc.in GooseMaterial.pc @ONLY)
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/GooseMaterial.pc DESTINATION ${PKGCONFIG_INSTALL_DIR})
 endif()
 
 # configure CMake file
 configure_package_config_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/GooseSolidConfig.cmake.in
-  ${CMAKE_CURRENT_BINARY_DIR}/GooseSolidConfig.cmake
-  PATH_VARS GOOSESOLID_INCLUDE_DIR GOOSESOLID_ROOT_DIR
+  ${CMAKE_CURRENT_SOURCE_DIR}/GooseMaterialConfig.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/GooseMaterialConfig.cmake
+  PATH_VARS GOOSEMATERIAL_INCLUDE_DIR GOOSEMATERIAL_ROOT_DIR
   INSTALL_DESTINATION ${CMAKEPACKAGE_INSTALL_DIR}
   NO_CHECK_REQUIRED_COMPONENTS_MACRO
 )
@@ -73,15 +73,15 @@ configure_package_config_file(
 # install
 # - CMake-file
 install(FILES
-  ${CMAKE_CURRENT_BINARY_DIR}/GooseSolidConfig.cmake
+  ${CMAKE_CURRENT_BINARY_DIR}/GooseMaterialConfig.cmake
   DESTINATION
   ${CMAKEPACKAGE_INSTALL_DIR}
 )
 # - headers
 install(FILES
-  ${CMAKE_CURRENT_SOURCE_DIR}/${GOOSESOLID_HEADERS}
+  ${CMAKE_CURRENT_SOURCE_DIR}/${GOOSEMATERIAL_HEADERS}
   DESTINATION
-  ${INCLUDE_INSTALL_DIR}/GooseSolid
+  ${INCLUDE_INSTALL_DIR}/GooseMaterial
 )
 
 # print information to screen

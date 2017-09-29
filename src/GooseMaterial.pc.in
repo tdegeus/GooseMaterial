@@ -1,9 +1,9 @@
 prefix=@CMAKE_INSTALL_PREFIX@
 exec_prefix=${prefix}
 
-Name: GooseSolid
+Name: GooseMaterial
 Description: Material models in C++
 Requires:
-Version: @GOOSESOLID_VERSION_NUMBER@
+Version: @GOOSEMATERIAL_VERSION_NUMBER@
 Libs:
 Cflags: -I${prefix}/@INCLUDE_INSTALL_DIR@

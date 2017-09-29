@@ -1,6 +1,6 @@
 /* ========================================== DESCRIPTION ==========================================
 
-(c - GPLv3) T.W.J. de Geus (Tom) | tom@geus.me | www.geus.me | github.com/tdegeus/GooseSolid
+(c - GPLv3) T.W.J. de Geus (Tom) | tom@geus.me | www.geus.me | github.com/tdegeus/GooseMaterial
 
 Description
 -----------
@@ -11,7 +11,7 @@ Suggested references
 --------------------
 
 *   The code + comments below.
-*   docs/ElasticPlasticPotential/ElasticPlasticPotential.pdf
+*   docs/AmorphousSolid/LinearStrain/ElastoPlastic/readme.pdf
 
 ================================================================================================= */
 
@@ -21,15 +21,20 @@ Suggested references
 #include <math.h>
 #include <cppmat/tensor3.h>
 
+#warning "GooseMaterial/AmorphousSolid/LinearStrain/ElastoPlastic/Cartesian3d.h : first usage, careful check then remove this message"
+
+namespace GooseMaterial {
+namespace AmorphousSolid {
+namespace LinearStrain {
+namespace ElastoPlastic {
+
 using T2  = cppmat::tensor3_2 <double>;
 using T2s = cppmat::tensor3_2s<double>;
 using T2d = cppmat::tensor3_2d<double>;
 
-namespace GooseSolid {
-
 // ============================================ OVERVIEW ===========================================
 
-class ElasticPlasticPotential
+class Material
 {
 private:
 
@@ -41,9 +46,9 @@ private:
 public:
 
   // constructor / destructor
- ~ElasticPlasticPotential(){};
-  ElasticPlasticPotential(){};
-  ElasticPlasticPotential(double K, double G,
+ ~Material(){};
+  Material(){};
+  Material(double K, double G,
     const std::vector<double> &epsy={}, bool init_elastic=true, bool smooth=true);
 
   // compute stress at "eps"
@@ -67,7 +72,7 @@ public:
 
 // ========================================= IMPLEMENTATION ========================================
 
-ElasticPlasticPotential::ElasticPlasticPotential(
+Material::Material(
   double K, double G, const std::vector<double> &epsy, bool init_elastic, bool smooth )
 {
   m_K      = K;
@@ -108,7 +113,7 @@ ElasticPlasticPotential::ElasticPlasticPotential(
 
 // -------------------------------------------------------------------------------------------------
 
-size_t ElasticPlasticPotential::find(double epseq)
+size_t Material::find(double epseq)
 {
   // check extremes
   if ( epseq < m_epsy.front() or epseq >= m_epsy.back() )
@@ -141,7 +146,7 @@ size_t ElasticPlasticPotential::find(double epseq)
 
 // -------------------------------------------------------------------------------------------------
 
-double ElasticPlasticPotential::eps_eq(const T2s &eps)
+double Material::eps_eq(const T2s &eps)
 {
   double epsm;
   T2s epsd;
@@ -160,14 +165,14 @@ double ElasticPlasticPotential::eps_eq(const T2s &eps)
 
 // -------------------------------------------------------------------------------------------------
 
-double ElasticPlasticPotential::sig_m(const T2s &sig)
+double Material::sig_m(const T2s &sig)
 {
   return sig.trace() / 3.;
 }
 
 // -------------------------------------------------------------------------------------------------
 
-double ElasticPlasticPotential::sig_eq(const T2s &sig)
+double Material::sig_eq(const T2s &sig)
 {
   double sigm;
   T2s sigd;
@@ -186,7 +191,7 @@ double ElasticPlasticPotential::sig_eq(const T2s &sig)
 
 // -------------------------------------------------------------------------------------------------
 
-double ElasticPlasticPotential::energy_eq(const T2s &eps)
+double Material::energy_eq(const T2s &eps)
 {
   double epsm,epseq;
   T2s epsd;
@@ -216,14 +221,14 @@ double ElasticPlasticPotential::energy_eq(const T2s &eps)
 
 // -------------------------------------------------------------------------------------------------
 
-double ElasticPlasticPotential::eps_y(size_t i)
+double Material::eps_y(size_t i)
 {
   return m_epsy[i];
 }
 
 // -------------------------------------------------------------------------------------------------
 
-T2s  ElasticPlasticPotential::stress(const T2s &eps)
+T2s  Material::stress(const T2s &eps)
 {
   double epsm,sigm,epseq;
   T2s epsd,sigd,sig;
@@ -260,6 +265,9 @@ T2s  ElasticPlasticPotential::stress(const T2s &eps)
   return sigm * I + sigd;
 }
 
-// -------------------------------------------------------------------------------------------------
+// =================================================================================================
 
-}
+} // namespace ...
+} // namespace ...
+} // namespace ...
+} // namespace ...
