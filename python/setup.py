@@ -1,6 +1,6 @@
 desc = '''
-GooseSolid is a C++ module, wrapped in Python, that provides several constitutive models for solids.
-It can be used for example in finite element programs (at the integration point level).
+GooseMaterial is a C++ module, wrapped in Python, that provides several constitutive models for
+solids. It can be used for example in finite element programs (at the integration point level).
 '''
 
 from setuptools import setup, Extension
@@ -10,11 +10,11 @@ import setuptools
 import pybind11
 import cppmat
 
-__version__ = '0.0.2'
+__version__ = '0.0.3'
 
 ext_modules = [
   Extension(
-    'GooseSolid',
+    'GooseMaterial',
     ['python_interface.cpp'],
     include_dirs=[
       pybind11.get_include(False),
@@ -27,7 +27,7 @@ ext_modules = [
 ]
 
 setup(
-  name               = 'GooseSolid',
+  name               = 'GooseMaterial',
   description        = 'Material models in C++ (and Python)',
   long_description   = desc,
   keywords           = 'FEM, Mechanics, C++, C++11, Python bindings, pybind11',
@@ -35,7 +35,7 @@ setup(
   license            = 'GPLv3',
   author             = 'Tom de Geus',
   author_email       = 'tom@geus.me',
-  url                = 'https://github.com/tdegeus/GooseSolid',
+  url                = 'https://github.com/tdegeus/GooseMaterial',
   ext_modules        = ext_modules,
   extra_compile_args = ["-DNDEBUG"], # switch off assertions
   install_requires   = ['pybind11>=2.2.0','cppmat>=0.2.10','goosempl>=0.1.3'],

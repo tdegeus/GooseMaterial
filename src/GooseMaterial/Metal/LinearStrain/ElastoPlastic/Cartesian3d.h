@@ -28,6 +28,7 @@ namespace GooseMaterial {
 namespace Metal {
 namespace LinearStrain {
 namespace ElastoPlastic {
+namespace Cartesian3d {
 
 using T2  = cppmat::tensor3_2 <double>;
 using T2s = cppmat::tensor3_2s<double>;
@@ -274,6 +275,7 @@ std::tuple<double,double> Material::plastic_multiplier(double phi, double sig_eq
 
 // =================================================================================================
 
+} // namespace ...
 } // namespace ...
 } // namespace ...
 } // namespace ...

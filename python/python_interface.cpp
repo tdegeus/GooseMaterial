@@ -2,41 +2,134 @@
 #include <cppmat/tensor3.h>
 #include <cppmat/pybind11_tensor3.h>
 
-#include "../src/GooseSolid/LinearElastic.h"
-#include "../src/GooseSolid/NonLinearElastic.h"
-#include "../src/GooseSolid/PlasticLinearElastic.h"
-#include "../src/GooseSolid/ViscoPlasticLinearElastic.h"
-#include "../src/GooseSolid/ViscoPlasticHardeningLinearElastic.h"
-#include "../src/GooseSolid/ElasticPlasticPotential.h"
-#include "../src/GooseSolid/LinearElastic_ViscousFluid.h"
-#include "../src/GooseSolid/Miscellaneous.h"
+#include "../src/GooseMaterial/AmorphousSolid/LinearStrain/ElasticLiquid/Cartesian3d.h"
+#include "../src/GooseMaterial/AmorphousSolid/LinearStrain/ElastoPlastic/Cartesian3d.h"
+#include "../src/GooseMaterial/Metal/LinearStrain/Elastic/Cartesian3d.h"
+#include "../src/GooseMaterial/Metal/LinearStrain/Elastic/miscellaneous.h"
+#include "../src/GooseMaterial/Metal/LinearStrain/ElastoPlastic/Cartesian3d.h"
+#include "../src/GooseMaterial/Metal/LinearStrain/ElastoViscoPlastic/Cartesian3d.h"
+#include "../src/GooseMaterial/Metal/LinearStrain/ElastoViscoPlasticHardening/Cartesian3d.h"
+#include "../src/GooseMaterial/Metal/LinearStrain/NonLinearElastic/Cartesian3d.h"
 
 namespace py = pybind11;
-namespace GS = GooseSolid;
 
-PYBIND11_MODULE(GooseSolid, m)
+PYBIND11_MODULE(GooseMaterial, m)
 {
 
 m.doc() = "Library with material models";
 
-// -------------------------------------------------------------------------------------------------
+py::module Metal = m.def_submodule(
+  "Metal",
+  "Material models for metal (etc.)"
+);
 
-py::class_<GS::LinearElastic>(m,"LinearElastic")
+py::module MetalLinearStrain = Metal.def_submodule(
+  "LinearStrain",
+  "Material models based on the linear strain tensor"
+);
+
+py::module MetalLinearStrainElastic = MetalLinearStrain.def_submodule(
+  "Elastic",
+  "Elastic material model"
+);
+
+py::module MetalLinearStrainElasticCartesian3d = MetalLinearStrainElastic.def_submodule(
+  "Cartesian3d",
+  "Defined on a 3d Cartesian coordinate system"
+);
+
+py::module MetalLinearStrainNonLinearElastic = MetalLinearStrain.def_submodule(
+  "NonLinearElastic",
+  "Non-linear elastic material model"
+);
+
+py::module MetalLinearStrainNonLinearElasticCartesian3d = MetalLinearStrainNonLinearElastic.def_submodule(
+  "Cartesian3d",
+  "Defined on a 3d Cartesian coordinate system"
+);
+
+py::module MetalLinearStrainElastoPlastic = MetalLinearStrain.def_submodule(
+  "ElastoPlastic",
+  "Elasto-plastic material model"
+);
+
+py::module MetalLinearStrainElastoPlasticCartesian3d = MetalLinearStrainElastoPlastic.def_submodule(
+  "Cartesian3d",
+  "Defined on a 3d Cartesian coordinate system"
+);
+
+py::module MetalLinearStrainElastoViscoPlastic = MetalLinearStrain.def_submodule(
+  "ElastoViscoPlastic",
+  "Elasto-visco-plastic material model"
+);
+
+py::module MetalLinearStrainElastoViscoPlasticCartesian3d = MetalLinearStrainElastoViscoPlastic.def_submodule(
+  "Cartesian3d",
+  "Defined on a 3d Cartesian coordinate system"
+);
+
+py::module MetalLinearStrainElastoViscoPlasticHardening = MetalLinearStrain.def_submodule(
+  "ElastoViscoPlasticHardening",
+  "Elasto-visco-plastic material model, with hardening"
+);
+
+py::module MetalLinearStrainElastoViscoPlasticHardeningCartesian3d = MetalLinearStrainElastoViscoPlasticHardening.def_submodule(
+  "Cartesian3d",
+  "Defined on a 3d Cartesian coordinate system"
+);
+
+py::module AmorphousSolid = m.def_submodule(
+  "AmorphousSolid",
+  "Material models for amorphous solids"
+);
+
+py::module AmorphousSolidLinearStrain = AmorphousSolid.def_submodule(
+  "LinearStrain",
+  "Material models based on the linear strain tensor"
+);
+
+py::module AmorphousSolidLinearStrainElasticLiquid = AmorphousSolidLinearStrain.def_submodule(
+  "ElasticLiquid",
+  "Elastic-Liquid material model"
+);
+
+py::module AmorphousSolidLinearStrainElasticLiquidCartesian3d = AmorphousSolidLinearStrainElasticLiquid.def_submodule(
+  "Cartesian3d",
+  "Defined on a 3d Cartesian coordinate system"
+);
+
+py::module AmorphousSolidLinearStrainElastoPlastic = AmorphousSolidLinearStrain.def_submodule(
+  "ElastoPlastic",
+  "Elasto-plastic material model"
+);
+
+py::module AmorphousSolidLinearStrainElastoPlasticCartesian3d = AmorphousSolidLinearStrainElastoPlastic.def_submodule(
+  "Cartesian3d",
+  "Defined on a 3d Cartesian coordinate system"
+);
+
+// =================================================================================================
+
+py::class_<GooseMaterial::Metal::LinearStrain::Elastic::Cartesian3d::Material>(MetalLinearStrainElasticCartesian3d,"Material")
 
 .def(py::init<double,double>(),
   py::arg("K"     ),
   py::arg("G"     )
 )
 
-.def("stress"        , &GS::LinearElastic::stress        , py::arg("eps"))
-.def("tangent_stress", &GS::LinearElastic::tangent_stress, py::arg("eps"))
+.def("stress"        , &GooseMaterial::Metal::LinearStrain::Elastic::Cartesian3d::Material::stress        , py::arg("eps"))
+.def("tangent_stress", &GooseMaterial::Metal::LinearStrain::Elastic::Cartesian3d::Material::tangent_stress, py::arg("eps"))
 
-.def("__repr__",[](const GS::LinearElastic &a)
-  {return "<GooseSolid.LinearElastic>";});
+.def("__repr__",[](const GooseMaterial::Metal::LinearStrain::Elastic::Cartesian3d::Material &a)
+  {return "<GooseMaterial.Metal.LinearStrain.Elastic.Cartesian3d.Material>";});
 
 // -------------------------------------------------------------------------------------------------
 
-py::class_<GS::NonLinearElastic>(m,"NonLinearElastic")
+MetalLinearStrainElastic.def("ConvertParameters",&GooseMaterial::Metal::LinearStrain::Elastic::ConvertParameters);
+
+// =================================================================================================
+
+py::class_<GooseMaterial::Metal::LinearStrain::NonLinearElastic::Cartesian3d::Material>(m,"Material")
 
 .def(py::init<double,double,double,double>(),
   py::arg("K"     ),
@@ -45,15 +138,15 @@ py::class_<GS::NonLinearElastic>(m,"NonLinearElastic")
   py::arg("n"     )=1.
 )
 
-.def("stress"        , &GS::NonLinearElastic::stress        , py::arg("eps"))
-.def("tangent_stress", &GS::NonLinearElastic::tangent_stress, py::arg("eps"))
+.def("stress"        , &GooseMaterial::Metal::LinearStrain::NonLinearElastic::Cartesian3d::Material::stress        , py::arg("eps"))
+.def("tangent_stress", &GooseMaterial::Metal::LinearStrain::NonLinearElastic::Cartesian3d::Material::tangent_stress, py::arg("eps"))
 
-.def("__repr__",[](const GS::NonLinearElastic &a)
-  {return "<GooseSolid.NonLinearElastic>";});
+.def("__repr__",[](const GooseMaterial::Metal::LinearStrain::NonLinearElastic::Cartesian3d::Material &a)
+  {return "<GooseMaterial.Metal.LinearStrain.Elastic.Cartesian3d.Material>";});
 
-// -------------------------------------------------------------------------------------------------
+// =================================================================================================
 
-py::class_<GS::PlasticLinearElastic>(m,"PlasticLinearElastic")
+py::class_<GooseMaterial::Metal::LinearStrain::ElastoPlastic::Cartesian3d::Material>(m,"Material")
 
 .def(py::init<double,double,double,double,double>(),
   py::arg("K"     ),
@@ -63,16 +156,16 @@ py::class_<GS::PlasticLinearElastic>(m,"PlasticLinearElastic")
   py::arg("m"     ) = 1.0
 )
 
-.def("stress"        , &GS::PlasticLinearElastic::stress        , py::arg("eps"))
-.def("tangent_stress", &GS::PlasticLinearElastic::tangent_stress, py::arg("eps"))
-.def("increment"     , &GS::PlasticLinearElastic::increment                     )
+.def("stress"        , &GooseMaterial::Metal::LinearStrain::ElastoPlastic::Cartesian3d::Material::stress        , py::arg("eps"))
+.def("tangent_stress", &GooseMaterial::Metal::LinearStrain::ElastoPlastic::Cartesian3d::Material::tangent_stress, py::arg("eps"))
+.def("increment"     , &GooseMaterial::Metal::LinearStrain::ElastoPlastic::Cartesian3d::Material::increment                     )
 
-.def("__repr__",[](const GS::PlasticLinearElastic &a)
-  {return "<GooseSolid.PlasticLinearElastic>";});
+.def("__repr__",[](const GooseMaterial::Metal::LinearStrain::ElastoPlastic::Cartesian3d::Material &a)
+  {return "<GooseMaterial.Metal.LinearStrain.ElastoPlastic.Cartesian3d.Material>";});
 
-// -------------------------------------------------------------------------------------------------
+// =================================================================================================
 
-py::class_<GS::ViscoPlasticLinearElastic>(m,"ViscoPlasticLinearElastic")
+py::class_<GooseMaterial::Metal::LinearStrain::ElastoViscoPlastic::Cartesian3d::Material>(m,"Material")
 
 .def(py::init<double,double,double,double,double>(),
   py::arg("K"     ),
@@ -82,16 +175,16 @@ py::class_<GS::ViscoPlasticLinearElastic>(m,"ViscoPlasticLinearElastic")
   py::arg("m"     ) = 1.0
 )
 
-.def("stress"        , &GS::ViscoPlasticLinearElastic::stress        , py::arg("eps"), py::arg("dt"))
-.def("tangent_stress", &GS::ViscoPlasticLinearElastic::tangent_stress, py::arg("eps"), py::arg("dt"))
-.def("increment"     , &GS::ViscoPlasticLinearElastic::increment                                    )
+.def("stress"        , &GooseMaterial::Metal::LinearStrain::ElastoViscoPlastic::Cartesian3d::Material::stress        , py::arg("eps"), py::arg("dt"))
+.def("tangent_stress", &GooseMaterial::Metal::LinearStrain::ElastoViscoPlastic::Cartesian3d::Material::tangent_stress, py::arg("eps"), py::arg("dt"))
+.def("increment"     , &GooseMaterial::Metal::LinearStrain::ElastoViscoPlastic::Cartesian3d::Material::increment                                    )
 
-.def("__repr__",[](const GS::ViscoPlasticLinearElastic &a)
-  {return "<GooseSolid.ViscoPlasticLinearElastic>";});
+.def("__repr__",[](const GooseMaterial::Metal::LinearStrain::ElastoViscoPlastic::Cartesian3d::Material &a)
+  {return "<GooseMaterial.Metal.LinearStrain.ElastoViscoPlastic.Cartesian3d.Material>";});
 
-// -------------------------------------------------------------------------------------------------
+// =================================================================================================
 
-py::class_<GS::ViscoPlasticHardeningLinearElastic>(m,"ViscoPlasticHardeningLinearElastic")
+py::class_<GooseMaterial::Metal::LinearStrain::ElastoViscoPlasticHardening::Cartesian3d::Material>(m,"Material")
 
 .def(py::init<double,double,double,double,double,double,double>(),
   py::arg("K"     ),
@@ -103,17 +196,17 @@ py::class_<GS::ViscoPlasticHardeningLinearElastic>(m,"ViscoPlasticHardeningLinea
   py::arg("m"     ) = 1.0
 )
 
-.def("stress"        , &GS::ViscoPlasticHardeningLinearElastic::stress        , py::arg("eps"), py::arg("dt"))
-.def("tangent_stress", &GS::ViscoPlasticHardeningLinearElastic::tangent_stress, py::arg("eps"), py::arg("dt"))
-.def("increment"     , &GS::ViscoPlasticHardeningLinearElastic::increment                                    )
+.def("stress"        , &GooseMaterial::Metal::LinearStrain::ElastoViscoPlasticHardening::Cartesian3d::Material::stress        , py::arg("eps"), py::arg("dt"))
+.def("tangent_stress", &GooseMaterial::Metal::LinearStrain::ElastoViscoPlasticHardening::Cartesian3d::Material::tangent_stress, py::arg("eps"), py::arg("dt"))
+.def("increment"     , &GooseMaterial::Metal::LinearStrain::ElastoViscoPlasticHardening::Cartesian3d::Material::increment                                    )
 
-.def("__repr__",[](const GS::ViscoPlasticHardeningLinearElastic &a)
-  {return "<GooseSolid.ViscoPlasticHardeningLinearElastic>";});
+.def("__repr__",[](const GooseMaterial::Metal::LinearStrain::ElastoViscoPlasticHardening::Cartesian3d::Material &a)
+  {return "<GooseMaterial.Metal.LinearStrain.ElastoViscoPlasticHardening.Cartesian3d.Material>";});
 
 
-// -------------------------------------------------------------------------------------------------
+// =================================================================================================
 
-py::class_<GS::LinearElastic_ViscousFluid>(m,"LinearElastic_ViscousFluid")
+py::class_<GooseMaterial::AmorphousSolid::LinearStrain::ElasticLiquid::Cartesian3d::Material>(m,"Material")
 
 .def(py::init<double,double,double,double,double>(),
   py::arg("K"     ),
@@ -123,16 +216,16 @@ py::class_<GS::LinearElastic_ViscousFluid>(m,"LinearElastic_ViscousFluid")
   py::arg("Tfluid")
 )
 
-.def("stress"     , &GS::LinearElastic_ViscousFluid::stress     , py::arg("epsdot"), py::arg("dt"))
-.def("increment"  , &GS::LinearElastic_ViscousFluid::increment                                    )
-.def("setNextSigy", &GS::LinearElastic_ViscousFluid::setNextSigy, py::arg("sigy")                 )
+.def("stress"     , &GooseMaterial::AmorphousSolid::LinearStrain::ElasticLiquid::Cartesian3d::Material::stress     , py::arg("epsdot"), py::arg("dt"))
+.def("increment"  , &GooseMaterial::AmorphousSolid::LinearStrain::ElasticLiquid::Cartesian3d::Material::increment                                    )
+.def("setNextSigy", &GooseMaterial::AmorphousSolid::LinearStrain::ElasticLiquid::Cartesian3d::Material::setNextSigy, py::arg("sigy")                 )
 
-.def("__repr__",[](const GS::LinearElastic_ViscousFluid &a)
-  {return "<GooseSolid.LinearElastic_ViscousFluid>";});
+.def("__repr__",[](const GooseMaterial::AmorphousSolid::LinearStrain::ElasticLiquid::Cartesian3d::Material &a)
+  {return "<GooseMaterial.AmorphousSolid.LinearStrain.ElasticLiquid.Cartesian3d.Material>";});
 
-// -------------------------------------------------------------------------------------------------
+// =================================================================================================
 
-py::class_<GS::ElasticPlasticPotential>(m,"ElasticPlasticPotential")
+py::class_<GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3d::Material>(m,"Material")
 
 .def(py::init<double,double,const std::vector<double> &,bool,bool>(),
   py::arg("K"           ),
@@ -142,16 +235,12 @@ py::class_<GS::ElasticPlasticPotential>(m,"ElasticPlasticPotential")
   py::arg("smooth"      )=true
 )
 
-.def("stress"   , &GS::ElasticPlasticPotential::stress   , py::arg("eps"))
-.def("energy_eq", &GS::ElasticPlasticPotential::energy_eq, py::arg("eps"))
+.def("stress"   , &GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3d::Material::stress   , py::arg("eps"))
+.def("energy_eq", &GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3d::Material::energy_eq, py::arg("eps"))
 
-.def("__repr__",[](const GS::ElasticPlasticPotential &a)
-  {return "<GooseSolid.ElasticPlasticPotential>";});
+.def("__repr__",[](const GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3d::Material &a)
+  {return "<GooseMaterial.AmorphousSolid.LinearStrain.Elastic.Cartesian3d.Material>";});
 
-// -------------------------------------------------------------------------------------------------
-
-m.def("ConvertElasticParameters",&GS::ConvertElasticParameters);
-
-// -------------------------------------------------------------------------------------------------
+// =================================================================================================
 
 } // PYBIND11_PLUGIN

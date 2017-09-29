@@ -26,6 +26,7 @@ namespace GooseMaterial {
 namespace Metal {
 namespace LinearStrain {
 namespace NonLinearElastic {
+namespace Cartesian3d {
 
 using T2  = cppmat::tensor3_2 <double>;
 using T2s = cppmat::tensor3_2s<double>;
@@ -146,6 +147,7 @@ std::tuple<T4,T2s> Material::tangent_stress(const T2s &eps)
 
 // =================================================================================================
 
+} // namespace ...
 } // namespace ...
 } // namespace ...
 } // namespace ...

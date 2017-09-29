@@ -40,14 +40,14 @@ set(PKGCONFIG_INSTALL_DIR
 
 # list all header files
 set(GOOSEMATERIAL_HEADERS
-  GooseMaterial/ElasticPlasticPotential.h
-  GooseMaterial/LinearElastic.h
-  GooseMaterial/LinearElastic_ViscousFluid.h
-  GooseMaterial/Miscellaneous.h
-  GooseMaterial/NonLinearElastic.h
-  GooseMaterial/PlasticLinearElastic.h
-  GooseMaterial/ViscoPlasticHardeningLinearElastic.h
-  GooseMaterial/ViscoPlasticLinearElastic.h
+  GooseMaterial/AmorphousSolid/LinearStrain/ElasticLiquid/Cartesian3d.h
+  GooseMaterial/AmorphousSolid/LinearStrain/ElastoPlastic/Cartesian3d.h
+  GooseMaterial/Metal/LinearStrain/Elastic/Cartesian3d.h
+  GooseMaterial/Metal/LinearStrain/Elastic/miscellaneous.h
+  GooseMaterial/Metal/LinearStrain/ElastoPlastic/Cartesian3d.h
+  GooseMaterial/Metal/LinearStrain/ElastoViscoPlastic/Cartesian3d.h
+  GooseMaterial/Metal/LinearStrain/ElastoViscoPlasticHardening/Cartesian3d.h
+  GooseMaterial/Metal/LinearStrain/NonLinearElastic/Cartesian3d.h
 )
 
 # Disable pkg-config for native Windows builds
