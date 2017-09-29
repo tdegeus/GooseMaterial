@@ -2,14 +2,14 @@
 #include <cppmat/tensor3.h>
 #include <cppmat/pybind11_tensor3.h>
 
-#include "include/GooseSolid/LinearElastic.h"
-#include "include/GooseSolid/NonLinearElastic.h"
-#include "include/GooseSolid/PlasticLinearElastic.h"
-#include "include/GooseSolid/ViscoPlasticLinearElastic.h"
-#include "include/GooseSolid/ViscoPlasticHardeningLinearElastic.h"
-#include "include/GooseSolid/ElasticPlasticPotential.h"
-#include "include/GooseSolid/LinearElastic_ViscousFluid.h"
-#include "include/GooseSolid/Miscellaneous.h"
+#include "../src/GooseSolid/LinearElastic.h"
+#include "../src/GooseSolid/NonLinearElastic.h"
+#include "../src/GooseSolid/PlasticLinearElastic.h"
+#include "../src/GooseSolid/ViscoPlasticLinearElastic.h"
+#include "../src/GooseSolid/ViscoPlasticHardeningLinearElastic.h"
+#include "../src/GooseSolid/ElasticPlasticPotential.h"
+#include "../src/GooseSolid/LinearElastic_ViscousFluid.h"
+#include "../src/GooseSolid/Miscellaneous.h"
 
 namespace py = pybind11;
 namespace GS = GooseSolid;

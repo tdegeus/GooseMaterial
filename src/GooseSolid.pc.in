@@ -4,6 +4,6 @@ exec_prefix=${prefix}
 Name: GooseSolid
 Description: Material models in C++
 Requires:
-Version: 0.0.1
+Version: @CPPMAT_VERSION_NUMBER@
 Libs:
-Cflags: -I${prefix}/include
+Cflags: -I${prefix}/@INCLUDE_INSTALL_DIR@
