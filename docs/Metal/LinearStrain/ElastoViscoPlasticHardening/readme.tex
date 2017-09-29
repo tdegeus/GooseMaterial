@@ -2,7 +2,7 @@
 \documentclass[times,namecite]{goose-article}
 
 \title{%
-  GooseSolid/ViscoPlasticLinearElastic
+  GooseMaterial/Metal/LinearStrain/ElastoViscoPlasticHardening
 }
 % Former GooseFEM mat3202
 
@@ -14,13 +14,13 @@
   \hspace{1mm}--\hspace{1mm} %
   \href{http://www.geus.me}{www.geus.me}%
   \hspace{1mm}--\hspace{1mm} %
-  \href{https://github.com/tdegeus/GooseSolid}{https://github.com/tdegeus/GooseSolid}%
+  \href{https://github.com/tdegeus/GooseMaterial}{https://github.com/tdegeus/GooseMaterial}%
 }
 
 \hypersetup{pdfauthor={T.W.J. de Geus}}
 
 \header{%
-  \href{https://github.com/tdegeus/GooseSolid}{GooseSolid/ViscoPlasticLinearElastic}%
+  \href{https://github.com/tdegeus/GooseMaterial}{GooseMaterial/Metal/LinearStrain/ElastoViscoPlasticHardening} -- \href{http://www.geus.me}{T.W.J.\ de Geus}%
 }
 
 \newcommand\leftstar[1]{\hspace*{-.3em}~^\star\!#1}
@@ -30,7 +30,7 @@
 \maketitle
 
 \begin{abstract}
-History dependent visco-plastic material. This corresponds to a linear relationship between the Cauchy stress $\bm{\sigma}$ and the elastic strain $\bm{\varepsilon}_\mathrm{e}$. The elastic strain depends on the strain $\bm{\varepsilon}$ (which is the symmetric part of the displacement gradient), and the history.
+History dependent elasto-visco-plastic material. The elasticity is governed by a linear relationship between the Cauchy stress $\bm{\sigma}$ and the elastic strain $\bm{\varepsilon}_\mathrm{e}$. The material deforms elastically up to a certain yield stress (which hardens due to plasticity through a power-law). Thereafter the material deforms through a combination of elasticity and plasticity. The elastic strain depends on the strain $\bm{\varepsilon}$ (which is the symmetric part of the displacement gradient), and the history.
 
 The model is implemented in 3-D, hence it can directly be used for either 3-D or 2-D plane strain problems.
 \end{abstract}
@@ -43,7 +43,7 @@ The model is implemented in 3-D, hence it can directly be used for either 3-D or
 \vfill\newpage
 \section{Constitutive model}
 
-The model consists of the following ingredients:
+The model consists of the following ingredients \citep[][Chapter 11]{DeSouzaNeto2008}. To start it might be a good idea to study the one-dimensional equivalent, for completeness listed in Appendix~\ref{sec:1D}.
 %
 \begin{enumerate}[(i)]
 %
@@ -65,6 +65,18 @@ wherein $\mathbb{C}_\mathrm{e}$ is the elastic stiffness, which reads:
 \end{align}
 with $K$ and $G$ the bulk and shear modulus respectively. See Appendix~\ref{sec:nomenclature} for nomenclature.
 %
+\item The elastic domain is bounded by the following yield function
+\begin{equation}
+  \Phi( \bm{\sigma} , \varepsilon_\mathrm{p} )
+  =
+  \sigma_\mathrm{eq} - \sigma_\mathrm{y} (\varepsilon_\mathrm{p}) \leq 0
+\end{equation}
+where $\sigma_\mathrm{eq}$ the equivalent stress (see Appendix~\ref{sec:ap:stress}), and $\sigma_\mathrm{y}$ the yield stress which is a non-linear function of the equivalent plastic strain $\varepsilon_\mathrm{p}$. The implementation is based on power-law hardening:
+\begin{equation}
+  \sigma_\mathrm{y} ( \varepsilon_\mathrm{p} ) = \sigma_\mathrm{y0} + H \varepsilon_\mathrm{p}^m
+\end{equation}
+where $\sigma_\mathrm{y0}$ is the initial yield stress, $H$ is the hardening modulus, and $m$ is the hardening exponent.
+%
 \item Plasticity is governed by Norton's flow rule:
 \begin{equation}\label{eq:model:epdot}
   \dot{\bm{\varepsilon}}_\mathrm{p}
@@ -74,18 +86,22 @@ with $K$ and $G$ the bulk and shear modulus respectively. See Appendix~\ref{sec:
 \end{equation}
 wherein $\dot{\bm{\varepsilon}}_\mathrm{p}$ is the plastic strain rate. The ratio of the stress deviator, $\bm{\sigma}_\mathrm{d}$, and it's equivalent value, $\sigma_\mathrm{eq}$, determines the direction of plastic flow (the symbol $\bm{N}$ is used to emphasize that only determines a direction, not an amplitude). The evolution of the plastic multiplier, $\dot{\gamma}$, is finally defined as follows:
 \begin{equation}\label{eq:model:gammadot}
-  \dot{\gamma}
+  \frac{ \dot{\gamma} }{ \dot{\gamma}_0 }
   =
-  \dot{\gamma}_0 \left( \frac{\sigma_\mathrm{eq}}{\sigma_0} \right)^{\frac{1}{m}}
+  \left( \frac{\sigma_\mathrm{eq}}{\sigma_\mathrm{y}} \right)^{1/n} - 1
 \end{equation}
-wherein $\dot{\gamma}_0$, $\sigma_0$, and the exponent $m$ are material parameters.
-%
-\end{enumerate}
+wherein $\dot{\gamma}_0$ and the exponent $n$ are material parameters (in addition of course to the initial yield stress $\sigma_\mathrm{y0}$, the hardening modulus $H$, and the hardening exponent $m$, contained in the yield stress $\sigma_\mathrm{y}$). Note that when $\Phi \leq 0$ then $\dot{\gamma} = 0$.
 
-It can furthermore be useful to define an equivalent plastic strain. Following the definition in \eqref{eq:model:epdot}, it is defined as follows:
+Following the definition in \eqref{eq:model:epdot}, the equivalent plastic strain can be simply defined as follows:
 \begin{equation}
   \varepsilon_\mathrm{p} = \int_0^t \dot{\gamma} \; \mathrm{d}\tau
 \end{equation}
+which corresponds to
+\begin{equation}
+  \dot{\varepsilon}_\mathrm{p} = \dot{\gamma}
+\end{equation}
+%
+\end{enumerate}
 
 \vfill\newpage
 \section{Numerical implementation: implicit}
@@ -108,16 +124,61 @@ and the state variables, the \emph{elastic trial state} reads:
   \leftstar{\bm{\sigma}}
   &=
   \mathbb{C}_\mathrm{e} : \leftstar{\bm{\varepsilon}}_\mathrm{e}
+  \\[1ex]
+  \leftstar{\varepsilon}_\mathrm{p}
+  &=
+  \varepsilon_\mathrm{p}^{(t)}
+  \\[1ex]
+  \leftstar{\Phi}
+  &= \Phi \big( \leftstar{\bm{\sigma}} , \leftstar{\varepsilon}_\mathrm{p} \big)
+   = \leftstar{\sigma}_\mathrm{eq} - \sigma_\mathrm{y} \big( \leftstar{\varepsilon}_\mathrm{p} \big)
 \end{align}
 where the notation $\leftstar{(.)}$ has been used to denote a trial value for $(.)^{(t + \Delta t)}$.
 
-\subsection{Return-map}
+\subsection{Trial state: elastic}
 
-A return-map is used to return the trial state back to a physically admissible state (for which the plasticity has evolved). It follows from
+If the trial state is within or on the (current) yield surface, i.e.\ when
 \begin{equation}
-\bm{\varepsilon}_\mathrm{e}^{(t+\Delta t)}
-  = \leftstar\bm{\varepsilon}_\mathrm{e}
-  - \Delta \gamma \; \bm{N}^{(t+\Delta t)}
+  \leftstar{\Phi} \leq 0
+\end{equation}
+the trial state coincides with the actual state, and:
+\begin{align}
+  \bm{\varepsilon}_\mathrm{e}^{(t+\Delta t)}
+  &= \leftstar{\bm{\varepsilon}}_\mathrm{e}
+   = \bm{\varepsilon}_\mathrm{e}^{(t)} + \bm{\varepsilon}_\Delta
+  \\[1ex]
+  \varepsilon_\mathrm{p}^{(t+\Delta t)}
+  &= \leftstar{\varepsilon}_\mathrm{p}
+   = \varepsilon_\mathrm{p}^{(t)}
+  \\[1ex]
+  \bm{\sigma}^{(t+\Delta t)}
+  &= \leftstar{\bm{\sigma}}
+\end{align}
+
+\subsection{Trial state elasto-plastic: return-map}
+
+If the trial state is outside the (current) yield surface, i.e.\ when
+\begin{equation}
+  \leftstar{\Phi} > 0
+\end{equation}
+plastic flow occurs in the increment. A return-map is needed to return to the admissible state. It has to satisfy the following system of equations:
+\begin{equation}
+\begin{cases}
+  \;
+  \bm{\varepsilon}_\mathrm{e}^{(t+\Delta t)}
+  &= \leftstar\bm{\varepsilon}_\mathrm{e}
+   - \Delta \gamma \; \bm{N}^{(t+\Delta t)}
+  \\[1ex]
+  \;
+  \varepsilon_\mathrm{p}^{(t+\Delta t)}
+  &= \varepsilon_\mathrm{p}^{(t)} + \Delta \gamma
+  \\[1ex]
+  \;
+  \Phi^{(t+\Delta t)}
+  &= \sigma_\mathrm{eq}^{(t+\Delta t)}
+   - \sigma_\mathrm{y} \big( \varepsilon_\mathrm{p}^{(t)} + \Delta\gamma \big)
+   = 0
+\end{cases}
 \end{equation}
 
 This can be reduced by using that
@@ -151,93 +212,22 @@ from which it also follows that
 \end{equation}
 Substitution into \eqref{eq:model:gammadot} yields:
 \begin{equation}\label{eq:return:gammadot}
-  \Delta \gamma
-  =
-  \dot{\gamma}_0 \Delta t \left(
-    \frac{ \leftstar{\sigma_\mathrm{eq}} - 3 G \Delta \gamma }{ \sigma_0 }
-  \right)^{\frac{1}{m}}
-\end{equation}
-which has to be solved for $\Delta \gamma$.
-
-\subsubsection{Special case $m = 1$}
-
-For the special case that $m = 1$, \eqref{eq:return:gammadot} can be solved in closed form. Its solution reads
-\begin{equation}
-\Delta \gamma =
-\leftstar{\sigma}_\mathrm{eq} /
-\left(
-  3 G + \frac{\sigma_0}{\dot{\gamma}_0 \Delta t}
-\right)
-\end{equation}
-
-\subsubsection{Solution using Newton-Raphson}
-
-If $m \neq 1$, \eqref{eq:return:gammadot} can only be solved numerically. To this end Newton-Raphson is used. First, \eqref{eq:return:gammadot} is rewritten in residual form:
-\begin{equation}
-  R ( \Delta \gamma )
-  =
-  \Delta \gamma - \dot{\gamma}_0 \Delta t
+  \frac{ \Delta \gamma }{ \Delta t \; \dot{\gamma}_0 } + 1 =
   \left(
     \frac{
-      \leftstar{\sigma}_\mathrm{eq} - 3 G \Delta \gamma
+      \leftstar{\sigma}_\mathrm{eq} - 3 G \; \Delta \gamma
     }{
-      \sigma_0
+      \sigma_\mathrm{y}( \varepsilon_\mathrm{p}^{(t)} + \Delta \gamma )
     }
-  \right)^{\frac{1}{m}}
-  =
-  0
+  \right)^{1/n}
 \end{equation}
-Its derivative then trivially follows
-\begin{equation}
-  \frac{\partial R \hfill}{\partial \Delta \gamma \hfill} =
-  1 + \frac{ 3 G \dot{\gamma}_0 \Delta t }{m}
-  \left(
-    \frac{
-      \leftstar{\sigma}_\mathrm{eq} - 3 G \Delta \gamma
-    }{
-      \sigma_0
-    }
-  \right)^{\frac{1}{m}-1}
+which can be re-arranged into a numerical more stable form:
+\begin{equation}\label{eq:return:gammadot2}
+  \left( \leftstar{\sigma}_\mathrm{eq} - 3 G \; \Delta \gamma \right)
+  \left( \frac{\Delta t}{ \Delta \gamma / \dot{\gamma}_0 + \Delta t} \right)^n
+  - \sigma_\mathrm{y}( \varepsilon_\mathrm{p}^{(t)} + \Delta \gamma ) = 0
 \end{equation}
-The iterative scheme then reads:
-
-\begin{enumerate}
-%
-\item Initial guess
-\begin{equation}
-  R_0 = R ( \Delta \gamma = 0 )
-\end{equation}
-%
-\item While \(R \neq 0\)
-%
-\begin{enumerate}
-%
-\item Calculate the derivative:
-\begin{equation}
-\left.
-    \frac{\partial R \hfill}{\partial \Delta \gamma \hfill}
-    \right|_{\Delta \gamma_i}
-\end{equation}
-%
-\item Update plastic multiplier
-\begin{equation}
-  \Delta \gamma_{i+1} = \Delta \gamma_i -
-  R(\Delta \gamma_i)
-  \left( \left.
-    \frac{\partial R \hfill}{\partial \Delta \gamma \hfill}
-  \right|_{\Delta \gamma_i} \right)^{-1}
-\end{equation}
-%
-\item Calculate new residual
-\begin{equation}
-  R( \Delta \gamma_{i+1} )
-\end{equation}
-%
-\end{enumerate}
-%
-\end{enumerate}
-
-\subsection{Actual state}
+which has to be solved by Newton-Raphson for $\Delta \gamma$.
 
 Finally, the trial state is updated:
 \begin{itemize}
@@ -267,7 +257,7 @@ with
   \frac{1}{3} \, \mathrm{tr} (\leftstar{\bm{\varepsilon}}_\mathrm{e}) \, \bm{I}
 \end{equation}
 %
-\item The updated equivalent plastic strain (for post-processing):
+\item The updated equivalent plastic strain:
 \begin{equation}
   \varepsilon_\mathrm{p}^{(t+\Delta t)} = \varepsilon_\mathrm{p}^{(t)} + \Delta \gamma
 \end{equation}
@@ -418,36 +408,70 @@ Hence:
     \partial \,\leftstar{\bm{\varepsilon}}_\mathrm{e} \hfill
   } \right) \;
 \end{align}
-From \eqref{eq:return:gammadot}, it follows that
+The non-linear relation in (\ref{eq:return:gammadot},\ref{eq:return:gammadot2}) can be rearranged as follows
 \begin{equation}
-\left(
-    \frac{\Delta \gamma}{\dot{\gamma}_0 \Delta t}
-  \right)^m
-  =
-  \frac{
-    \leftstar{\sigma}_\mathrm{eq} - 3 G \Delta \gamma
-  }{
-    \sigma_0
-  }
-  \quad\rightarrow\quad
   \leftstar{\sigma}_\mathrm{eq}
   =
-  \sigma_0 \left( \frac{\Delta \gamma}{\dot{\gamma}_0 \Delta t} \right)^m +
-  3 G \Delta \gamma
+  3 G \; \Delta \gamma
+  +
+  \left( \frac{\Delta t}{ \Delta \gamma / \dot{\gamma}_0 + \Delta t} \right)^{-n}
+  \sigma_\mathrm{y} \big( \varepsilon_\mathrm{p} \big)
 \end{equation}
-Hence:
+where the simplified notation $\varepsilon_\mathrm{p} = \varepsilon_\mathrm{p}^{(t + \Delta t)} = \varepsilon_\mathrm{p}^{(t)} + \Delta \gamma$ has been used. To simply notation in the proceeding, additionally
 \begin{equation}
-\frac{
-    \partial ~\leftstar{\sigma}_\mathrm{eq} \hfill
+  \tilde{H} =
+  \left.
+  \frac{
+    \partial\, \sigma_\mathrm{y} \hfill
   }{
-    \partial ~\Delta \gamma      \hfill
+    \partial   \Delta \gamma \hfill
   }
+  \right|_{ \varepsilon_\mathrm{p} }
   =
-  3 G + \frac{m \sigma_0}{\dot{\gamma}_0 \Delta t}
-  \left(
-    \frac{\Delta \gamma}{\dot{\gamma}_0 \Delta t}
-  \right)^{m-1}
+  \left. \frac{
+    \partial\, \sigma_\mathrm{y} \hfill
+  }{
+    \partial\, \varepsilon_\mathrm{p} \hfill
+  } \right|_{ \varepsilon_\mathrm{p} }
+  =
+  m H \big( \varepsilon_\mathrm{p} \big)^{m - 1}
 \end{equation}
+
+The derivative then follows as:
+\begin{align}
+  \frac{
+    \partial \,\leftstar{\sigma}_\mathrm{eq} \hfill
+  }{
+    \partial \Delta \gamma \hfill
+  }
+  &=
+  3 G
+  +
+  \tilde{H} \left( \frac{\Delta t}{ \Delta \gamma / \dot{\gamma}_0 + \Delta t} \right)^{-n}
+  + \sigma_\mathrm{y} \big( \varepsilon_\mathrm{p} \big) \;
+  \frac{\partial}{\partial \Delta \gamma}
+  \left\{
+    \left( \frac{\Delta t}{ \Delta \gamma / \dot{\gamma}_0 + \Delta t} \right)^{-n}
+  \right\}
+  \\
+  &=
+  3 G
+  +
+  \tilde{H} \left( \frac{\Delta t}{ \Delta \gamma / \dot{\gamma}_0 + \Delta t} \right)^{-n}
+  +
+  \underbrace{
+    \sigma_\mathrm{y} \big( \varepsilon_\mathrm{p} \big)
+    \left( \frac{\Delta t}{ \Delta \gamma / \dot{\gamma}_0 + \Delta t} \right)^{-n}
+  }_{\leftstar{\sigma}_\mathrm{eq} - 3 G \Delta \gamma = \sigma_\mathrm{eq}^{(t+\Delta t)}}
+  \frac{n }{\dot{\gamma}_0 ( \Delta \gamma / \dot{\gamma}_0 + \Delta t)}
+  \\
+  &=
+  3 G
+  +
+  \tilde{H} \left( \frac{\Delta t}{ \Delta \gamma / \dot{\gamma}_0 + \Delta t} \right)^{-n}
+  +
+  \frac{n \, \sigma_\mathrm{eq}^{(t+\Delta t)}}{\dot{\gamma}_0 \big(  \Delta \gamma / \dot{\gamma}_0 + \Delta t \big)}
+\end{align}
 %
 \end{itemize}
 %
@@ -461,14 +485,29 @@ The final result then reads:
 \left[
   \frac{\Delta \gamma}{\leftstar{\sigma}_\mathrm{eq}} -
   \left[
-    3G + \frac{m \sigma_0}{\dot{\gamma}_0 \Delta t}
-    \left(
-      \frac{\Delta \gamma}{\dot{\gamma}_0 \Delta t}
-    \right)^{m-1}
+    3 G
+    +
+    \tilde{H} \left( \frac{\Delta t}{ \Delta \gamma / \dot{\gamma}_0 + \Delta t} \right)^{-n}
+    +
+    \frac{n \, \sigma_\mathrm{eq}^{(t+\Delta t)}}{\dot{\gamma}_0 \big(  \Delta \gamma / \dot{\gamma}_0 + \Delta t \big)}
   \right]^{-1}
 \right]
 \leftstar{\bm{N}} \otimes \leftstar{\bm{N}}
 \end{equation}
+
+\vfill\newpage
+\section{Numerical examples}
+
+\subsection{Parameter variations}
+
+The meaning of the parameters is illustrated using a parameter variation in Figure~\ref{fig:parameter}.
+
+\begin{figure}[htp]
+  \centering
+  \includegraphics[width=1.\textwidth]{figures/parameters}
+  \caption{Effect of different parameter variations.}
+  \label{fig:parameter}
+\end{figure}
 
 \appendix
 \vfill\newpage
@@ -534,8 +573,59 @@ J_2 = \tfrac{1}{2} \, || \, \bm{\sigma}_\mathrm{d} \, ||^2
 %
 \end{itemize}
 
+\section{Constitutive model in one-dimension}
+\label{sec:1D}
 
+\begin{enumerate}[(i)]
+%
+\item Elasto-plastic decomposition
+\begin{equation}
+  \varepsilon = \varepsilon_\mathrm{e} + \varepsilon_\mathrm{p}
+\end{equation}
+%
+\item Linear elasticity
+\begin{equation}
+  \sigma = E \; \varepsilon_\mathrm{e}
+\end{equation}
+%
+\item Yield function
+\begin{equation}
+  \Phi ( \sigma , \sigma_\mathrm{y} ) = | \sigma | - \sigma_\mathrm{y}
+\end{equation}
+Elastic domain
+\begin{equation}
+  \mathcal{E}
+  = \big\{ \sigma \; \big| \; \Phi ( \sigma , \sigma_\mathrm{y} ) < 0 \big\}
+\end{equation}
+%
+\item Plastic flow rule
+\begin{equation}
+  \dot{\varepsilon}_\mathrm{p} = \dot{\gamma} \; \mathrm{sign} ( \sigma )
+\end{equation}
+where
+\begin{equation}
+  \dot{\gamma}
+  =
+  \begin{cases}
+    \displaystyle \dot{\gamma}_0
+    \left[
+      \left( \frac{| \sigma |}{\sigma_\mathrm{y}} \right)^{1/n} - 1
+    \right] \qquad &
+    \mathrm{if} \; \Phi ( \sigma , \sigma_\mathrm{y} ) \geq 0
+    \\
+    0 \qquad &
+    \mathrm{if} \; \Phi ( \sigma , \sigma_\mathrm{y} ) <    0
+  \end{cases}
+\end{equation}
+%
+\item Hardening law
+\begin{align}
+  \sigma_\mathrm{y} &= \sigma_\mathrm{y0} + H \varepsilon_\mathrm{p}^m \\
+  \dot{\varepsilon}_\mathrm{p} &= \dot{\gamma}
+\end{align}
+\end{enumerate}
 
+\bibliography{library}
 
 \end{document}
 

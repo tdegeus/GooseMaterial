@@ -2,7 +2,7 @@
 \documentclass[times,namecite]{goose-article}
 
 \title{%
-  GooseSolid/ElasticPlasticPotential
+  GooseMaterial/AmorphousSolid/LinearStrain/ElastoPlastic
 }
 
 \author{T.W.J.~de~Geus}
@@ -13,13 +13,13 @@
   \hspace{1mm}--\hspace{1mm} %
   \href{http://www.geus.me}{www.geus.me}%
   \hspace{1mm}--\hspace{1mm} %
-  \href{https://github.com/tdegeus/GooseSolid}{https://github.com/tdegeus/GooseSolid}%
+  \href{https://github.com/tdegeus/GooseMaterial}{https://github.com/tdegeus/GooseMaterial}%
 }
 
 \hypersetup{pdfauthor={T.W.J. de Geus}}
 
 \header{%
-  \href{https://github.com/tdegeus/GooseSolid}{GooseSolid/ElasticPlasticPotential}%
+  \href{https://github.com/tdegeus/GooseMaterial}{GooseMaterial/AmorphousSolid/LinearStrain/ElastoPlastic} -- \href{http://www.geus.me}{T.W.J.\ de Geus}%
 }
 
 \newcommand\leftstar[1]{\hspace*{-.3em}~^\star\!#1}
@@ -128,14 +128,14 @@ where $\mathbb{C}$ is the fourth-order the elastic stiffness tensor, defined as
   \captionsetup[subfigure]{justification=centering}
   \begin{minipage}[t]{.49\textwidth}
     \centering
-    \includegraphics[width=1.\textwidth]{potential_U}
+    \includegraphics[width=1.\textwidth]{figures/potential_U}
     \subcaption{Volumetric strain energy, $U ( \varepsilon_\mathrm{m} )$}
     \label{fig:U}
   \end{minipage}
   \hfill
   \begin{minipage}[t]{.49\textwidth}
     \centering
-    \includegraphics[width=1.\textwidth]{potential_V-elas}
+    \includegraphics[width=1.\textwidth]{figures/potential_V-elas}
     \subcaption{Shear strain energy, $V ( \varepsilon_\mathrm{eq} )$}
     \label{fig:V-elas}
   \end{minipage}
@@ -152,14 +152,14 @@ We now extend the model to account for plasticity. For this we strive for a mode
   \captionsetup[subfigure]{justification=centering}
   \begin{minipage}[t]{.49\textwidth}
     \centering
-    \includegraphics[width=1.\textwidth]{potential_V-plas}
+    \includegraphics[width=1.\textwidth]{figures/potential_V-plas}
     \subcaption{Multi-parabolic shear strain energy}
     \label{fig:V-plas}
   \end{minipage}
   \hfill
   \begin{minipage}[t]{.49\textwidth}
     \centering
-    \includegraphics[width=1.\textwidth]{potential_V-plas-smooth}
+    \includegraphics[width=1.\textwidth]{figures/potential_V-plas-smooth}
     \subcaption{Smooth multi-parabolic shear strain energy}
     \label{fig:V-plas-smooth}
   \end{minipage}
@@ -288,13 +288,13 @@ To obtain the stress response we start from the derivative of the shear strain e
   \captionsetup[subfigure]{justification=centering}
   \begin{minipage}[t]{.49\textwidth}
     \centering
-    \includegraphics[width=1.\textwidth]{potential_dV-plas}
+    \includegraphics[width=1.\textwidth]{figures/potential_dV-plas}
     \subcaption{Multi-parabolic shear strain energy}
   \end{minipage}
   \hfill
   \begin{minipage}[t]{.49\textwidth}
     \centering
-    \includegraphics[width=1.\textwidth]{potential_dV-plas-smooth}
+    \includegraphics[width=1.\textwidth]{figures/potential_dV-plas-smooth}
     \subcaption{Smooth multi-parabolic shear strain energy}
   \end{minipage}
   \caption{Derivate of the shear strain energy $V$.}
@@ -306,13 +306,13 @@ To obtain the stress response we start from the derivative of the shear strain e
   \captionsetup[subfigure]{justification=centering}
   \begin{minipage}[t]{.49\textwidth}
     \centering
-    \includegraphics[width=1.\textwidth]{stress-strain}
+    \includegraphics[width=1.\textwidth]{figures/stress-strain}
     \subcaption{Multi-parabolic shear strain energy}
   \end{minipage}
   \hfill
   \begin{minipage}[t]{.49\textwidth}
     \centering
-    \includegraphics[width=1.\textwidth]{stress-strain-smooth}
+    \includegraphics[width=1.\textwidth]{figures/stress-strain-smooth}
     \subcaption{Smooth multi-parabolic shear strain energy}
   \end{minipage}
   \caption{Stress--strain response. The equivalent (shear) stress $\sigma_\mathrm{eq}$ is plotted as a function of the equivalent strain $\varepsilon_\mathrm{eq}$ for both the multi-parabolic shear strain energy and its smoothened equivalent. Although not important for the result here, note that this response is actually obtained from the implementation by applying monotonically increasing simple shear.}
