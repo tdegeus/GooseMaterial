@@ -19,18 +19,18 @@ Suggested references
 
 #include <tuple>
 #include <math.h>
-#include <cppmat/tensor3.h>
+#include <cppmat/tensor2.h>
 
-#warning "GooseMaterial/AmorphousSolid/LinearStrain/ElastoPlastic/Cartesian3d.h : first usage, careful check then remove this message"
+#warning "GooseMaterial/AmorphousSolid/LinearStrain/ElastoPlastic/Cartesian2d.h : first usage, careful check then remove this message"
 
 namespace GooseMaterial {
 namespace AmorphousSolid {
 namespace LinearStrain {
 namespace ElastoPlastic {
-namespace Cartesian3d {
+namespace Cartesian2d {
 
-using T2s = cppmat::tensor3_2s<double>;
-using T2d = cppmat::tensor3_2d<double>;
+using T2s = cppmat::tensor2_2s<double>;
+using T2d = cppmat::tensor2_2d<double>;
 
 // ============================================ OVERVIEW ===========================================
 
@@ -151,8 +151,8 @@ size_t Material::find(double epseq)
 T2s Material::stress(const T2s &eps)
 {
   // decompose strain: hydrostatic part, deviatoric part
-  T2d    I     = cppmat::identity3_2();
-  double epsm  = eps.trace()/3.;
+  T2d    I     = cppmat::identity2_2();
+  double epsm  = eps.trace()/2.;
   T2s    epsd  = eps - epsm*I;
   double epseq = std::pow( .5*epsd.ddot(epsd) , 0.5 );
 
@@ -192,8 +192,8 @@ double Material::eps_y(size_t i)
 
 double Material::eps_eq(const T2s &eps)
 {
-  T2d    I    = cppmat::identity3_2();
-  double epsm = eps.trace()/3.;
+  T2d    I    = cppmat::identity2_2();
+  double epsm = eps.trace()/2.;
   T2s    epsd = eps - epsm*I;
 
   return std::pow( .5*epsd.ddot(epsd) , 0.5 );
@@ -203,15 +203,15 @@ double Material::eps_eq(const T2s &eps)
 
 double Material::eps_m(const T2s &eps)
 {
-  return eps.trace()/3.;
+  return eps.trace()/2.;
 }
 
 // -------------------------------------------------------------------------------------------------
 
 double Material::sig_eq(const T2s &sig)
 {
-  T2d    I    = cppmat::identity3_2();
-  double sigm = sig.trace()/3.;
+  T2d    I    = cppmat::identity2_2();
+  double sigm = sig.trace()/2.;
   T2s    sigd = sig - sigm*I;
 
   return std::pow( .5*sigd.ddot(sigd) , 0.5 );
@@ -221,14 +221,14 @@ double Material::sig_eq(const T2s &sig)
 
 double Material::sig_m(const T2s &sig)
 {
-  return sig.trace()/3.;
+  return sig.trace()/2.;
 }
 
 // -------------------------------------------------------------------------------------------------
 
 double Material::energy_m(double epsm)
 {
-  return 3./2. * m_K * std::pow( epsm , 2. );
+  return m_K * std::pow( epsm , 2. );
 }
 
 // -------------------------------------------------------------------------------------------------

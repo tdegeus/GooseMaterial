@@ -1,9 +1,12 @@
 
+#include <cppmat/tensor2.h>
 #include <cppmat/tensor3.h>
+#include <cppmat/pybind11_tensor2.h>
 #include <cppmat/pybind11_tensor3.h>
 
 #include "../src/GooseMaterial/AmorphousSolid/LinearStrain/ElasticLiquid/Cartesian3d.h"
 #include "../src/GooseMaterial/AmorphousSolid/LinearStrain/ElastoPlastic/Cartesian3d.h"
+#include "../src/GooseMaterial/AmorphousSolid/LinearStrain/ElastoPlastic/Cartesian2d.h"
 #include "../src/GooseMaterial/Metal/LinearStrain/Elastic/Cartesian3d.h"
 #include "../src/GooseMaterial/Metal/LinearStrain/Elastic/miscellaneous.h"
 #include "../src/GooseMaterial/Metal/LinearStrain/ElastoPlastic/Cartesian3d.h"
@@ -108,6 +111,11 @@ py::module AmorphousSolidLinearStrainElastoPlasticCartesian3d = AmorphousSolidLi
   "Defined on a 3d Cartesian coordinate system"
 );
 
+py::module AmorphousSolidLinearStrainElastoPlasticCartesian2d = AmorphousSolidLinearStrainElastoPlastic.def_submodule(
+  "Cartesian2d",
+  "Defined on a 3d Cartesian coordinate system"
+);
+
 // =================================================================================================
 
 py::class_<GooseMaterial::Metal::LinearStrain::Elastic::Cartesian3d::Material>(MetalLinearStrainElasticCartesian3d,"Material")
@@ -129,7 +137,7 @@ MetalLinearStrainElastic.def("ConvertParameters",&GooseMaterial::Metal::LinearSt
 
 // =================================================================================================
 
-py::class_<GooseMaterial::Metal::LinearStrain::NonLinearElastic::Cartesian3d::Material>(m,"Material")
+py::class_<GooseMaterial::Metal::LinearStrain::NonLinearElastic::Cartesian3d::Material>(MetalLinearStrainNonLinearElasticCartesian3d,"Material")
 
 .def(py::init<double,double,double,double>(),
   py::arg("K"     ),
@@ -146,7 +154,7 @@ py::class_<GooseMaterial::Metal::LinearStrain::NonLinearElastic::Cartesian3d::Ma
 
 // =================================================================================================
 
-py::class_<GooseMaterial::Metal::LinearStrain::ElastoPlastic::Cartesian3d::Material>(m,"Material")
+py::class_<GooseMaterial::Metal::LinearStrain::ElastoPlastic::Cartesian3d::Material>(MetalLinearStrainElastoPlasticCartesian3d,"Material")
 
 .def(py::init<double,double,double,double,double>(),
   py::arg("K"     ),
@@ -165,7 +173,7 @@ py::class_<GooseMaterial::Metal::LinearStrain::ElastoPlastic::Cartesian3d::Mater
 
 // =================================================================================================
 
-py::class_<GooseMaterial::Metal::LinearStrain::ElastoViscoPlastic::Cartesian3d::Material>(m,"Material")
+py::class_<GooseMaterial::Metal::LinearStrain::ElastoViscoPlastic::Cartesian3d::Material>(MetalLinearStrainElastoViscoPlasticCartesian3d,"Material")
 
 .def(py::init<double,double,double,double,double>(),
   py::arg("K"     ),
@@ -184,7 +192,7 @@ py::class_<GooseMaterial::Metal::LinearStrain::ElastoViscoPlastic::Cartesian3d::
 
 // =================================================================================================
 
-py::class_<GooseMaterial::Metal::LinearStrain::ElastoViscoPlasticHardening::Cartesian3d::Material>(m,"Material")
+py::class_<GooseMaterial::Metal::LinearStrain::ElastoViscoPlasticHardening::Cartesian3d::Material>(MetalLinearStrainElastoViscoPlasticHardeningCartesian3d,"Material")
 
 .def(py::init<double,double,double,double,double,double,double>(),
   py::arg("K"     ),
@@ -206,7 +214,7 @@ py::class_<GooseMaterial::Metal::LinearStrain::ElastoViscoPlasticHardening::Cart
 
 // =================================================================================================
 
-py::class_<GooseMaterial::AmorphousSolid::LinearStrain::ElasticLiquid::Cartesian3d::Material>(m,"Material")
+py::class_<GooseMaterial::AmorphousSolid::LinearStrain::ElasticLiquid::Cartesian3d::Material>(AmorphousSolidLinearStrainElasticLiquidCartesian3d,"Material")
 
 .def(py::init<double,double,double,double,double>(),
   py::arg("K"     ),
@@ -225,21 +233,45 @@ py::class_<GooseMaterial::AmorphousSolid::LinearStrain::ElasticLiquid::Cartesian
 
 // =================================================================================================
 
-py::class_<GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3d::Material>(m,"Material")
+py::class_<GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3d::Material>(AmorphousSolidLinearStrainElastoPlasticCartesian3d,"Material")
 
-.def(py::init<double,double,const std::vector<double> &,bool,bool>(),
+.def(py::init<double,double,const std::vector<double> &,bool>(),
   py::arg("K"           ),
   py::arg("G"           ),
-  py::arg("a"           ),
-  py::arg("init_elastic")=true,
-  py::arg("smooth"      )=true
+  py::arg("eps_y"       ),
+  py::arg("init_elastic")=true
 )
 
-.def("stress"   , &GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3d::Material::stress   , py::arg("eps"))
-.def("energy_eq", &GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3d::Material::energy_eq, py::arg("eps"))
+.def("stress"   ,                                                      &GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3d::Material::stress    , py::arg("eps"))
+.def("eps_eq"   ,                                                      &GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3d::Material::eps_eq    , py::arg("eps"))
+.def("eps_m"    ,                                                      &GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3d::Material::eps_m     , py::arg("eps"))
+.def("energy"   , py::overload_cast<const cppmat::tensor3_2s<double>&>(&GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3d::Material::energy   ), py::arg("eps"))
+.def("energy_m ", py::overload_cast<const cppmat::tensor3_2s<double>&>(&GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3d::Material::energy_m ), py::arg("eps"))
+.def("energy_eq", py::overload_cast<const cppmat::tensor3_2s<double>&>(&GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3d::Material::energy_eq), py::arg("eps"))
 
 .def("__repr__",[](const GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3d::Material &a)
   {return "<GooseMaterial.AmorphousSolid.LinearStrain.Elastic.Cartesian3d.Material>";});
+
+// =================================================================================================
+
+py::class_<GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2d::Material>(AmorphousSolidLinearStrainElastoPlasticCartesian2d,"Material")
+
+.def(py::init<double,double,const std::vector<double> &,bool>(),
+  py::arg("K"           ),
+  py::arg("G"           ),
+  py::arg("eps_y"       ),
+  py::arg("init_elastic")=true
+)
+
+.def("stress"   ,                                                      &GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2d::Material::stress    , py::arg("eps"))
+.def("eps_eq"   ,                                                      &GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2d::Material::eps_eq    , py::arg("eps"))
+.def("eps_m"    ,                                                      &GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2d::Material::eps_m     , py::arg("eps"))
+.def("energy"   , py::overload_cast<const cppmat::tensor2_2s<double>&>(&GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2d::Material::energy   ), py::arg("eps"))
+.def("energy_m ", py::overload_cast<const cppmat::tensor2_2s<double>&>(&GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2d::Material::energy_m ), py::arg("eps"))
+.def("energy_eq", py::overload_cast<const cppmat::tensor2_2s<double>&>(&GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2d::Material::energy_eq), py::arg("eps"))
+
+.def("__repr__",[](const GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2d::Material &a)
+  {return "<GooseMaterial.AmorphousSolid.LinearStrain.Elastic.Cartesian2d.Material>";});
 
 // =================================================================================================
 

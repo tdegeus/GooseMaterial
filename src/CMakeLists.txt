@@ -77,12 +77,11 @@ install(FILES
   DESTINATION
   ${CMAKEPACKAGE_INSTALL_DIR}
 )
-# - headers
-install(FILES
-  ${CMAKE_CURRENT_SOURCE_DIR}/${GOOSEMATERIAL_HEADERS}
-  DESTINATION
-  ${INCLUDE_INSTALL_DIR}/GooseMaterial
-)
+# - headers: retain file structure
+foreach ( file ${GOOSEMATERIAL_HEADERS} )
+  get_filename_component( dir ${file} DIRECTORY )
+  install( FILES ${file} DESTINATION ${INCLUDE_INSTALL_DIR}/${dir} )
+endforeach()
 
 # print information to screen
 message(STATUS "")

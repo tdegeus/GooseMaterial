@@ -409,6 +409,35 @@ This results in a stress response
 \end{equation}
 Note the the equivalent stress and strain are defined such that they are work conjugate (i.e. $\sigma_\mathrm{eq} \, \varepsilon_\mathrm{eq} = \bm{\sigma} : \bm{\varepsilon}$) for uniaxial extension of an incompressible material.
 
+\section{Specialized model -- planar shear}
+
+\subsection{Motivation}
+
+\begin{equation}
+  \underline{\underline{\varepsilon}}
+  =
+  \begin{bmatrix}
+    0      & \gamma \\
+    \gamma & 0
+  \end{bmatrix}
+\end{equation}
+
+\begin{equation}
+  \underline{\underline{R}}
+  =
+  \begin{bmatrix}
+    \cos \theta & - \sin \theta \\
+    \sin \theta &   \cos \theta
+  \end{bmatrix}
+\end{equation}
+
+\begin{figure}[htp]
+  \centering
+  \includegraphics[width=.5\textwidth]{figures/epseq_2d}
+  \caption{Comparison between the equivalent strain $2 \varepsilon_\mathrm{eq}^2 = \bm{\varepsilon}_\mathrm{d} : \bm{\varepsilon}_\mathrm{d}$ the strain along the $x$-plane, $\varepsilon_\mathrm{ss} = \vec{e}_x \cdot \bm{\varepsilon} \cdot \vec{e}_y$, and the strain perpendicular to it, $\varepsilon_\mathrm{ps} = \vec{e}_x \cdot \bm{\varepsilon} \cdot \vec{e}_x$.}
+  \label{fig:}
+\end{figure}
+
 \bibliography{library}
 
 \end{document}
