@@ -25,7 +25,7 @@ plt.ylabel(r'$U ( \varepsilon_\mathrm{m} ) $')
 ax.xaxis.set_ticks([0])
 ax.yaxis.set_ticks([])
 
-plt.savefig('potential_U.svg')
+plt.savefig('potential_U_raw.svg')
 
 # --------------------------------------------------------------------------------------------------
 
@@ -47,7 +47,7 @@ plt.ylabel(r'$V ( \varepsilon_\mathrm{eq} ) $')
 ax.xaxis.set_ticks([0])
 ax.yaxis.set_ticks([])
 
-plt.savefig('potential_V-elas.svg')
+plt.savefig('potential_V-elas_raw.svg')
 
 
 # --------------------------------------------------------------------------------------------------
@@ -153,7 +153,7 @@ plt.ylabel(r'$\partial V / \partial \varepsilon_\mathrm{eq}$')
 ax.xaxis.set_ticks([0])
 ax.yaxis.set_ticks([0])
 
-plt.savefig('potential_dV-plas.svg')
+plt.savefig('potential_dV-plas_raw.svg')
 
 # --------------------------------------------------------------------------------------------------
 
@@ -188,7 +188,7 @@ plt.ylabel(r'$\partial V / \partial \varepsilon_\mathrm{eq}$')
 ax.xaxis.set_ticks([0])
 ax.yaxis.set_ticks([0])
 
-plt.savefig('potential_dV-plas-smooth.svg')
+plt.savefig('potential_dV-plas-smooth_raw.svg')
 
 # --------------------------------------------------------------------------------------------------
 
@@ -223,7 +223,7 @@ plt.ylabel(r'$\sigma_\mathrm{eq}$')
 ax.xaxis.set_ticks([0])
 ax.yaxis.set_ticks([0])
 
-plt.savefig('potential_sigeq-plas.svg')
+plt.savefig('potential_sigeq-plas_raw.svg')
 
 # --------------------------------------------------------------------------------------------------
 
@@ -258,7 +258,7 @@ plt.ylabel(r'$\sigma_\mathrm{eq}$')
 ax.xaxis.set_ticks([0])
 ax.yaxis.set_ticks([0])
 
-plt.savefig('potential_sigeq-plas-smooth.svg')
+plt.savefig('potential_sigeq-plas-smooth_raw.svg')
 
 # --------------------------------------------------------------------------------------------------
 
