@@ -49,27 +49,27 @@ public:
   Material(){};
   Material(double K, double G, const std::vector<double> &epsy={}, bool init_elastic=true);
 
-  // compute stress at "eps"
-  T2s stress(const T2s &eps);
+  // compute stress at "Eps"
+  T2s stress(const T2s &Eps);
 
   // post-process functions
-  // - find the index of the current yield strain (below "eps_eq")
-  size_t find(double     epseq);
-  size_t find(const T2s &eps  );
+  // - find the index of the current yield strain (below "eps_d")
+  size_t find(double     epsd);
+  size_t find(const T2s &Eps );
   // - return yield strain "i"
   double eps_y(size_t i);
-  // - return hydrostatic/equivalent stress/strain
-  double eps_eq(const T2s &eps);
-  double eps_m (const T2s &eps);
-  double sig_eq(const T2s &sig);
-  double sig_m (const T2s &sig);
+  // - return hydrostatic/deviatoric equivalent stress/strain
+  double eps_m(const T2s &Eps);
+  double eps_d(const T2s &Eps);
+  double sig_m(const T2s &Sig);
+  double sig_d(const T2s &Sig);
   // - return the strain energy (or its hydrostatic or deviatoric component)
-  double energy   (double     epsm, double epseq);
-  double energy_m (double     epsm              );
-  double energy_eq(double     epseq             );
-  double energy   (const T2s &eps               );
-  double energy_m (const T2s &eps               );
-  double energy_eq(const T2s &eps               );
+  double energy  (double     epsm, double epsd);
+  double energy_m(double     epsm             );
+  double energy_d(double     epsd             );
+  double energy  (const T2s &Eps              );
+  double energy_m(const T2s &Eps              );
+  double energy_d(const T2s &Eps              );
 
 };
 
@@ -115,10 +115,10 @@ Material::Material(double K, double G, const std::vector<double> &epsy, bool ini
 
 // -------------------------------------------------------------------------------------------------
 
-size_t Material::find(double epseq)
+size_t Material::find(double epsd)
 {
   // check extremes
-  if ( epseq < m_epsy.front() or epseq >= m_epsy.back() )
+  if ( epsd < m_epsy.front() or epsd >= m_epsy.back() )
     throw std::runtime_error("Insufficient 'eps_y'");
 
   // set initial search bounds and index
@@ -132,12 +132,12 @@ size_t Material::find(double epseq)
   while ( true )
   {
     // check if found, unroll once to speed-up
-    if ( epseq >= m_epsy[i-1] and epseq < m_epsy[i  ] ) return i-1;
-    if ( epseq >= m_epsy[i  ] and epseq < m_epsy[i+1] ) return i;
-    if ( epseq >= m_epsy[i+1] and epseq < m_epsy[i+2] ) return i+1;
+    if ( epsd >= m_epsy[i-1] and epsd < m_epsy[i  ] ) return i-1;
+    if ( epsd >= m_epsy[i  ] and epsd < m_epsy[i+1] ) return i;
+    if ( epsd >= m_epsy[i+1] and epsd < m_epsy[i+2] ) return i+1;
 
     // correct the left- and right-bound
-    if ( epseq >= m_epsy[i] ) l = i;
+    if ( epsd >= m_epsy[i] ) l = i;
     else                      r = i;
 
     // set new search index
@@ -148,37 +148,37 @@ size_t Material::find(double epseq)
 
 // -------------------------------------------------------------------------------------------------
 
-T2s Material::stress(const T2s &eps)
+T2s Material::stress(const T2s &Eps)
 {
   // decompose strain: hydrostatic part, deviatoric part
   T2d    I     = cppmat::identity2_2();
-  double epsm  = eps.trace()/2.;
-  T2s    epsd  = eps - epsm*I;
-  double epseq = std::pow( .5*epsd.ddot(epsd) , 0.5 );
+  double epsm  = Eps.trace()/2.;
+  T2s    Epsd  = Eps - epsm*I;
+  double epsd = std::pow( .5*Epsd.ddot(Epsd) , 0.5 );
 
   // constitutive response - hydrostatic part
   double sigm  = m_K * epsm;
 
   // equivalent strain zero -> zero deviatoric stress
-  if ( epseq <= 0. ) return sigm * I;
+  if ( epsd <= 0. ) return sigm * I;
 
   // read current yield strains
-  size_t i       = find(epseq);
+  size_t i       = find(epsd);
   double eps_min = ( m_epsy[i+1] + m_epsy[i] ) / 2.;
   double deps_y  = ( m_epsy[i+1] - m_epsy[i] ) / 2.;
 
   // constitutive response - deviatoric part
-  T2s sigd = ( ( m_G/epseq ) * ( deps_y/M_PI ) * sin ( M_PI/deps_y * (epseq-eps_min) ) ) * epsd;
+  T2s Sigd = ( ( m_G/epsd ) * ( deps_y/M_PI ) * sin ( M_PI/deps_y * (epsd-eps_min) ) ) * Epsd;
 
   // return full strain tensor
-  return sigm*I + sigd;
+  return sigm*I + Sigd;
 }
 
 // ================================= IMPLEMENTATION : POST-PROCESS =================================
 
-size_t Material::find(const T2s &eps)
+size_t Material::find(const T2s &Eps)
 {
-  return find(eps_eq(eps));
+  return find(eps_d(Eps));
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -190,38 +190,38 @@ double Material::eps_y(size_t i)
 
 // -------------------------------------------------------------------------------------------------
 
-double Material::eps_eq(const T2s &eps)
+double Material::eps_m(const T2s &Eps)
+{
+  return Eps.trace()/2.;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+double Material::eps_d(const T2s &Eps)
 {
   T2d    I    = cppmat::identity2_2();
-  double epsm = eps.trace()/2.;
-  T2s    epsd = eps - epsm*I;
+  double epsm = Eps.trace()/2.;
+  T2s    Epsd = Eps - epsm*I;
 
-  return std::pow( .5*epsd.ddot(epsd) , 0.5 );
+  return std::pow( .5*Epsd.ddot(Epsd) , 0.5 );
 }
 
 // -------------------------------------------------------------------------------------------------
 
-double Material::eps_m(const T2s &eps)
+double Material::sig_m(const T2s &Sig)
 {
-  return eps.trace()/2.;
+  return Sig.trace()/2.;
 }
 
 // -------------------------------------------------------------------------------------------------
 
-double Material::sig_eq(const T2s &sig)
+double Material::sig_d(const T2s &Sig)
 {
   T2d    I    = cppmat::identity2_2();
-  double sigm = sig.trace()/2.;
-  T2s    sigd = sig - sigm*I;
+  double sigm = Sig.trace()/2.;
+  T2s    Sigd = Sig - sigm*I;
 
-  return std::pow( .5*sigd.ddot(sigd) , 0.5 );
-}
-
-// -------------------------------------------------------------------------------------------------
-
-double Material::sig_m(const T2s &sig)
-{
-  return sig.trace()/2.;
+  return std::pow( .5*Sigd.ddot(Sigd) , 0.5 );
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -233,41 +233,41 @@ double Material::energy_m(double epsm)
 
 // -------------------------------------------------------------------------------------------------
 
-double Material::energy_m(const T2s &eps)
+double Material::energy_m(const T2s &Eps)
 {
-  return energy_m(eps_m(eps));
+  return energy_m(eps_m(Eps));
 }
 
 // -------------------------------------------------------------------------------------------------
 
-double Material::energy_eq(double epseq)
+double Material::energy_d(double epsd)
 {
-  size_t i       = find(epseq);
+  size_t i       = find(epsd);
   double eps_min = ( m_epsy[i+1] + m_epsy[i] ) / 2.;
   double deps_y  = ( m_epsy[i+1] - m_epsy[i] ) / 2.;
 
-  return -2. * m_G * std::pow( deps_y/M_PI , 2. ) * ( 1. + cos( M_PI/deps_y * (epseq-eps_min) ) );
+  return -2. * m_G * std::pow( deps_y/M_PI , 2. ) * ( 1. + cos( M_PI/deps_y * (epsd-eps_min) ) );
 }
 
 // -------------------------------------------------------------------------------------------------
 
-double Material::energy_eq(const T2s &eps)
+double Material::energy_d(const T2s &Eps)
 {
-  return energy_eq(eps_eq(eps));
+  return energy_d(eps_d(Eps));
 }
 
 // -------------------------------------------------------------------------------------------------
 
-double Material::energy(double epsm, double epseq)
+double Material::energy(double epsm, double epsd)
 {
-  return energy_m(epsm) + energy_eq(epseq);
+  return energy_m(epsm) + energy_d(epsd);
 }
 
 // -------------------------------------------------------------------------------------------------
 
-double Material::energy(const T2s &eps)
+double Material::energy(const T2s &Eps)
 {
-  return energy_m(eps_m(eps)) + energy_eq(eps_eq(eps));
+  return energy_m(eps_m(Eps)) + energy_d(eps_d(Eps));
 }
 
 // =================================================================================================

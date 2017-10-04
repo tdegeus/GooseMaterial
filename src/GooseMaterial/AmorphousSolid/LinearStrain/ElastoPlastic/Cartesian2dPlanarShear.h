@@ -19,18 +19,19 @@ Suggested references
 
 #include <tuple>
 #include <math.h>
-#include <cppmat/tensor3.h>
+#include <cppmat/tensor2.h>
 
-#warning "GooseMaterial/AmorphousSolid/LinearStrain/ElastoPlastic/Cartesian3d.h : first usage, careful check then remove this message"
+#warning "GooseMaterial/AmorphousSolid/LinearStrain/ElastoPlastic/Cartesian2dPlanarShear.h : first usage, careful check then remove this message"
 
 namespace GooseMaterial {
 namespace AmorphousSolid {
 namespace LinearStrain {
 namespace ElastoPlastic {
-namespace Cartesian3d {
+namespace Cartesian2dPlanarShear {
 
-using T2s = cppmat::tensor3_2s<double>;
-using T2d = cppmat::tensor3_2d<double>;
+using V   = cppmat::vector2   <double>;
+using T2s = cppmat::tensor2_2s<double>;
+using T2d = cppmat::tensor2_2d<double>;
 
 // ============================================ OVERVIEW ===========================================
 
@@ -41,13 +42,14 @@ private:
   double              m_K;    // bulk  modulus
   double              m_G;    // shear modulus
   std::vector<double> m_epsy; // yield strains
+  V                   m_n;    // normal of the weak layer
 
 public:
 
   // constructor / destructor
  ~Material(){};
   Material(){};
-  Material(double K, double G, const std::vector<double> &epsy={}, bool init_elastic=true);
+  Material(double K, double G, const V &n, const std::vector<double> &epsy={}, bool init_elastic=true);
 
   // compute stress at "Eps"
   T2s stress(const T2s &Eps);
@@ -61,22 +63,34 @@ public:
   // - return hydrostatic/deviatoric equivalent stress/strain
   double eps_m(const T2s &Eps);
   double eps_d(const T2s &Eps);
+  double eps_s(const T2s &Eps);
+  double eps_n(const T2s &Eps);
   double sig_m(const T2s &Sig);
   double sig_d(const T2s &Sig);
   // - return the strain energy (or its hydrostatic or deviatoric component)
-  double energy  (double     epsm, double epsd);
-  double energy_m(double     epsm             );
-  double energy_d(double     epsd             );
-  double energy  (const T2s &Eps              );
-  double energy_m(const T2s &Eps              );
-  double energy_d(const T2s &Eps              );
+  double energy  (double     epsm, double epss, double epsn);
+  double energy_m(double     epsm                          );
+  double energy_s(double     epss                          );
+  double energy_n(double     epsn                          );
+  double energy  (const T2s &Eps                           );
+  double energy_m(const T2s &Eps                           );
+  double energy_s(const T2s &Eps                           );
+  double energy_n(const T2s &Eps                           );
 
 };
 
 // ===================================== IMPLEMENTATION : CORE =====================================
 
-Material::Material(double K, double G, const std::vector<double> &epsy, bool init_elastic)
+Material::Material(double K, double G, const V &n, const std::vector<double> &epsy, bool init_elastic)
 {
+  // check input - normal of the weak layer
+  if ( n.norm() <= 0. )
+    throw std::runtime_error("Normal vector cannot be null vector");
+
+  // copy input - normal of the weak layer
+  m_n  = n;
+  m_n.setUnitLength();
+
   // copy input - elastic moduli
   m_K = K;
   m_G = G;
@@ -151,27 +165,35 @@ size_t Material::find(double epsd)
 T2s Material::stress(const T2s &Eps)
 {
   // decompose strain: hydrostatic part, deviatoric part
-  T2d    I     = cppmat::identity3_2();
-  double epsm  = Eps.trace()/3.;
+  T2d    I     = cppmat::identity2_2();
+  double epsm  = Eps.trace()/2.;
   T2s    Epsd  = Eps - epsm*I;
-  double epsd = std::pow( .5*Epsd.ddot(Epsd) , 0.5 );
 
   // constitutive response - hydrostatic part
   double sigm  = m_K * epsm;
 
-  // equivalent strain zero -> zero deviatoric stress
-  if ( epsd <= 0. ) return sigm * I;
+  // get strain vector, and its equivalent project on the plane
+  V sn = Epsd.dot(m_n);               sn.setUnitLength();
+  V s  = sn - ( sn.dot(m_n) ) * m_n;  s .setUnitLength();
+
+  // decompose deviatoric strain in a planar part and a non-planar part
+  double epss  = cppmat::dot(s.dot(Epsd),m_n);
+  T2s    Epss  = epss * ( s.dyadic(m_n) + m_n.dyadic(s) ).astensor2s();
+  T2s    Epsn  = Epsd - Epss;
+
+  // planar equivalent strain zero -> only non-planar elastic deviatoric stress
+  if ( epss <= 0. ) return sigm * I + m_G * Epsn;
 
   // read current yield strains
-  size_t i       = find(epsd);
+  size_t i       = find(epss);
   double eps_min = ( m_epsy[i+1] + m_epsy[i] ) / 2.;
   double deps_y  = ( m_epsy[i+1] - m_epsy[i] ) / 2.;
 
   // constitutive response - deviatoric part
-  T2s Sigd = ( ( m_G/epsd ) * ( deps_y/M_PI ) * sin ( M_PI/deps_y * (epsd-eps_min) ) ) * Epsd;
+  T2s Sigs = ( ( m_G/epss ) * ( deps_y/M_PI ) * sin ( M_PI/deps_y * (epss-eps_min) ) ) * Epss;
 
   // return full strain tensor
-  return sigm*I + Sigd;
+  return sigm*I + m_G * Epsn + Sigs;
 }
 
 // ================================= IMPLEMENTATION : POST-PROCESS =================================
@@ -192,15 +214,15 @@ double Material::eps_y(size_t i)
 
 double Material::eps_m(const T2s &Eps)
 {
-  return Eps.trace()/3.;
+  return Eps.trace()/2.;
 }
 
 // -------------------------------------------------------------------------------------------------
 
 double Material::eps_d(const T2s &Eps)
 {
-  T2d    I    = cppmat::identity3_2();
-  double epsm = Eps.trace()/3.;
+  T2d    I    = cppmat::identity2_2();
+  double epsm = Eps.trace()/2.;
   T2s    Epsd = Eps - epsm*I;
 
   return std::pow( .5*Epsd.ddot(Epsd) , 0.5 );
@@ -208,17 +230,52 @@ double Material::eps_d(const T2s &Eps)
 
 // -------------------------------------------------------------------------------------------------
 
+double Material::eps_s(const T2s &Eps)
+{
+  T2d    I    = cppmat::identity2_2();
+  double epsm = Eps.trace()/2.;
+  T2s    Epsd = Eps - epsm*I;
+
+  // get strain vector, and its equivalent project on the plane
+  V sn = Epsd.dot(m_n);               sn.setUnitLength();
+  V s  = sn - ( sn.dot(m_n) ) * m_n;  s .setUnitLength();
+
+  return cppmat::dot(s.dot(Epsd),m_n);
+}
+
+// -------------------------------------------------------------------------------------------------
+
+double Material::eps_n(const T2s &Eps)
+{
+  T2d    I    = cppmat::identity2_2();
+  double epsm = Eps.trace()/2.;
+  T2s    Epsd = Eps - epsm*I;
+
+  // get strain vector, and its equivalent project on the plane
+  V sn = Epsd.dot(m_n);               sn.setUnitLength();
+  V s  = sn - ( sn.dot(m_n) ) * m_n;  s .setUnitLength();
+
+  // decompose deviatoric strain in a planar part and a non-planar part
+  double epss  = cppmat::dot(s.dot(Epsd),m_n);
+  T2s    Epss  = epss * ( s.dyadic(m_n) + m_n.dyadic(s) ).astensor2s();
+  T2s    Epsn  = Epsd - Epss;
+
+  return std::pow( .5*Epsn.ddot(Epsn) , 0.5 );
+}
+
+// -------------------------------------------------------------------------------------------------
+
 double Material::sig_m(const T2s &Sig)
 {
-  return Sig.trace()/3.;
+  return Sig.trace()/2.;
 }
 
 // -------------------------------------------------------------------------------------------------
 
 double Material::sig_d(const T2s &Sig)
 {
-  T2d    I    = cppmat::identity3_2();
-  double sigm = Sig.trace()/3.;
+  T2d    I    = cppmat::identity2_2();
+  double sigm = Sig.trace()/2.;
   T2s    Sigd = Sig - sigm*I;
 
   return std::pow( .5*Sigd.ddot(Sigd) , 0.5 );
@@ -228,7 +285,7 @@ double Material::sig_d(const T2s &Sig)
 
 double Material::energy_m(double epsm)
 {
-  return 3./2. * m_K * std::pow( epsm , 2. );
+  return m_K * std::pow( epsm , 2. );
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -240,34 +297,48 @@ double Material::energy_m(const T2s &Eps)
 
 // -------------------------------------------------------------------------------------------------
 
-double Material::energy_d(double epsd)
+double Material::energy_s(double epss)
 {
-  size_t i       = find(epsd);
+  size_t i       = find(epss);
   double eps_min = ( m_epsy[i+1] + m_epsy[i] ) / 2.;
   double deps_y  = ( m_epsy[i+1] - m_epsy[i] ) / 2.;
 
-  return -2. * m_G * std::pow( deps_y/M_PI , 2. ) * ( 1. + cos( M_PI/deps_y * (epsd-eps_min) ) );
+  return -2. * m_G * std::pow( deps_y/M_PI , 2. ) * ( 1. + cos( M_PI/deps_y * (epss-eps_min) ) );
 }
 
 // -------------------------------------------------------------------------------------------------
 
-double Material::energy_d(const T2s &Eps)
+double Material::energy_s(const T2s &Eps)
 {
-  return energy_d(eps_d(Eps));
+  return energy_s(eps_s(Eps));
 }
 
 // -------------------------------------------------------------------------------------------------
 
-double Material::energy(double epsm, double epsd)
+double Material::energy_n(double epsn)
 {
-  return energy_m(epsm) + energy_d(epsd);
+  return m_G * std::pow( epsn , 2. );
+}
+
+// -------------------------------------------------------------------------------------------------
+
+double Material::energy_n(const T2s &Eps)
+{
+  return energy_n(eps_n(Eps));
+}
+
+// -------------------------------------------------------------------------------------------------
+
+double Material::energy(double epsm, double epss, double epsn)
+{
+  return energy_m(epsm) + energy_s(epss) + energy_n(epsn);
 }
 
 // -------------------------------------------------------------------------------------------------
 
 double Material::energy(const T2s &Eps)
 {
-  return energy_m(eps_m(Eps)) + energy_d(eps_d(Eps));
+  return energy_m(eps_m(Eps)) + energy_s(eps_s(Eps)) + energy_n(eps_n(Eps));
 }
 
 // =================================================================================================

@@ -1,7 +1,7 @@
 
 # define project information
 project(GooseMaterial)
-set(GOOSEMATERIAL_VERSION_NUMBER 0.0.2)
+set(GOOSEMATERIAL_VERSION_NUMBER 0.0.3)
 
 # required to specify the c++ standard
 cmake_minimum_required(VERSION 3.0)
@@ -41,7 +41,10 @@ set(PKGCONFIG_INSTALL_DIR
 # list all header files
 set(GOOSEMATERIAL_HEADERS
   GooseMaterial/AmorphousSolid/LinearStrain/ElasticLiquid/Cartesian3d.h
+  GooseMaterial/AmorphousSolid/LinearStrain/ElastoPlastic/Cartesian2d.h
   GooseMaterial/AmorphousSolid/LinearStrain/ElastoPlastic/Cartesian3d.h
+  GooseMaterial/AmorphousSolid/LinearStrain/ElastoPlastic/Cartesian2dPlanarShear.h
+  GooseMaterial/AmorphousSolid/LinearStrain/ElastoPlastic/Cartesian3dPlanarShear.h
   GooseMaterial/Metal/LinearStrain/Elastic/Cartesian3d.h
   GooseMaterial/Metal/LinearStrain/Elastic/miscellaneous.h
   GooseMaterial/Metal/LinearStrain/ElastoPlastic/Cartesian3d.h
