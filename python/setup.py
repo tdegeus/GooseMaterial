@@ -10,7 +10,7 @@ import setuptools
 import pybind11
 import cppmat
 
-__version__ = '0.0.3'
+__version__ = '0.0.4'
 
 ext_modules = [
   Extension(

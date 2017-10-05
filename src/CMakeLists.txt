@@ -1,7 +1,7 @@
 
 # define project information
 project(GooseMaterial)
-set(GOOSEMATERIAL_VERSION_NUMBER 0.0.3)
+set(GOOSEMATERIAL_VERSION_NUMBER 0.0.4)
 
 # required to specify the c++ standard
 cmake_minimum_required(VERSION 3.0)
