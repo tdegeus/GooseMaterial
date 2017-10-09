@@ -28,10 +28,11 @@ namespace LinearStrain {
 namespace NonLinearElastic {
 namespace Cartesian3d {
 
-using T2  = cppmat::tensor3_2 <double>;
-using T2s = cppmat::tensor3_2s<double>;
-using T2d = cppmat::tensor3_2d<double>;
-using T4  = cppmat::tensor3_4 <double>;
+namespace cm = cppmat::cartesian3d;
+
+using T2s = cm::tensor2s<double>;
+using T2d = cm::tensor2d<double>;
+using T4  = cm::tensor4 <double>;
 
 // ============================================ OVERVIEW ===========================================
 
@@ -77,7 +78,7 @@ T2s  Material::stress(const T2s &eps)
   T2s sig_d(0.0);
 
   // second order identity tensor
-  I      = cppmat::identity3_2();
+  I      = cm::identity2();
 
   // decompose strain: hydrostatic part, deviatoric part, equivalent strain
   eps_m  = eps.trace() / 3.;
@@ -108,7 +109,7 @@ std::tuple<T4,T2s> Material::tangent_stress(const T2s &eps)
   // ------
 
   // second order identity tensor
-  I      = cppmat::identity3_2();
+  I      = cm::identity2();
 
   // decompose strain: hydrostatic part, deviatoric part, equivalent strain
   eps_m  = eps.trace() / 3.;
@@ -129,8 +130,8 @@ std::tuple<T4,T2s> Material::tangent_stress(const T2s &eps)
   // -------
 
   // unit tensors: II = dyadic(I,I) and deviatoric unit tensor I4d (A_d = I4d : A)
-  T4 I4d = cppmat::identity3_4d();
-  T4 II  = cppmat::identity3_II();
+  T4 I4d = cm::identity4d();
+  T4 II  = cm::identityII();
 
   // hydrostatic part
   T4 K4  = m_K * II;

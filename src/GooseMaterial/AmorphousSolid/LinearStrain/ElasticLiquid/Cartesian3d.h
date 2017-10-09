@@ -32,9 +32,10 @@ namespace LinearStrain {
 namespace ElasticLiquid {
 namespace Cartesian3d {
 
-using T2  = cppmat::tensor3_2 <double>;
-using T2s = cppmat::tensor3_2s<double>;
-using T2d = cppmat::tensor3_2d<double>;
+namespace cm = cppmat::cartesian3d;
+
+using T2s = cm::tensor2s<double>;
+using T2d = cm::tensor2d<double>;
 
 // ============================================ OVERVIEW ===========================================
 
@@ -120,7 +121,7 @@ T2s Material::stress(const T2s &epsdot, double dt)
   m_T = m_T_n+dt;
 
   // decompose the strain in a hydrostatic and a deviatoric part
-  I       = cppmat::identity3_2();
+  I       = cm::identity2();
   epsdotm = epsdot.trace()/3.;
   epsdotd = epsdot - epsdotm*I;
 

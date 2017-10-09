@@ -31,6 +31,10 @@ The following materials have been implemented:
 *   [GooseMaterial::Metal::LinearStrain::ElastoViscoPlasticHardening](./docs/Metal/LinearStrain/ElastoViscoPlasticHardening/readme.pdf)
 *   [GooseMaterial::Metal::LinearStrain::ElastoViscoPlastic](./docs/Metal/LinearStrain/ElastoViscoPlastic/readme.pdf)
 *   [GooseMaterial::AmorphousSolid::LinearStrain::ElasticLiquid](./docs/AmorphousSolid/LinearStrain/ElasticLiquid/readme.pdf)
+*   [GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic](./docs/AmorphousSolid/LinearStrain/ElastoPlastic/readme.pdf)
+     - [GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3d::Material](./src/GooseMaterial/AmorphousSolid/LinearStrain/ElastoPlastic/Cartesian3d.h)
+     - [GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2d::Material](./src/GooseMaterial/AmorphousSolid/LinearStrain/ElastoPlastic/Cartesian2d.h)
+     - [GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2dPlanarShear::Material](./src/GooseMaterial/AmorphousSolid/LinearStrain/ElastoPlastic/Cartesian2dPlanarShear.h)
 
 ## Installation
 

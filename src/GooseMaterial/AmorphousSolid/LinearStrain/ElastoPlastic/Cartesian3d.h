@@ -27,10 +27,11 @@ namespace LinearStrain {
 namespace ElastoPlastic {
 namespace Cartesian3d {
 
-using T2s = cppmat::tensor3_2s<double>;
-using T2d = cppmat::tensor3_2d<double>;
+namespace cm = cppmat::cartesian3d;
 
-T2d    I    = cppmat::identity3_2();
+using T2s = cm::tensor2s<double>;
+using T2d = cm::tensor2d<double>;
+
 double ndim = 3.;
 
 // ============================================ OVERVIEW ===========================================
@@ -164,8 +165,9 @@ size_t Material::find(double epsd)
 T2s Material::stress(const T2s &Eps)
 {
   // decompose strain: hydrostatic part, deviatoric part
-  double epsm  = Eps.trace()/ndim;
-  T2s    Epsd  = Eps - epsm*I;
+  T2d    I    = cm::identity2();
+  double epsm = Eps.trace()/ndim;
+  T2s    Epsd = Eps - epsm*I;
   double epsd = std::pow( .5*Epsd.ddot(Epsd) , 0.5 );
 
   // elastic: return full stress tensor
@@ -222,6 +224,7 @@ double Material::eps_m(const T2s &Eps)
 
 double Material::eps_d(const T2s &Eps)
 {
+  T2d    I    = cm::identity2();
   double epsm = Eps.trace()/ndim;
   T2s    Epsd = Eps - epsm*I;
 
@@ -246,6 +249,7 @@ double Material::sig_m(const T2s &Sig)
 
 double Material::sig_d(const T2s &Sig)
 {
+  T2d    I    = cm::identity2();
   double sigm = Sig.trace()/ndim;
   T2s    Sigd = Sig - sigm*I;
 

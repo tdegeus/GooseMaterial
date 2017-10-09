@@ -10,7 +10,7 @@ import setuptools
 import pybind11
 import cppmat
 
-__version__ = '0.0.4'
+__version__ = '0.0.5'
 
 ext_modules = [
   Extension(
@@ -38,7 +38,7 @@ setup(
   url                = 'https://github.com/tdegeus/GooseMaterial',
   ext_modules        = ext_modules,
   extra_compile_args = ["-DNDEBUG"], # switch off assertions
-  install_requires   = ['pybind11>=2.2.0','cppmat>=0.2.10','goosempl>=0.1.3'],
+  install_requires   = ['pybind11>=2.2.0','cppmat>=0.2.14','goosempl>=0.1.3'],
   cmdclass           = {'build_ext': cppmat.BuildExt},
   zip_safe           = False,
 )

@@ -27,11 +27,12 @@ namespace LinearStrain {
 namespace ElastoPlastic {
 namespace Cartesian2dPlanarShear {
 
-using V   = cppmat::vector2   <double>;
-using T2s = cppmat::tensor2_2s<double>;
-using T2d = cppmat::tensor2_2d<double>;
+namespace cm = cppmat::cartesian2d;
 
-T2d    I    = cppmat::identity2_2();
+using V   = cm::vector  <double>;
+using T2s = cm::tensor2s<double>;
+using T2d = cm::tensor2d<double>;
+
 double ndim = 2.;
 
 // ============================================ OVERVIEW ===========================================
@@ -180,8 +181,9 @@ size_t Material::find(double epsd)
 T2s Material::stress(const T2s &Eps)
 {
   // decompose strain: hydrostatic part, deviatoric part
-  double epsm  = Eps.trace()/ndim;
-  T2s    Epsd  = Eps - epsm*I;
+  T2d    I    = cm::identity2();
+  double epsm = Eps.trace()/ndim;
+  T2s    Epsd = Eps - epsm*I;
 
   // elastic: return full stress tensor
   if ( m_elastic  ) return (m_K*epsm) * I + m_G * Epsd;
@@ -191,7 +193,7 @@ T2s Material::stress(const T2s &Eps)
   V s  = sn - ( sn.dot(m_n) ) * m_n;  s .setUnitLength();
 
   // decompose deviatoric strain in a planar part and a non-planar part
-  double epss  = cppmat::dot(s.dot(Epsd),m_n);
+  double epss  = cm::dot(s.dot(Epsd),m_n);
   T2s    Epss  = epss * ( s.dyadic(m_n) + m_n.dyadic(s) ).astensor2s();
   T2s    Epsn  = Epsd - Epss;
 
@@ -246,6 +248,7 @@ double Material::eps_m(const T2s &Eps)
 
 double Material::eps_d(const T2s &Eps)
 {
+  T2d    I    = cm::identity2();
   double epsm = Eps.trace()/ndim;
   T2s    Epsd = Eps - epsm*I;
 
@@ -256,6 +259,7 @@ double Material::eps_d(const T2s &Eps)
 
 double Material::eps_s(const T2s &Eps)
 {
+  T2d    I    = cm::identity2();
   double epsm = Eps.trace()/ndim;
   T2s    Epsd = Eps - epsm*I;
 
@@ -263,13 +267,14 @@ double Material::eps_s(const T2s &Eps)
   V sn = Epsd.dot(m_n);               sn.setUnitLength();
   V s  = sn - ( sn.dot(m_n) ) * m_n;  s .setUnitLength();
 
-  return cppmat::dot(s.dot(Epsd),m_n);
+  return cm::dot(s.dot(Epsd),m_n);
 }
 
 // -------------------------------------------------------------------------------------------------
 
 double Material::eps_n(const T2s &Eps)
 {
+  T2d    I    = cm::identity2();
   double epsm = Eps.trace()/ndim;
   T2s    Epsd = Eps - epsm*I;
 
@@ -278,7 +283,7 @@ double Material::eps_n(const T2s &Eps)
   V s  = sn - ( sn.dot(m_n) ) * m_n;  s .setUnitLength();
 
   // decompose deviatoric strain in a planar part and a non-planar part
-  double epss  = cppmat::dot(s.dot(Epsd),m_n);
+  double epss  = cm::dot(s.dot(Epsd),m_n);
   T2s    Epss  = epss * ( s.dyadic(m_n) + m_n.dyadic(s) ).astensor2s();
   T2s    Epsn  = Epsd - Epss;
 
@@ -303,6 +308,7 @@ double Material::sig_m(const T2s &Sig)
 
 double Material::sig_d(const T2s &Sig)
 {
+  T2d    I    = cm::identity2();
   double sigm = Sig.trace()/ndim;
   T2s    Sigd = Sig - sigm*I;
 
