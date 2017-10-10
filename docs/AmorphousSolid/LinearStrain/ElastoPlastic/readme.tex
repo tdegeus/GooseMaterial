@@ -24,6 +24,10 @@
 
 \newcommand\leftstar[1]{\hspace*{-.3em}~^\star\!#1}
 
+\newcommand\T[1]{\underline{\bm{{#1}}}}
+
+\newcommand\TT[1]{\underline{\mathbb{{#1}}}}
+
 \begin{document}
 
 \maketitle
@@ -42,39 +46,41 @@ A microscopic continuum model of plasticity in amorphous solids is proposed. Thi
 
 \subsection{Constitutive model}
 
-The model is constructed such that it behaves linear elastically in the volumetric stress response. The same holds for the deviatoric stress response, whereby plasticity is modeled such that the material starts flowing once a critical strain is reached. After a period of flow, the deviatoric stress response is again linear elastic. A detail to mention upfront, is that the elastic moduli and the equivalent stress and strain are defined such that the model is equivalent regardless of the number of dimensions, $d$, and it has the least amount of prefactors in the stress--strain response. To retrieve the common definitions in linear elasticity for $d = 3$, one simply has to scale these parameters (see Section~\ref{sec:nomenclature} for the nomenclature, including the parameter transformation).
+The model is constructed such that it behaves linear elastically in the volumetric stress response. The same holds for the deviatoric stress response, whereby plasticity is modeled such that the material starts flowing once a critical strain is reached. After a period of flow, the deviatoric stress response is again linear elastic. A detail to mention upfront, is that the elastic moduli and the equivalent stress and strain are defined such that the model is equivalent regardless of the number of dimensions, $d$, and it has the least amount of prefactors in the stress--strain response. To retrieve the common definitions in linear elasticity for $d = 3$, one simply has to scale these parameters. See Section~\ref{sec:nomenclature} for the nomenclature, including the parameter transformation.
 
-The model is based on a strain energy $W$ is considered which is composed of two parts, a volumetric (or hydrostatic) part $U$ related to the hydrostatic strain $\varepsilon_\mathrm{m}$, and a shear (or deviatoric) part $V$ related to the equivalent strain $\varepsilon_\mathrm{eq}$, i.e.\
+The model is based on a strain energy $W$ is composed of two parts, a volumetric (or hydrostatic) part $U$ related to the hydrostatic strain $\varepsilon_\mathrm{m}$, and a shear (or deviatoric) part $V$ related to the equivalent shear strain $\varepsilon_\mathrm{d}$, i.e.\
 \begin{equation}
-  W ( \bm{\varepsilon} ) = U ( \varepsilon_\mathrm{m} ) + V ( \varepsilon_\mathrm{eq} )
+  W ( \T{\varepsilon} ) = U ( \varepsilon_\mathrm{m} ) + V ( \varepsilon_\mathrm{d} )
 \end{equation}
-The stress response $\bm{\sigma}$ is the derivative of this energy with respect to the strain tensor $\bm{\varepsilon}$. Before specializing $U$ and $V$ we can already say that
+The stress response $\T{\sigma}$ is the derivative of this energy with respect to the strain tensor $\T{\varepsilon}$. Before specializing $U$ and $V$ we can already say that
 \begin{equation}\label{eq:dU-dV:elas}
-  \bm{\sigma}
+  \T{\sigma}
   =
-  \frac{\partial W}{\partial \bm{\varepsilon}}
-  =
-  \frac{\partial U}{\partial \varepsilon_\mathrm{m}} \;
-  \frac{\partial \varepsilon_\mathrm{m}}{\partial \bm{\varepsilon}}
-  +
-  \frac{\partial V}{\partial \varepsilon_\mathrm{eq}} \;
-  \frac{\partial \varepsilon_\mathrm{eq}}{\partial \bm{\varepsilon}}
+  \frac{\partial W}{\partial \T{\varepsilon}}
   =
   \frac{\partial U}{\partial \varepsilon_\mathrm{m}} \;
-  \frac{1}{d} \bm{I}
+  \frac{\partial \varepsilon_\mathrm{m}}{\partial \T{\varepsilon}}
   +
-  \frac{\partial V}{\partial \varepsilon_\mathrm{eq}} \;
-  \frac{\bm{\varepsilon}_d}{2 \, \varepsilon_\mathrm{eq}}
+  \frac{\partial V}{\partial \varepsilon_\mathrm{d}} \;
+  \frac{\partial \varepsilon_\mathrm{d}}{\partial \T{\varepsilon}}
+  =
+  \frac{\partial U}{\partial \varepsilon_\mathrm{m}} \;
+  \frac{1}{d} \T{I}
+  +
+  \frac{\partial V}{\partial \varepsilon_\mathrm{d}} \;
+  \frac{\T{\varepsilon}_d}{2 \, \varepsilon_\mathrm{d}}
 \end{equation}
-From which we can identity the hydrostatic stress and the deviator stress tensor:
+From which we can identity the hydrostatic stress and the deviatoric stress tensor as
 \begin{equation}\label{stress:generic}
   \sigma_\mathrm{m} = \frac{1}{d} \frac{\partial U}{\partial \varepsilon_\mathrm{m}}
   \;, \qquad
-  \bm{\sigma}_\mathrm{d}
+  \T{\sigma}_\mathrm{d}
   =
-  \frac{\partial V}{\partial \varepsilon_\mathrm{eq}} \;
-  \frac{\bm{\varepsilon}_d}{2 \, \varepsilon_\mathrm{eq}}
+  \frac{\partial V}{\partial \varepsilon_\mathrm{d}} \;
+  \frac{\T{\varepsilon}_d}{2 \, \varepsilon_\mathrm{d}}
 \end{equation}
+
+Below both $U(\varepsilon_\mathrm{m})$ and $V(\varepsilon_\mathrm{d})$ will be defined by slowly increase complexity, departing from linear elasticity.
 
 \subsubsection{Linear elasticity}
 
@@ -82,57 +88,55 @@ We start simple by considering linear elasticity. In this case the volumetric st
 \begin{equation}\label{eq:W:elas}
   U ( \varepsilon_\mathrm{m}  ) = \frac{d}{2} \, K \, \varepsilon_\mathrm{m}^2
   \;, \qquad
-  V ( \varepsilon_\mathrm{eq} ) = G \, \varepsilon_\mathrm{eq}^2
+  V ( \varepsilon_\mathrm{d} ) = G \, \varepsilon_\mathrm{d}^2
 \end{equation}
-The two potentials are plotted in Fig.~\ref{fig:U-V:elas} (in which only $\varepsilon_\mathrm{eq} \geq 0$ is shown, as it is by definition non-negative). It is trivial to obtain that
+The two potentials are plotted in Fig.~\ref{fig:U-V:elas} (in which only $\varepsilon_\mathrm{d} \geq 0$ is shown, as it is by definition non-negative). It is trivial to obtain that
 \begin{equation}
   \frac{\partial U}{\partial \varepsilon_\mathrm{m}}
   =
   d \, K \, \varepsilon_\mathrm{m}
   \;, \qquad
-  \frac{\partial V}{\partial \varepsilon_\mathrm{eq}}
+  \frac{\partial V}{\partial \varepsilon_\mathrm{d}}
   =
-  2 \, G \, \varepsilon_\mathrm{eq}
+  2 \, G \, \varepsilon_\mathrm{d}
 \end{equation}
 (plotted in Fig.~\ref{fig:dU-dV:elas}). From which we obtain the following expression for the stress
 \begin{equation}\label{eq:sig-elas}
-  \bm{\sigma} ( \bm{\varepsilon} )
+  \T{\sigma} ( \T{\varepsilon} )
   =
-  K \, \varepsilon_\mathrm{m} \, \bm{I}
+  K \, \varepsilon_\mathrm{m} \, \T{I}
   +
-  G \, \bm{\varepsilon}_\mathrm{d}
+  G \, \T{\varepsilon}_\mathrm{d}
 \end{equation}
 
 \begin{figure}[htp]
   \centering
   \includegraphics[width=1.\textwidth]{figures/potential_U-V_elas}
-  \caption{Strain energy $W ( \bm{\varepsilon} ) = U ( \varepsilon_\mathrm{m} ) + V ( \varepsilon_\mathrm{eq} )$ for linear elasticity.}
+  \caption{Strain energy $W ( \T{\varepsilon} ) = U ( \varepsilon_\mathrm{m} ) + V ( \varepsilon_\mathrm{d} )$ for linear elasticity.}
   \label{fig:U-V:elas}
 \end{figure}
 
 \begin{figure}[htp]
   \centering
   \includegraphics[width=1.\textwidth]{figures/potential_dU-dV_elas}
-  \caption{Derivative of the hydrostatic strain energy $U$ and the deviatoric strain energy $V$ w.r.t.\ respectively the hydrostatic strain $\varepsilon_\mathrm{m}$ and the equivalent strain $\varepsilon_\mathrm{eq}$.}
+  \caption{Derivative of the hydrostatic strain energy $U$ and the deviatoric strain energy $V$ w.r.t.\ respectively the hydrostatic strain $\varepsilon_\mathrm{m}$ and the equivalent shear strain $\varepsilon_\mathrm{d}$.}
   \label{fig:dU-dV:elas}
 \end{figure}
 
-\subsubsection{Plastic potential}
+\subsubsection{Plastic potential -- Parabolic potential with multiple minima}
 
 The model is now extended to account for plasticity. The model is defined such that the material responds volumetrically purely elastic, while in shear the model is governed by multiple minima. These minima have the effect that when the material reaches a certain yield stress it jumps to the next minimum. Around this minimum the elasticity is always the same. When loading is continued the the material again jumps to a new minimum when the next yield stress is reached. The magnitude of the jumps and of the yield stress are thereby related.
 
-\paragraph{Parabolic potential with multiple minima}
-
-As described, the volumetric behavior is simply elastic; given by Eq.~(\ref{eq:W:elas}a) and plotted in Fig.~\ref{fig:U-V:elas}(a). To attain the desired behavior in shear we divide the equivalent strain space in a finite number of yield strains $\varepsilon_\mathrm{y}^{(0)}, \varepsilon_\mathrm{y}^{(1)}, \varepsilon_\mathrm{y}^{(2)}, ...$ and define a parabolic potential between each pair ($[ \varepsilon_\mathrm{y}^{(0)}, \varepsilon_\mathrm{y}^{(1)} )$, $[ \varepsilon_\mathrm{y}^{(1)}, \varepsilon_\mathrm{y}^{(2)} )$, ...). The shear strain energy is then composed of a manifold of quadratic contributions
+As described, the volumetric behavior is simply elastic; whereby the potential is given by Eq.~(\ref{eq:W:elas}a) and is plotted in Fig.~\ref{fig:U-V:elas}(a). To attain the desired behavior in shear we divide the equivalent shear strain space in a finite number of yield strains $\varepsilon_\mathrm{y}^{(0)}, \varepsilon_\mathrm{y}^{(1)}, \varepsilon_\mathrm{y}^{(2)}, ...$ and define a parabolic potential between each pair ($[ \varepsilon_\mathrm{y}^{(0)}, \varepsilon_\mathrm{y}^{(1)} )$, $[ \varepsilon_\mathrm{y}^{(1)}, \varepsilon_\mathrm{y}^{(2)} )$, ...). The shear strain energy is then composed of a manifold of quadratic contributions
 \begin{equation}\label{eq:V-plas}
   V \big(
-    \varepsilon_\mathrm{y}^{(i)} \leq \varepsilon_\mathrm{eq} < \varepsilon_\mathrm{y}^{(i+1)}
+    \varepsilon_\mathrm{y}^{(i)} \leq \varepsilon_\mathrm{d} < \varepsilon_\mathrm{y}^{(i+1)}
   \big)
   =
   V^{(i)}
   =
   G \, \bigg[\,
-    \Big[\, \varepsilon_\mathrm{eq} - \varepsilon_\mathrm{min}^{(i)} \,\Big]^2
+    \Big[\, \varepsilon_\mathrm{d} - \varepsilon_\mathrm{min}^{(i)} \,\Big]^2
     -
     \Big[\, \Delta \varepsilon_\mathrm{y}^{(i)} \,\Big]^2
   \,\bigg]
@@ -143,7 +147,7 @@ where the mean of $\varepsilon_\mathrm{y}^{(i)}$ and $\varepsilon_\mathrm{y}^{(i
   =
   \frac{1}{2} \Big[\, \varepsilon_\mathrm{y}^{(i+1)} + \varepsilon_\mathrm{y}^{(i)} \,\Big]
 \end{equation}
-which is also the equivalent strain at which the shear strain energy reaches its minimum. From this minimum, the distance to $\varepsilon_\mathrm{y}^{(i)}$ and $\varepsilon_\mathrm{y}^{(i+1)}$ is
+which is also the equivalent shear strain at which the shear strain energy reaches its minimum. From this minimum, the distance to $\varepsilon_\mathrm{y}^{(i)}$ and $\varepsilon_\mathrm{y}^{(i+1)}$ is
 \begin{equation}
   \Delta \varepsilon_\mathrm{y}^{(i)}
   =
@@ -153,33 +157,33 @@ The resulting shear strain energy is plotted in Fig.~\ref{fig:V:plas}(a).
 
 The stress response is obtained from
 \begin{equation}\label{eq:dV-plas}
-  \frac{\partial V^{(i)}}{\partial \varepsilon_\mathrm{eq}}
+  \frac{\partial V^{(i)}}{\partial \varepsilon_\mathrm{d}}
   =
-  2 \, G \, \Big[\, \varepsilon_\mathrm{eq} - \varepsilon_\mathrm{min}^{(i)} \,\Big]
+  2 \, G \, \Big[\, \varepsilon_\mathrm{d} - \varepsilon_\mathrm{min}^{(i)} \,\Big]
 \end{equation}
 (see Fig.~\ref{fig:dV:plas}(a)). From which it can observed that in elasticity the behavior is identical to above (cf.~(\ref{eq:dU-dV:elas}b)). For the case that $\varepsilon_\mathrm{y}^{(0)} = - \varepsilon_\mathrm{y}^{(1)}$ the responses are even identical until initial yield stress is reached. For completeness, the stress reads
 \begin{equation}
-  \bm{\sigma} ( \bm{\varepsilon} )
+  \T{\sigma} ( \T{\varepsilon} )
   =
-  K \, \varepsilon_\mathrm{m} \, \bm{I}
+  K \, \varepsilon_\mathrm{m} \, \T{I}
   +
-  G \, \Big[\, 1 - \varepsilon_\mathrm{min}^{(i)} / \varepsilon_\mathrm{eq} \,\Big] \;
-  \bm{\varepsilon}_\mathrm{d}
+  G \, \Big[\, 1 - \varepsilon_\mathrm{min}^{(i)} / \varepsilon_\mathrm{d} \,\Big] \;
+  \T{\varepsilon}_\mathrm{d}
   \qquad
   \mathrm{for}
-  \qquad
-  \varepsilon_\mathrm{y}^{(i)} \leq \varepsilon_\mathrm{eq} < \varepsilon_\mathrm{y}^{(i+1)}
+  \;
+  \varepsilon_\mathrm{y}^{(i)} \leq \varepsilon_\mathrm{d} < \varepsilon_\mathrm{y}^{(i+1)}
 \end{equation}
-whereby one has to assume that when $\varepsilon_\mathrm{eq} = 0$ also $\bm{\sigma}_\mathrm{d} = \bm{0}$ in order to avoid zero-devision.
+whereby one has to assume that when $\varepsilon_\mathrm{d} = 0$ also $\T{\sigma}_\mathrm{d} = \T{0}$ in order to avoid zero-devision.
 
 From Fig.~\ref{fig:dV:plas}(a) we can observe that this model is not very realistic, as it exhibits stress jumps between different parabola in the potential, because of the discontinuity in the second derivative of the elastic potential. This is remedied in the final model, presented below.
 
-\paragraph{Smooth parabolic potential with multiple minima}
+\subsubsection{Plastic potential -- Smooth parabolic potential with multiple minima}
 
 The final model consists of a smoothened equivalent of Eq.~\eqref{eq:V-plas} is defined:
 \begin{equation}\label{eq:V-plas-smooth}
   V \big(
-    \varepsilon_\mathrm{y}^{(i)} \leq \varepsilon_\mathrm{eq} < \varepsilon_\mathrm{y}^{(i+1)}
+    \varepsilon_\mathrm{y}^{(i)} \leq \varepsilon_\mathrm{d} < \varepsilon_\mathrm{y}^{(i+1)}
   \big)
   =
   V^{(i)}
@@ -191,53 +195,53 @@ The final model consists of a smoothened equivalent of Eq.~\eqref{eq:V-plas} is 
     +
     \cos \left(
       \frac{ \pi }{ \Delta \varepsilon_\mathrm{y}^{(i)} }
-      \Big[\, \varepsilon_\mathrm{eq} - \varepsilon_\mathrm{min}^{(i)} \,\Big]
+      \Big[\, \varepsilon_\mathrm{d} - \varepsilon_\mathrm{min}^{(i)} \,\Big]
     \right)
   \right]
 \end{equation}
 which is plotted in Fig.~\ref{fig:V:plas}(b). In this case the stress is obtained from
 \begin{equation}\label{eq:dV-plas-smooth}
-  \frac{\partial V^{(i)}}{\partial \varepsilon_\mathrm{eq}}
+  \frac{\partial V^{(i)}}{\partial \varepsilon_\mathrm{d}}
   =
   2 \, G \,
   \left[ \frac{\Delta \varepsilon_\mathrm{y}^{(i)}}{\pi} \right]
   \sin \left(
     \frac{ \pi }{ \Delta \varepsilon_\mathrm{y}^{(i)} }
-    \Big[\, \varepsilon_\mathrm{eq} - \varepsilon_\mathrm{min}^{(i)} \,\Big]
+    \Big[\, \varepsilon_\mathrm{d} - \varepsilon_\mathrm{min}^{(i)} \,\Big]
   \right)
 \end{equation}
-(see Fig.~\ref{fig:dV:plas}(b)). Which is to the first order equal to linear elasticity around its minimum $\varepsilon_\mathrm{min}^{(i)}$. Indeed, the first order Taylor series of Eq.~\eqref{eq:dV-plas-smooth} around $\varepsilon_\mathrm{eq} - \varepsilon_\mathrm{min}^{(i)} = 0$,
+(see Fig.~\ref{fig:dV:plas}(b)). Which is to the first order equal to linear elasticity around its minimum $\varepsilon_\mathrm{min}^{(i)}$. Indeed, the first order Taylor series of Eq.~\eqref{eq:dV-plas-smooth} around $\varepsilon_\mathrm{d} = \varepsilon_\mathrm{min}^{(i)}$,
 \begin{equation}
-  \frac{\partial V^{(i)}}{\partial \varepsilon_\mathrm{eq}}
+  \frac{\partial V^{(i)}}{\partial \varepsilon_\mathrm{d}}
   \approx
-  2 \, G \, \Big[\, \varepsilon_\mathrm{eq} - \varepsilon_\mathrm{min}^{(i)} \,\Big]
+  2 \, G \, \Big[\, \varepsilon_\mathrm{d} - \varepsilon_\mathrm{min}^{(i)} \,\Big]
 \end{equation}
 is identical to Eq.~\eqref{eq:dV-plas}.
 
 For completeness, also in case the expression for the entire stress tensor
 \begin{equation}
-  \bm{\sigma} ( \bm{\varepsilon} )
+  \T{\sigma} ( \T{\varepsilon} )
   =
-  K \, \varepsilon_\mathrm{m} \, \bm{I}
+  K \, \varepsilon_\mathrm{m} \, \T{I}
   +
   G \,
   \left[ \frac{\Delta \varepsilon_\mathrm{y}^{(i)}}{\pi} \right]
   \sin \left(
     \frac{ \pi }{ \Delta \varepsilon_\mathrm{y}^{(i)} }
-    \Big[\, \varepsilon_\mathrm{eq} - \varepsilon_\mathrm{min}^{(i)} \,\Big]
+    \Big[\, \varepsilon_\mathrm{d} - \varepsilon_\mathrm{min}^{(i)} \,\Big]
   \right)
-  \frac{\bm{\varepsilon}_\mathrm{d}}{\varepsilon_\mathrm{eq}}
+  \frac{\T{\varepsilon}_\mathrm{d}}{\varepsilon_\mathrm{d}}
   \qquad
   \mathrm{for}
-  \qquad
-  \varepsilon_\mathrm{y}^{(i)} \leq \varepsilon_\mathrm{eq} < \varepsilon_\mathrm{y}^{(i+1)}
+  \;
+  \varepsilon_\mathrm{y}^{(i)} \leq \varepsilon_\mathrm{d} < \varepsilon_\mathrm{y}^{(i+1)}
 \end{equation}
-whereby, again, one has to assume that when $\varepsilon_\mathrm{eq} = 0$ also $\bm{\sigma}_\mathrm{d} = \bm{0}$ in order to avoid zero-devision.
+whereby, again, one has to assume that when $\varepsilon_\mathrm{d} = 0$ also $\T{\sigma}_\mathrm{d} = \T{0}$ in order to avoid zero-devision.
 
 \begin{figure}[htp]
   \centering
   \includegraphics[width=1.\textwidth]{figures/potential_V-plas}
-  \caption{The multi-minima shear strain energy, $V ( \varepsilon_\mathrm{eq} )$, that models the effect of plasticity. The multi-parabolic shear strain energy is shown in (a), while its smoothened equivalent is shown in (b).}
+  \caption{The multi-minima shear strain energy, $V ( \varepsilon_\mathrm{d} )$, that models the effect of plasticity. The multi-parabolic shear strain energy is shown in (a), while its smoothened equivalent is shown in (b).}
   \label{fig:V:plas}
 \end{figure}
 
@@ -251,27 +255,32 @@ whereby, again, one has to assume that when $\varepsilon_\mathrm{eq} = 0$ also $
 \subsection{Nomenclature}
 \label{sec:nomenclature}
 
-\subsubsection{Tensor products}
+\subsubsection{Tensors and tensor products}
 \label{sec:nomenclature:tensor}
 
 \begin{itemize}
 %
+\item Second order tensor
+\begin{equation}
+  \T{A} = A_{ij} \vec{e}_i \vec{e}_j
+\end{equation}
+%
 \item Dyadic tensor product
 \begin{align}
-  \mathbb{C} &= \bm{A} \otimes \bm{B} \\
-  C_{ijkl}   &= A_{ij} \,      B_{kl}
+  \T{C} &= \vec{a} \otimes \vec{b} \\
+  C_{ij} &= a_{i} \, b_{j}
 \end{align}
 %
 \item Double tensor contraction
 \begin{align}
-  C &= \bm{A} : \bm{B} \\
+  C &= \T{A} : \T{B} \\
     &= A_{ij} \, B_{ji}
 \end{align}
 %
 \item Deviatoric projection tensor (in $d$ dimensions)
 \begin{equation}
-  \mathbb{I}_\mathrm{d}
-  = \mathbb{I}_\mathrm{s} - \tfrac{1}{d} \bm{I} \otimes \bm{I}
+  \TT{I}_\mathrm{d}
+  = \TT{I}_\mathrm{s} - \tfrac{1}{d} \T{I} \otimes \T{I}
 \end{equation}
 %
 \end{itemize}
@@ -284,22 +293,30 @@ whereby, again, one has to assume that when $\varepsilon_\mathrm{eq} = 0$ also $
 \item Mean strain (in $d$ dimensions)
 \begin{equation}
   \varepsilon_\mathrm{m}
-  = \tfrac{1}{d} \, \mathrm{tr} ( \bm{\varepsilon} )
-  = \tfrac{1}{d} \, \bm{\varepsilon} : \bm{I}
+  = \tfrac{1}{d} \, \mathrm{tr} ( \T{\varepsilon} )
+  = \tfrac{1}{d} \, \T{\varepsilon} : \T{I}
 \end{equation}
 %
 \item Strain deviator
 \begin{equation}
-  \bm{\varepsilon}_\mathrm{d}
-  = \bm{\varepsilon} - \varepsilon_\mathrm{m} \, \bm{I}
-  = \mathbb{I}_\mathrm{d} : \bm{\varepsilon}
+  \T{\varepsilon}_\mathrm{d}
+  = \T{\varepsilon} - \varepsilon_\mathrm{m} \, \T{I}
+  = \TT{I}_\mathrm{d} : \T{\varepsilon}
+\end{equation}
+%
+\item Equivalent shear strain
+\begin{equation}
+  \varepsilon_\mathrm{d}
+  = \; \sqrt{
+    \tfrac{1}{2} \, \T{\varepsilon}_\mathrm{d} : \T{\varepsilon}_\mathrm{d}
+  }
 \end{equation}
 %
 \item Equivalent strain
 \begin{equation}
   \varepsilon_\mathrm{eq}
   = \; \sqrt{
-    \tfrac{1}{2} \, \bm{\varepsilon}_\mathrm{d} : \bm{\varepsilon}_\mathrm{d}
+    \tfrac{1}{2} \, \T{\varepsilon} : \T{\varepsilon}
   }
 \end{equation}
 %
@@ -314,21 +331,26 @@ whereby, again, one has to assume that when $\varepsilon_\mathrm{eq} = 0$ also $
 %
 \begin{equation}
 \sigma_\mathrm{m}
-= \tfrac{1}{d} \, \mathrm{tr} ( \bm{\sigma} )
-= \tfrac{1}{d} \, \bm{\sigma} : \bm{I}
+= \tfrac{1}{d} \, \mathrm{tr} ( \T{\sigma} )
+= \tfrac{1}{d} \, \T{\sigma} : \T{I}
 \end{equation}
 %
 \item Stress deviator
 %
 \begin{equation}
-  \bm{\sigma}_\mathrm{d}
-  = \bm{\sigma} - \sigma_\mathrm{m} \, \bm{I}
-  = \mathbb{I}_\mathrm{d} : \bm{\sigma}
+  \T{\sigma}_\mathrm{d}
+  = \T{\sigma} - \sigma_\mathrm{m} \, \T{I}
+  = \TT{I}_\mathrm{d} : \T{\sigma}
 \end{equation}
 %
-\item Von Mises equivalent stress
+\item Von Mises equivalent shear stress
 \begin{equation}
-\sigma_\mathrm{eq} = \sqrt{ \tfrac{1}{2} \, \bm{\sigma}_\mathrm{d} : \bm{\sigma}_\mathrm{d} }
+\sigma_\mathrm{d} = \sqrt{ \tfrac{1}{2} \, \T{\sigma}_\mathrm{d} : \T{\sigma}_\mathrm{d} }
+\end{equation}
+%
+\item Equivalent stress
+\begin{equation}
+\sigma_\mathrm{eq} = \sqrt{ \tfrac{1}{2} \, \T{\sigma} : \T{\sigma} }
 \end{equation}
 %
 \end{itemize}
@@ -340,54 +362,54 @@ whereby, again, one has to assume that when $\varepsilon_\mathrm{eq} = 0$ also $
 %
 \item Strain deviator
 \begin{equation}
-  \frac{ \partial \bm{\varepsilon}_\mathrm{d} }{ \partial \bm{\varepsilon} }
-  = \mathbb{I}_\mathrm{d}
+  \frac{ \partial \T{\varepsilon}_\mathrm{d} }{ \partial \T{\varepsilon} }
+  = \TT{I}_\mathrm{d}
 \end{equation}
 %
-\item Mean equivalent strain (in $d$ dimensions)
+\item Mean equivalent shear strain (in $d$ dimensions)
 \begin{equation}
-  \frac{ \partial \varepsilon_\mathrm{m} }{ \partial \bm{\varepsilon} }
+  \frac{ \partial \varepsilon_\mathrm{m} }{ \partial \T{\varepsilon} }
   =
-  \tfrac{1}{d} \bm{I} : \mathbb{I}
+  \tfrac{1}{d} \T{I} : \TT{I}
   =
-  \tfrac{1}{d} \bm{I}
+  \tfrac{1}{d} \T{I}
 \end{equation}
 %
-\item Von Mises equivalent strain
+\item Equivalent shear strain
 \begin{equation}
-  \frac{ \partial \varepsilon_\mathrm{eq} }{ \partial \bm{\varepsilon} }
+  \frac{ \partial \varepsilon_\mathrm{d} }{ \partial \T{\varepsilon} }
   =
-  \frac{1}{2 \, \varepsilon_\mathrm{eq}} \frac{1}{2}
-  \big[\, \mathbb{I}_\mathrm{d} : \bm{\varepsilon}_\mathrm{d} + \bm{\varepsilon}_\mathrm{d} : \mathbb{I}_\mathrm{d} \,\big]
+  \frac{1}{2 \, \varepsilon_\mathrm{d}} \frac{1}{2}
+  \big[\, \TT{I}_\mathrm{d} : \T{\varepsilon}_\mathrm{d} + \T{\varepsilon}_\mathrm{d} : \TT{I}_\mathrm{d} \,\big]
   =
-  \frac{\bm{\varepsilon}_\mathrm{d}}{2 \, \varepsilon_\mathrm{eq}}
+  \frac{\T{\varepsilon}_\mathrm{d}}{2 \, \varepsilon_\mathrm{d}}
 \end{equation}
 %
 \end{itemize}
 
 \subsubsection{Conversion to common parameters for linear elasticity}
 
-Here the parameters are confronted to their common definitions (denoted here with a tilde) for linear elasticity in $d = 3$:
+The parameters are confronted to their common definitions (denoted here with a tilde) for linear elasticity in $d = 3$:
 
 \begin{itemize}
   \item Hydrostatic strain
   \begin{equation}
     \tilde{\varepsilon}_\mathrm{m} = \varepsilon_\mathrm{m}
   \end{equation}
-  \item Equivalent strain
+  \item Equivalent shear strain
   \begin{equation}
     \tilde{\varepsilon}_\mathrm{eq}
-    = \sqrt{\tfrac{2}{3} \bm{\varepsilon}_\mathrm{d} : \bm{\varepsilon}_\mathrm{d} }
-    = \sqrt{\tfrac{4}{3}} \; \varepsilon_\mathrm{eq}
+    = \sqrt{\tfrac{2}{3} \T{\varepsilon}_\mathrm{d} : \T{\varepsilon}_\mathrm{d} }
+    = \sqrt{\tfrac{4}{3}} \; \varepsilon_\mathrm{d}
   \end{equation}
   \item Hydrostatic stress
   \begin{equation}
     \tilde{\sigma}_\mathrm{m} = \sigma_\mathrm{m}
   \end{equation}
-  \item Equivalent stress
+  \item Von Mises equivalent shear stress
   \begin{equation}
     \tilde{\sigma}_\mathrm{eq}
-    = \sqrt{\tfrac{3}{2} \bm{\sigma}_\mathrm{d} : \bm{\sigma}_\mathrm{d} }
+    = \sqrt{\tfrac{3}{2} \T{\sigma}_\mathrm{d} : \T{\sigma}_\mathrm{d} }
     = \sqrt{3} \; \sigma_\mathrm{eq}
   \end{equation}
   \item Bulk modulus
@@ -401,27 +423,55 @@ Here the parameters are confronted to their common definitions (denoted here wit
 \end{itemize}
 This results in a stress response
 \begin{equation}
-  \bm{\sigma} ( \bm{\varepsilon} )
+  \T{\sigma} ( \T{\varepsilon} )
   =
-  3 K \, \varepsilon_\mathrm{m} \, \bm{I}
+  3 K \, \varepsilon_\mathrm{m} \, \T{I}
   +
-  2 G \, \bm{\varepsilon}_\mathrm{d}
+  2 G \, \T{\varepsilon}_\mathrm{d}
 \end{equation}
-Note the the equivalent stress and strain are defined such that they are work conjugate (i.e. $\sigma_\mathrm{eq} \, \varepsilon_\mathrm{eq} = \bm{\sigma} : \bm{\varepsilon}$) for uniaxial extension of an incompressible material.
+Note the the equivalent stress and strain are defined such that they are work conjugate (i.e. $\sigma_\mathrm{eq} \, \varepsilon_\mathrm{d} = \T{\sigma} : \T{\varepsilon}$) for uniaxial extension of an incompressible material.
 
 \section{Specialized model -- planar shear}
 
 \subsection{Motivation}
 
-\begin{equation}
+The model as proposed above treats all shear modes equally (because $V$ is function of $\varepsilon_\mathrm{d}$). Consequently it is isotropic. There are however cases for which an anisotropic model is more realistic. Below a model is proposed in which the plasticity can only occur along a specific plane. Before that, the claim of isotropy is further motivated in two dimensions. In that case the strain tensor has three independent modes, illustrated in Fig.~\ref{fig:strain-modes:2d}.
+
+\begin{figure}[htp]
+  \centering
+  \includegraphics[width=.7\textwidth]{figures/strain-modes_2d}
+  \caption{The three independent modes described by a 2-d stain tensor $\T{\varepsilon}$.}
+  \label{fig:strain-modes:2d}
+\end{figure}
+
+The first shear mode, in Fig.~\ref{fig:strain-modes:2d}(b), corresponds to a strain tensor of the following structure
+\begin{equation} \label{eq:strain-modes:basic}
   \underline{\underline{\varepsilon}}
   =
   \begin{bmatrix}
     0      & \gamma \\
-    \gamma & 0
+    \gamma &  0
+  \end{bmatrix}
+\end{equation}
+The second shear mode, in Figure~\ref{fig:strain-modes:2d}(c), corresponds to the same shear deformation rotated by $-\pi/4$. It is therefore of the structure
+\begin{equation}
+  \underline{\underline{\varepsilon}}
+  =
+  \begin{bmatrix}
+    \gamma &  0      \\
+     0     & -\gamma
   \end{bmatrix}
 \end{equation}
 
+In terms of the equivalent shear strain, both modes result in $\varepsilon_\mathrm{d} = | \gamma |$. This is further illustrated by rotating the strain tensor from Eq.~\eqref{eq:strain-modes:basic} by an angle $\theta$:
+\begin{equation}
+  \underline{\underline{\varepsilon}}^\prime
+  =
+  \underline{\underline{R}} \,
+  \underline{\underline{\varepsilon}} \,
+  \underline{\underline{R}}^T
+\end{equation}
+where the rotation matrix depends on the rotation angle $\theta$ as follows
 \begin{equation}
   \underline{\underline{R}}
   =
@@ -430,13 +480,107 @@ Note the the equivalent stress and strain are defined such that they are work co
     \sin \theta &   \cos \theta
   \end{bmatrix}
 \end{equation}
+Trivially $\varepsilon_\mathrm{d} = | \gamma |$, independent of $\theta$ -- as plotted in Fig~\ref{fig:shear-modes:epseq} in black. The contributions of the two shear modes are examined by examining $\varepsilon^\prime_{xy}$, representative of the first shear mode in Fig.~\ref{fig:strain-modes:2d}(b), and $\varepsilon^\prime_{xx}$, representative of the second shear mode in Fig.~\ref{fig:strain-modes:2d}(c). These contributions are plotted in Fig.~\ref{fig:shear-modes:epseq} respectively in green and red. Indeed, the contributions of the two shear modes vary with $\theta$, while $\varepsilon_\mathrm{d}$ is oblivious to this rotation.
 
 \begin{figure}[htp]
   \centering
-  \includegraphics[width=.5\textwidth]{figures/epseq_2d}
-  \caption{Comparison between the equivalent strain $2 \varepsilon_\mathrm{eq}^2 = \bm{\varepsilon}_\mathrm{d} : \bm{\varepsilon}_\mathrm{d}$ the strain along the $x$-plane, $\varepsilon_\mathrm{ss} = \vec{e}_x \cdot \bm{\varepsilon} \cdot \vec{e}_y$, and the strain perpendicular to it, $\varepsilon_\mathrm{ps} = \vec{e}_x \cdot \bm{\varepsilon} \cdot \vec{e}_x$.}
-  \label{fig:}
+  \includegraphics[width=.5\textwidth]{figures/strain-modes_2d_epseq}
+  \caption{Comparison between the equivalent shear strain $2 \varepsilon_\mathrm{d}^2 = \T{\varepsilon}_\mathrm{d} : \T{\varepsilon}_\mathrm{d}$ the strain along the $x$-plane, $\varepsilon_\mathrm{ss} = \vec{e}_x \cdot \T{\varepsilon} \cdot \vec{e}_y$, and the strain perpendicular to it, $\varepsilon_\mathrm{ps} = \vec{e}_x \cdot \T{\varepsilon} \cdot \vec{e}_x$.}
+  \label{fig:shear-modes:epseq}
 \end{figure}
+
+\subsection{Model}
+
+In this model, the plasticity will be localized on a plane with normal $\vec{n}$ (which has unit length $||\, \vec{n} \,|| \equiv 1$), see Fig.~\ref{fig:strain-vector-planar}. To do so, the strain deviator $\T{\varepsilon}_\mathrm{d}$ is decomposed in two parts, the strain along the plastic (`weak') plane $\T{\varepsilon}_\mathrm{s}$, and the remaining strain $\T{\varepsilon}_\mathrm{n}$. I.e.
+\begin{equation}\label{eq:planar:strain:decomposition}
+  \T{\varepsilon}_\mathrm{d} = \T{\varepsilon}_\mathrm{s} + \T{\varepsilon}_\mathrm{n}
+\end{equation}
+To compute the former, planar strain tensor $\T{\varepsilon}_\mathrm{s}$, first the direction of the deviatoric stain tensor projected on the plane is determined as
+\begin{equation}
+  \vec{s}_\mathrm{n} =
+  \frac{
+    \T{\varepsilon}_\mathrm{d} \cdot \vec{n}
+  }
+  {
+    ||\, \T{\varepsilon}_\mathrm{d} \cdot \vec{n} \,||
+  }
+\end{equation}
+The strain direction along the plane is now found by projecting $\vec{s}_\mathrm{n}$ on it:
+\begin{equation}
+  \vec{s} =
+  \frac{
+    \vec{s}_\mathrm{n} - ( \vec{s}_\mathrm{n} \cdot \vec{n} )\, \vec{n}
+  }
+  {
+    ||\, \vec{s}_\mathrm{n} - ( \vec{s}_\mathrm{n} \cdot \vec{n} )\, \vec{n} \,||
+  }
+\end{equation}
+The amount of strain in this direction is finally found to be
+\begin{equation}
+  \varepsilon_\mathrm{s} = \vec{s} \cdot \T{\varepsilon}_\mathrm{d} \cdot \vec{n}
+\end{equation}
+Not that $\varepsilon_\mathrm{s}$ is by definition non-negative, i.e.\ it is oblivious to rotations about $\vec{n}$.
+
+The planar deviatoric strain tensor can now be constructed:
+\begin{equation}
+  \T{\varepsilon}_\mathrm{s} = \varepsilon_\mathrm{s}
+  \big(
+    \vec{s} \otimes \vec{n} + \vec{n} \otimes \vec{s}
+  \big)
+\end{equation}
+From this it is obvious that $\varepsilon_\mathrm{s}$ is the equivalent shear strain of this tensor, i.e.
+\begin{equation}
+  \varepsilon_\mathrm{s}
+  \equiv
+  \sqrt{ \tfrac{1}{2} \T{\varepsilon}_\mathrm{s} : \T{\varepsilon}_\mathrm{s} }
+\end{equation}
+(To show this one has to use that $\vec{n} \cdot \vec{n} \equiv 1$ and $\vec{s} \cdot \vec{s} \equiv 1$ while $\vec{n} \cdot \vec{s} \equiv 0$).
+
+\begin{figure}[htp]
+  \centering
+  \includegraphics[width=.35\textwidth]{figures/strain-vector-planar}
+  \caption{Strain along a plane defined by its normal $\vec{n}$: the strain vector $\vec{s}_\mathrm{n}$ and its planar projection $\vec{s}$.}
+  \label{fig:strain-vector-planar}
+\end{figure}
+
+The remaining strain can now be trivially obtained from Eq.~\eqref{eq:planar:strain:decomposition} as
+\begin{equation}
+  \T{\varepsilon}_\mathrm{n} = \T{\varepsilon}_\mathrm{d} - \T{\varepsilon}_\mathrm{s}
+\end{equation}
+Its equivalent shear strain reads
+\begin{equation}
+  \varepsilon_\mathrm{n} = \sqrt{ \tfrac{1}{2} \T{\varepsilon}_\mathrm{n} : \T{\varepsilon}_\mathrm{n} }
+\end{equation}
+
+For plasticity to occur only along the `weak' plane, the shear strain energy is further decomposed in a planar part $V_\mathrm{s}$ that will be plastic, and a non-planar part $V_\mathrm{n}$ that will be elastic:
+\begin{equation}
+  V
+  =
+  V_\mathrm{s} ( \varepsilon_\mathrm{s} )
+  +
+  V_\mathrm{n} ( \varepsilon_\mathrm{n} )
+\end{equation}
+Based on the definitions of the elastic and plastic potentials the following expression for the stress is obtained
+\begin{equation}
+  \T{\sigma} ( \T{\varepsilon} )
+  =
+  K \, \varepsilon_\mathrm{m} \, \T{I}
+  +
+  G \, \T{\varepsilon}_\mathrm{n}
+  +
+  G \,
+  \left[ \frac{\Delta \varepsilon_\mathrm{y}^{(i)}}{\pi} \right]
+  \sin \left(
+    \frac{ \pi }{ \Delta \varepsilon_\mathrm{y}^{(i)} }
+    \Big[\, \varepsilon_\mathrm{s} - \varepsilon_\mathrm{min}^{(i)} \,\Big]
+  \right)
+  \frac{\T{\varepsilon}_\mathrm{s}}{\varepsilon_\mathrm{s}}
+  \quad
+  \mathrm{for}
+  \;
+  \varepsilon_\mathrm{y}^{(i)} \leq \varepsilon_\mathrm{s} < \varepsilon_\mathrm{y}^{(i+1)}
+\end{equation}
+
 
 \bibliography{library}
 

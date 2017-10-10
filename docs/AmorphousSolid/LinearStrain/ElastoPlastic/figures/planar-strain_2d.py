@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import GooseTensor as gt
 
 plt.style.use(['goose','goose-latex'])
 
@@ -15,22 +16,34 @@ simple = np.array([
   [ 1. , 0. ],
 ])
 
-# initialize strain measures
+# normal
+normal = np.array([[0.,1.]]).T
+
 theta  = np.linspace(-np.pi/2.,+np.pi/2,800)
 eps_ps = np.empty(theta.shape)
 eps_ss = np.empty(theta.shape)
 eps_eq = np.empty(theta.shape)
 
-# compute
 for i in range(theta.size):
 
-  R         = rotation(theta[i])
-  eps       = (R.dot(simple)).dot(R.T)
-  eps_ps[i] = eps[0,0]
-  eps_ss[i] = eps[0,1]
-  eps_eq[i] = np.sqrt( 1./2. * ( eps[0,0]**2. + eps[1,1]**2. + 2.*eps[0,1]**2. ) )
+  # apply a certain rotation
+  R     = rotation(theta[i])
+  eps   = (R.dot(simple)).dot(R.T)
+  # n     = R.dot(normal)
+  n = normal
 
-# --------------------------------------------------------------------------------------------------
+  # get the planar strain
+  s     = eps.dot(n)
+  s    /= np.linalg.norm(s)
+  sp    = s - s.T.dot(n) * n
+  sp   /= np.linalg.norm(sp)
+  gamma = (sp.T.dot(eps)).dot(n)
+  epspn = gamma * ( sp.T*n + (sp.T*n).T )
+  epss  = eps - epspn
+
+  eps_eq[i] = np.sqrt(.5*gt.ddot22(eps  ,eps  ))
+  eps_ss[i] = np.sqrt(.5*gt.ddot22(epspn,epspn))
+  eps_ps[i] = np.sqrt(.5*gt.ddot22(epss ,epss ))
 
 fig,ax = plt.subplots()
 
@@ -47,4 +60,4 @@ ax.yaxis.set_ticks([-1,0,1])
 plt.xlabel(r'$\theta$')
 plt.ylabel(r'$\varepsilon$')
 
-plt.savefig('epseq_2d.svg')
+plt.show()
