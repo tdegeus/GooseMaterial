@@ -17,9 +17,14 @@ Suggested references
 
 ================================================================================================= */
 
+#ifndef GOOSEMATERIAL_METAL_LINEARSTRAIN_ELASTOVISCOPLASTIC_CARTESIAN3D_H
+#define GOOSEMATERIAL_METAL_LINEARSTRAIN_ELASTOVISCOPLASTIC_CARTESIAN3D_H
+
 #include <assert.h>
 #include <tuple>
 #include <cppmat/tensor3.h>
+
+#include "../../../Macros.h"
 
 #warning "GooseMaterial/Metal/LinearStrain/ElastoViscoPlastic/Cartesian3d.h : first usage, careful check then remove this message"
 
@@ -265,3 +270,5 @@ double Material::plastic_multiplier(double sig_eq, double dt)
 } // namespace ...
 } // namespace ...
 } // namespace ...
+
+#endif

@@ -7,6 +7,9 @@ Description
 
 Elastic plastic material for amorphous solids.
 
+N.B. The elastic part of this model is also implemented in:
+"AmorphousSolid/LinearStrain/Elastic/Cartesian3d.h"
+
 Suggested references
 --------------------
 
@@ -15,11 +18,18 @@ Suggested references
 
 ================================================================================================= */
 
+#ifndef GOOSEMATERIAL_AMORPHOUSSOLID_LINEARSTRAIN_ELASTOPLASTIC_CARTESIAN3D_H
+#define GOOSEMATERIAL_AMORPHOUSSOLID_LINEARSTRAIN_ELASTOPLASTIC_CARTESIAN3D_H
+
 #define _USE_MATH_DEFINES // to use "M_PI" from "math.h"
 
 #include <tuple>
 #include <math.h>
 #include <cppmat/tensor3.h>
+
+#include "../../../Macros.h"
+
+// -------------------------------------------------------------------------------------------------
 
 namespace GooseMaterial {
 namespace AmorphousSolid {
@@ -27,12 +37,12 @@ namespace LinearStrain {
 namespace ElastoPlastic {
 namespace Cartesian3d {
 
-namespace cm = cppmat::cartesian3d;
+// -------------------------------------------------------------------------------------------------
 
-using T2s = cm::tensor2s<double>;
-using T2d = cm::tensor2d<double>;
-
-double ndim = 3.;
+namespace cm   = cppmat::cartesian3d;
+using     T2s  = cm::tensor2s<double>;
+using     T2d  = cm::tensor2d<double>;
+double    ndim = 3.;
 
 // ============================================ OVERVIEW ===========================================
 
@@ -59,8 +69,8 @@ public:
   // - return is material is elastic or not
   bool   elastic();
   // - find the index of the current yield strain (below "eps_d")
-  size_t find(double     epsd);
-  size_t find(const T2s &Eps );
+  size_t find(double epsd);
+  size_t find(const T2s &Eps);
   // - return yield strain "i"
   double eps_y(size_t i);
   // - return (hydrostatic/deviatoric) equivalent stress/strain
@@ -118,9 +128,7 @@ Material::Material(double K, double G, const std::vector<double> &epsy, bool ini
   // - add yield strain to have an initial elastic response
   if ( init_elastic ) { m_epsy[i] = -vec[0]; ++i; }
   // - copy the rest
-  for ( auto &j : vec ) {
-    m_epsy[i] = j; ++i;
-  }
+  for ( auto &j : vec ) { m_epsy[i] = j; ++i; }
 
   // check the number of yield strains
   if ( m_epsy.size() < 2 )
@@ -171,10 +179,10 @@ T2s Material::stress(const T2s &Eps)
   double epsd = std::pow( .5*Epsd.ddot(Epsd) , 0.5 );
 
   // elastic: return full stress tensor
-  if ( m_elastic  ) return (m_K*epsm) * I + m_G * Epsd;
+  if ( m_elastic  ) return ( m_K * epsm ) * I + m_G * Epsd;
 
   // zero equivalent strain -> return stress tensor with only hydrostatic part
-  if ( epsd <= 0. ) return (m_K*epsm) * I;
+  if ( epsd <= 0. ) return ( m_K * epsm ) * I;
 
   // read current yield strains
   size_t i       = find(epsd);
@@ -307,8 +315,6 @@ double Material::energy(const T2s &Eps)
 
 // =================================================================================================
 
-} // namespace ...
-} // namespace ...
-} // namespace ...
-} // namespace ...
-} // namespace ...
+}}}}} // namespace GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3d
+
+#endif

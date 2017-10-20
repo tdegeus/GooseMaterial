@@ -16,9 +16,12 @@ Suggested references
 
 ================================================================================================= */
 
+#ifndef GOOSEMATERIAL_METAL_LINEARSTRAIN_ELASTIC_MISC_H
+#define GOOSEMATERIAL_METAL_LINEARSTRAIN_ELASTIC_MISC_H
+
 #include <tuple>
 
-#warning "GooseMaterial/Metal/LinearStrain/Elastic/miscellaneous.h : first usage, careful check then remove this message"
+#include "../../../Macros.h"
 
 namespace GooseMaterial {
 namespace Metal {
@@ -78,3 +81,5 @@ std::tuple<double,double> ConvertParameters (
 } // namespace ...
 } // namespace ...
 } // namespace ...
+
+#endif

@@ -16,10 +16,13 @@ Suggested references
 
 ================================================================================================= */
 
+#ifndef GOOSEMATERIAL_METAL_LINEARSTRAIN_ELASTIC_CARTESIAN3D_H
+#define GOOSEMATERIAL_METAL_LINEARSTRAIN_ELASTIC_CARTESIAN3D_H
+
 #include <tuple>
 #include <cppmat/tensor3.h>
 
-#warning "GooseMaterial/Metal/LinearStrain/Elastic/Cartesian3d.h : first usage, careful check then remove this message"
+#include "../../../Macros.h"
 
 namespace GooseMaterial {
 namespace Metal {
@@ -68,49 +71,41 @@ Material::Material( double K, double G ) : m_K(K), m_G(G)
 
 T2s  Material::stress(const T2s &eps)
 {
-  double eps_m,sig_m;
-  T2s eps_d,sig_d;
-  T2d I;
-
   // second order identity tensor
-  I      = cm::identity2();
+  T2d    I    = cm::identity2();
 
   // decompose strain: hydrostatic part, deviatoric part
-  eps_m  = eps.trace() / 3.;
-  eps_d  = eps - eps_m * I;
+  double epsm = eps.trace() / 3.;
+  T2s    epsd = eps - epsm * I;
 
   // constitutive response
-  sig_m  = 3. * m_K * eps_m;
-  sig_d  = 2. * m_G * eps_d;
+  double sigm = ( 3. * m_K ) * epsm;
+  T2s    sigd = ( 2. * m_G ) * epsd;
 
   // combine volumetric and deviatoric stress
-  return sig_m * I + sig_d ;
+  return sigm * I + sigd ;
 }
 
 // -------------------------------------------------------------------------------------------------
 
 std::tuple<T4,T2s> Material::tangent_stress(const T2s &eps)
 {
-  double eps_m,sig_m;
-  T2s eps_d,sig_d,sig;
-  T2d I;
-
   // stress
   // ------
 
   // second order identity tensor
-  I      = cm::identity2();
+  T2d    I    = cm::identity2();
 
   // decompose strain: hydrostatic part, deviatoric part
-  eps_m  = eps.trace() / 3.;
-  eps_d  = eps - eps_m * I;
+  double epsm = eps.trace() / 3.;
+  T2s    epsd = eps - epsm * I;
 
   // constitutive response
-  sig_m  = 3. * m_K * eps_m;
-  sig_d  = 2. * m_G * eps_d;
+  double sigm = ( 3. * m_K ) * epsm;
+  T2s    sigd = ( 2. * m_G ) * epsd;
 
   // combine volumetric and deviatoric stress
-  sig    = sig_m * I + sig_d ;
+  T2s    sig  = sigm * I + sigd;
 
   // tangent
   // -------
@@ -120,7 +115,7 @@ std::tuple<T4,T2s> Material::tangent_stress(const T2s &eps)
   T4 II  = cm::identityII();
 
   // initialize tangent as the elasticity tensor
-  T4 K4  = m_K * II + 2. * m_G * I4d;
+  T4 K4  = m_K * II + ( 2. * m_G ) * I4d;
 
   return std::make_tuple(K4,sig);
 }
@@ -132,3 +127,5 @@ std::tuple<T4,T2s> Material::tangent_stress(const T2s &eps)
 } // namespace ...
 } // namespace ...
 } // namespace ...
+
+#endif

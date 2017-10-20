@@ -18,9 +18,14 @@ Suggested references
 
 ================================================================================================= */
 
+#ifndef GOOSEMATERIAL_METAL_LINEARSTRAIN_ELASTOVISCOPLASTICHARDENING_CARTESIAN3D_H
+#define GOOSEMATERIAL_METAL_LINEARSTRAIN_ELASTOVISCOPLASTICHARDENING_CARTESIAN3D_H
+
 #include <assert.h>
 #include <tuple>
 #include <cppmat/tensor3.h>
+
+#include "../../../Macros.h"
 
 #warning "GooseMaterial/Metal/LinearStrain/ElastoViscoPlasticHardening/Cartesian3d.h : first usage, careful check then remove this message"
 
@@ -276,3 +281,5 @@ std::tuple<double,double> Material::plastic_multiplier(
 } // namespace ...
 } // namespace ...
 } // namespace ...
+
+#endif

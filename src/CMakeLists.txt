@@ -1,10 +1,19 @@
 
-# define project information
-project(GooseMaterial)
-set(GOOSEMATERIAL_VERSION_NUMBER 0.0.5)
-
 # required to specify the c++ standard
 cmake_minimum_required(VERSION 3.0)
+
+# define project information
+project(GooseMaterial)
+
+# automatically parse the version number
+file(READ "${CMAKE_CURRENT_SOURCE_DIR}/GooseMaterial/Macros.h" _goosematerial_version_header)
+string(REGEX MATCH "define[ \t]+GOOSEMATERIAL_WORLD_VERSION[ \t]+([0-9]+)" _goosematerial_world_version_match "${_goosematerial_version_header}")
+set(GOOSEMATERIAL_WORLD_VERSION "${CMAKE_MATCH_1}")
+string(REGEX MATCH "define[ \t]+GOOSEMATERIAL_MAJOR_VERSION[ \t]+([0-9]+)" _goosematerial_major_version_match "${_goosematerial_version_header}")
+set(GOOSEMATERIAL_MAJOR_VERSION "${CMAKE_MATCH_1}")
+string(REGEX MATCH "define[ \t]+GOOSEMATERIAL_MINOR_VERSION[ \t]+([0-9]+)" _goosematerial_minor_version_match "${_goosematerial_version_header}")
+set(GOOSEMATERIAL_MINOR_VERSION "${CMAKE_MATCH_1}")
+set(GOOSEMATERIAL_VERSION_NUMBER ${GOOSEMATERIAL_WORLD_VERSION}.${GOOSEMATERIAL_MAJOR_VERSION}.${GOOSEMATERIAL_MINOR_VERSION})
 
 # required for install
 include(CMakePackageConfigHelpers)
@@ -40,16 +49,21 @@ set(PKGCONFIG_INSTALL_DIR
 
 # list all header files
 set(GOOSEMATERIAL_HEADERS
+  GooseMaterial/Macros.h
+  GooseMaterial/AmorphousSolid/LinearStrain/Elastic/Cartesian2d.h
+  GooseMaterial/AmorphousSolid/LinearStrain/Elastic/Cartesian3d.h
   GooseMaterial/AmorphousSolid/LinearStrain/ElasticLiquid/Cartesian3d.h
   GooseMaterial/AmorphousSolid/LinearStrain/ElastoPlastic/Cartesian2d.h
   GooseMaterial/AmorphousSolid/LinearStrain/ElastoPlastic/Cartesian3d.h
   GooseMaterial/AmorphousSolid/LinearStrain/ElastoPlastic/Cartesian2dPlanarShear.h
   GooseMaterial/AmorphousSolid/LinearStrain/ElastoPlastic/Cartesian3dPlanarShear.h
+  GooseMaterial/Metal/LinearStrain/Elastic.h
   GooseMaterial/Metal/LinearStrain/Elastic/Cartesian3d.h
   GooseMaterial/Metal/LinearStrain/Elastic/miscellaneous.h
   GooseMaterial/Metal/LinearStrain/ElastoPlastic/Cartesian3d.h
   GooseMaterial/Metal/LinearStrain/ElastoViscoPlastic/Cartesian3d.h
   GooseMaterial/Metal/LinearStrain/ElastoViscoPlasticHardening/Cartesian3d.h
+  GooseMaterial/Metal/LinearStrain/NonLinearElastic.h
   GooseMaterial/Metal/LinearStrain/NonLinearElastic/Cartesian3d.h
 )
 

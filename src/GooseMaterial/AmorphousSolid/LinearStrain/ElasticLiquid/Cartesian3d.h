@@ -21,8 +21,13 @@ Suggested references
 
 ================================================================================================= */
 
+#ifndef GOOSEMATERIAL_AMORPHOUSSOLID_LINEARSTRAIN_ELASTICLIQUID_CARTESIAN3D_H
+#define GOOSEMATERIAL_AMORPHOUSSOLID_LINEARSTRAIN_ELASTICLIQUID_CARTESIAN3D_H
+
 #include <tuple>
 #include <cppmat/tensor3.h>
+
+#include "../../../Macros.h"
 
 #warning "GooseMaterial/AmorphousSolid/LinearStrain/ElasticLiquid/Cartesian3d.h : first usage, careful check then remove this message"
 
@@ -159,3 +164,5 @@ T2s Material::stress(const T2s &epsdot, double dt)
 } // namespace ..
 } // namespace ..
 } // namespace ..
+
+#endif

@@ -17,10 +17,13 @@ Suggested references
 
 ================================================================================================= */
 
+#ifndef GOOSEMATERIAL_METAL_LINEARSTRAIN_NONLINEARELASTIC_CARTESIAN3D_H
+#define GOOSEMATERIAL_METAL_LINEARSTRAIN_NONLINEARELASTIC_CARTESIAN3D_H
+
 #include <tuple>
 #include <cppmat/tensor3.h>
 
-#warning "GooseMaterial/Metal/LinearStrain/NonLinearElastic/Cartesian3d.h : first usage, careful check then remove this message"
+#include "../../../Macros.h"
 
 namespace GooseMaterial {
 namespace Metal {
@@ -72,59 +75,59 @@ Material::Material( double K, double sig0, double eps0, double m ) :
 
 T2s  Material::stress(const T2s &eps)
 {
-  double eps_m,sig_m,eps_eq;
-  T2s eps_d;
+  double epsm,sigm,epseq;
+  T2s epsd;
   T2d I;
-  T2s sig_d(0.0);
+  T2s sigd(0.0);
 
   // second order identity tensor
-  I      = cm::identity2();
+  I     = cm::identity2();
 
   // decompose strain: hydrostatic part, deviatoric part, equivalent strain
-  eps_m  = eps.trace() / 3.;
-  eps_d  = eps - eps_m * I;
-  eps_eq = std::pow( 2./3. * eps_d.ddot(eps_d) , 0.5 );
+  epsm  = eps.trace() / 3.;
+  epsd  = eps - epsm * I;
+  epseq = std::pow( 2./3. * epsd.ddot(epsd) , 0.5 );
 
   // hydrostatic stress
-  sig_m  = 3. * m_K * eps_m;
+  sigm  = ( 3. * m_K ) * epsm;
 
   // deviatoric stress
-  if ( eps_eq != 0.0 )
-    sig_d = 2./3. * m_sig0/std::pow(m_eps0,m_n) * std::pow(eps_eq,m_n-1.) * eps_d;
+  if ( epseq != 0.0 )
+    sigd = ( 2./3. * m_sig0/std::pow(m_eps0,m_n) * std::pow(epseq,m_n-1.) ) * epsd;
 
   // combine volumetric and deviatoric stress
-  return sig_m * I + sig_d ;
+  return sigm * I + sigd ;
 }
 
 // -------------------------------------------------------------------------------------------------
 
 std::tuple<T4,T2s> Material::tangent_stress(const T2s &eps)
 {
-  double eps_m,sig_m,eps_eq;
-  T2s eps_d,sig;
+  double epsm,sigm,epseq;
+  T2s epsd,sig;
   T2d I;
-  T2s sig_d(0.0);
+  T2s sigd(0.0);
 
   // stress
   // ------
 
   // second order identity tensor
-  I      = cm::identity2();
+  I     = cm::identity2();
 
   // decompose strain: hydrostatic part, deviatoric part, equivalent strain
-  eps_m  = eps.trace() / 3.;
-  eps_d  = eps - eps_m * I;
-  eps_eq = std::pow( 2./3. * eps_d.ddot(eps_d) , 0.5 );
+  epsm  = eps.trace() / 3.;
+  epsd  = eps - epsm * I;
+  epseq = std::pow( 2./3. * epsd.ddot(epsd) , 0.5 );
 
   // hydrostatic stress
-  sig_m  = 3. * m_K * eps_m;
+  sigm  = ( 3. * m_K ) * epsm;
 
   // deviatoric stress
-  if ( eps_eq != 0.0 )
-    sig_d = 2./3. * m_sig0/std::pow(m_eps0,m_n) * std::pow(eps_eq,m_n-1.) * eps_d;
+  if ( epseq != 0.0 )
+    sigd = ( 2./3. * m_sig0/std::pow(m_eps0,m_n) * std::pow(epseq,m_n-1.) ) * epsd;
 
   // combine volumetric and deviatoric stress
-  sig = sig_m * I + sig_d ;
+  sig = sigm * I + sigd ;
 
   // tangent
   // -------
@@ -137,9 +140,9 @@ std::tuple<T4,T2s> Material::tangent_stress(const T2s &eps)
   T4 K4  = m_K * II;
 
   // deviator part
-  if ( eps_eq != 0.0 )
+  if ( epseq != 0.0 )
     K4 += 2./3. * m_sig0/std::pow(m_eps0,m_n)
-       * (2./3.*(m_n-1.)*std::pow(eps_eq,m_n-3.)*eps_d.dyadic(eps_d) + std::pow(eps_eq,m_n-1.)*I4d);
+       * (2./3.*(m_n-1.)*std::pow(epseq,m_n-3.)*epsd.dyadic(epsd) + std::pow(epseq,m_n-1.)*I4d);
   else
     K4 += I4d;
 
@@ -153,3 +156,5 @@ std::tuple<T4,T2s> Material::tangent_stress(const T2s &eps)
 } // namespace ...
 } // namespace ...
 } // namespace ...
+
+#endif

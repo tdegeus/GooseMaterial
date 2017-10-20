@@ -1,8 +1,6 @@
 
-#include <cppmat/tensor2.h>
-#include <cppmat/tensor3.h>
-#include <cppmat/pybind11_tensor2.h>
-#include <cppmat/pybind11_tensor3.h>
+#include <cppmat/cppmat.h>
+#include <cppmat/pybind11_cppmat.h>
 
 #include "../src/GooseMaterial/AmorphousSolid/LinearStrain/ElasticLiquid/Cartesian3d.h"
 #include "../src/GooseMaterial/AmorphousSolid/LinearStrain/ElastoPlastic/Cartesian3d.h"
@@ -175,12 +173,12 @@ py::class_<GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian
   py::arg("init_elastic")=true
 )
 
-.def("stress"  ,                                                      &GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3d::Material::stress   , py::arg("Eps"))
-.def("eps_d"   ,                                                      &GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3d::Material::eps_d    , py::arg("Eps"))
-.def("eps_m"   ,                                                      &GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3d::Material::eps_m    , py::arg("Eps"))
-.def("energy"  , py::overload_cast<const cppmat::tensor3_2s<double>&>(&GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3d::Material::energy  ), py::arg("Eps"))
-.def("energy_m", py::overload_cast<const cppmat::tensor3_2s<double>&>(&GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3d::Material::energy_m), py::arg("Eps"))
-.def("energy_d", py::overload_cast<const cppmat::tensor3_2s<double>&>(&GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3d::Material::energy_d), py::arg("Eps"))
+.def("stress"  ,                                                                 &GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3d::Material::stress   , py::arg("Eps"))
+.def("eps_d"   ,                                                                 &GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3d::Material::eps_d    , py::arg("Eps"))
+.def("eps_m"   ,                                                                 &GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3d::Material::eps_m    , py::arg("Eps"))
+.def("energy"  , py::overload_cast<const cppmat::cartesian3d::tensor2s<double>&>(&GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3d::Material::energy  ), py::arg("Eps"))
+.def("energy_m", py::overload_cast<const cppmat::cartesian3d::tensor2s<double>&>(&GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3d::Material::energy_m), py::arg("Eps"))
+.def("energy_d", py::overload_cast<const cppmat::cartesian3d::tensor2s<double>&>(&GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3d::Material::energy_d), py::arg("Eps"))
 
 .def("__repr__",[](const GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3d::Material &a)
   {return "<GooseMaterial.AmorphousSolid.LinearStrain.Elastic.Cartesian3d.Material>";});
@@ -196,12 +194,12 @@ py::class_<GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian
   py::arg("init_elastic")=true
 )
 
-.def("stress"  ,                                                      &GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2d::Material::stress   , py::arg("Eps"))
-.def("eps_d"   ,                                                      &GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2d::Material::eps_d    , py::arg("Eps"))
-.def("eps_m"   ,                                                      &GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2d::Material::eps_m    , py::arg("Eps"))
-.def("energy"  , py::overload_cast<const cppmat::tensor2_2s<double>&>(&GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2d::Material::energy  ), py::arg("Eps"))
-.def("energy_m", py::overload_cast<const cppmat::tensor2_2s<double>&>(&GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2d::Material::energy_m), py::arg("Eps"))
-.def("energy_d", py::overload_cast<const cppmat::tensor2_2s<double>&>(&GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2d::Material::energy_d), py::arg("Eps"))
+.def("stress"  ,                                                                 &GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2d::Material::stress   , py::arg("Eps"))
+.def("eps_d"   ,                                                                 &GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2d::Material::eps_d    , py::arg("Eps"))
+.def("eps_m"   ,                                                                 &GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2d::Material::eps_m    , py::arg("Eps"))
+.def("energy"  , py::overload_cast<const cppmat::cartesian2d::tensor2s<double>&>(&GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2d::Material::energy  ), py::arg("Eps"))
+.def("energy_m", py::overload_cast<const cppmat::cartesian2d::tensor2s<double>&>(&GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2d::Material::energy_m), py::arg("Eps"))
+.def("energy_d", py::overload_cast<const cppmat::cartesian2d::tensor2s<double>&>(&GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2d::Material::energy_d), py::arg("Eps"))
 
 .def("__repr__",[](const GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2d::Material &a)
   {return "<GooseMaterial.AmorphousSolid.LinearStrain.Elastic.Cartesian2d.Material>";});
@@ -210,7 +208,7 @@ py::class_<GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian
 
 py::class_<GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3dPlanarShear::Material>(AmorphousSolid_LinearStrain_ElastoPlastic_Cartesian3dPlanarShear,"Material")
 
-.def(py::init<double,double,const cppmat::vector3<double>&,const std::vector<double> &,bool>(),
+.def(py::init<double,double,const cppmat::cartesian3d::vector<double>&,const std::vector<double> &,bool>(),
   py::arg("K"           ),
   py::arg("G"           ),
   py::arg("n"           ),
@@ -218,15 +216,15 @@ py::class_<GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian
   py::arg("init_elastic")=true
 )
 
-.def("stress"  ,                                                      &GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3dPlanarShear::Material::stress   , py::arg("Eps"))
-.def("eps_d"   ,                                                      &GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3dPlanarShear::Material::eps_d    , py::arg("Eps"))
-.def("eps_s"   ,                                                      &GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3dPlanarShear::Material::eps_s    , py::arg("Eps"))
-.def("eps_n"   ,                                                      &GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3dPlanarShear::Material::eps_n    , py::arg("Eps"))
-.def("eps_m"   ,                                                      &GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3dPlanarShear::Material::eps_m    , py::arg("Eps"))
-.def("energy"  , py::overload_cast<const cppmat::tensor3_2s<double>&>(&GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3dPlanarShear::Material::energy  ), py::arg("Eps"))
-.def("energy_m", py::overload_cast<const cppmat::tensor3_2s<double>&>(&GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3dPlanarShear::Material::energy_m), py::arg("Eps"))
-.def("energy_s", py::overload_cast<const cppmat::tensor3_2s<double>&>(&GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3dPlanarShear::Material::energy_s), py::arg("Eps"))
-.def("energy_n", py::overload_cast<const cppmat::tensor3_2s<double>&>(&GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3dPlanarShear::Material::energy_n), py::arg("Eps"))
+.def("stress"  ,                                                                 &GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3dPlanarShear::Material::stress   , py::arg("Eps"))
+.def("eps_d"   ,                                                                 &GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3dPlanarShear::Material::eps_d    , py::arg("Eps"))
+.def("eps_s"   ,                                                                 &GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3dPlanarShear::Material::eps_s    , py::arg("Eps"))
+.def("eps_n"   ,                                                                 &GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3dPlanarShear::Material::eps_n    , py::arg("Eps"))
+.def("eps_m"   ,                                                                 &GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3dPlanarShear::Material::eps_m    , py::arg("Eps"))
+.def("energy"  , py::overload_cast<const cppmat::cartesian3d::tensor2s<double>&>(&GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3dPlanarShear::Material::energy  ), py::arg("Eps"))
+.def("energy_m", py::overload_cast<const cppmat::cartesian3d::tensor2s<double>&>(&GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3dPlanarShear::Material::energy_m), py::arg("Eps"))
+.def("energy_s", py::overload_cast<const cppmat::cartesian3d::tensor2s<double>&>(&GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3dPlanarShear::Material::energy_s), py::arg("Eps"))
+.def("energy_n", py::overload_cast<const cppmat::cartesian3d::tensor2s<double>&>(&GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3dPlanarShear::Material::energy_n), py::arg("Eps"))
 
 .def("__repr__",[](const GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3dPlanarShear::Material &a)
   {return "<GooseMaterial.AmorphousSolid.LinearStrain.Elastic.Cartesian3dPlanarShear.Material>";});
@@ -235,7 +233,7 @@ py::class_<GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian
 
 py::class_<GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2dPlanarShear::Material>(AmorphousSolid_LinearStrain_ElastoPlastic_Cartesian2dPlanarShear,"Material")
 
-.def(py::init<double,double,const cppmat::vector2<double>&,const std::vector<double> &,bool>(),
+.def(py::init<double,double,const cppmat::cartesian2d::vector<double>&,const std::vector<double> &,bool>(),
   py::arg("K"           ),
   py::arg("G"           ),
   py::arg("n"           ),
@@ -243,15 +241,15 @@ py::class_<GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian
   py::arg("init_elastic")=true
 )
 
-.def("stress"  ,                                                      &GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2dPlanarShear::Material::stress   , py::arg("Eps"))
-.def("eps_d"   ,                                                      &GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2dPlanarShear::Material::eps_d    , py::arg("Eps"))
-.def("eps_s"   ,                                                      &GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2dPlanarShear::Material::eps_s    , py::arg("Eps"))
-.def("eps_n"   ,                                                      &GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2dPlanarShear::Material::eps_n    , py::arg("Eps"))
-.def("eps_m"   ,                                                      &GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2dPlanarShear::Material::eps_m    , py::arg("Eps"))
-.def("energy"  , py::overload_cast<const cppmat::tensor2_2s<double>&>(&GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2dPlanarShear::Material::energy  ), py::arg("Eps"))
-.def("energy_m", py::overload_cast<const cppmat::tensor2_2s<double>&>(&GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2dPlanarShear::Material::energy_m), py::arg("Eps"))
-.def("energy_s", py::overload_cast<const cppmat::tensor2_2s<double>&>(&GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2dPlanarShear::Material::energy_s), py::arg("Eps"))
-.def("energy_n", py::overload_cast<const cppmat::tensor2_2s<double>&>(&GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2dPlanarShear::Material::energy_n), py::arg("Eps"))
+.def("stress"  ,                                                                 &GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2dPlanarShear::Material::stress   , py::arg("Eps"))
+.def("eps_d"   ,                                                                 &GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2dPlanarShear::Material::eps_d    , py::arg("Eps"))
+.def("eps_s"   ,                                                                 &GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2dPlanarShear::Material::eps_s    , py::arg("Eps"))
+.def("eps_n"   ,                                                                 &GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2dPlanarShear::Material::eps_n    , py::arg("Eps"))
+.def("eps_m"   ,                                                                 &GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2dPlanarShear::Material::eps_m    , py::arg("Eps"))
+.def("energy"  , py::overload_cast<const cppmat::cartesian2d::tensor2s<double>&>(&GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2dPlanarShear::Material::energy  ), py::arg("Eps"))
+.def("energy_m", py::overload_cast<const cppmat::cartesian2d::tensor2s<double>&>(&GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2dPlanarShear::Material::energy_m), py::arg("Eps"))
+.def("energy_s", py::overload_cast<const cppmat::cartesian2d::tensor2s<double>&>(&GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2dPlanarShear::Material::energy_s), py::arg("Eps"))
+.def("energy_n", py::overload_cast<const cppmat::cartesian2d::tensor2s<double>&>(&GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2dPlanarShear::Material::energy_n), py::arg("Eps"))
 
 .def("__repr__",[](const GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2dPlanarShear::Material &a)
   {return "<GooseMaterial.AmorphousSolid.LinearStrain.Elastic.Cartesian2dPlanarShear.Material>";});

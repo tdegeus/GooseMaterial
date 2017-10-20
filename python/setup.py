@@ -5,12 +5,17 @@ solids. It can be used for example in finite element programs (at the integratio
 
 from setuptools import setup, Extension
 
-import sys
+import sys,re
 import setuptools
 import pybind11
 import cppmat
 
-__version__ = '0.0.5'
+header = open('../src/GooseMaterial/Macros.h','r').read()
+world  = re.split('(.*)(\#define GOOSEMATERIAL_WORLD_VERSION\ )([0-9]+)(.*)',header)[3]
+major  = re.split('(.*)(\#define GOOSEMATERIAL_MAJOR_VERSION\ )([0-9]+)(.*)',header)[3]
+minor  = re.split('(.*)(\#define GOOSEMATERIAL_MINOR_VERSION\ )([0-9]+)(.*)',header)[3]
+
+__version__ = '.'.join([world,major,minor])
 
 ext_modules = [
   Extension(
