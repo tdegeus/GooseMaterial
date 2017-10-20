@@ -25,24 +25,26 @@ Suggested references
 
 #include "../../../Macros.h"
 
+// -------------------------------------------------------------------------------------------------
+
 namespace GooseMaterial {
 namespace Metal {
 namespace LinearStrain {
 namespace NonLinearElastic {
 namespace Cartesian3d {
 
-namespace cm = cppmat::cartesian3d;
+// -------------------------------------------------------------------------------------------------
 
-using T2s = cm::tensor2s<double>;
-using T2d = cm::tensor2d<double>;
-using T4  = cm::tensor4 <double>;
+namespace cm  = cppmat::cartesian3d;
+using     T2s = cm::tensor2s<double>;
+using     T2d = cm::tensor2d<double>;
+using     T4  = cm::tensor4 <double>;
 
 // ============================================ OVERVIEW ===========================================
 
 class Material
 {
 private:
-
   double m_K;    // material parameter : bulk modulus
   double m_sig0; // material parameter : reference stress
   double m_eps0; // material parameter : reference strain
@@ -52,10 +54,6 @@ private:
   std::tuple<T4,T2s> compute(const T2s &eps, bool tangent);
 
 public:
-
-  // constructor / destructor
- ~Material(){};
-  Material(){};
   Material(double K, double sig0, double eps0, double m=1.);
 
   // compute stress(+tangent) at "eps"
@@ -151,10 +149,6 @@ std::tuple<T4,T2s> Material::tangent_stress(const T2s &eps)
 
 // =================================================================================================
 
-} // namespace ...
-} // namespace ...
-} // namespace ...
-} // namespace ...
-} // namespace ...
+}}}}} // namespace GooseMaterial::Metal::LinearStrain::NonLinearElastic::Cartesian3d
 
 #endif

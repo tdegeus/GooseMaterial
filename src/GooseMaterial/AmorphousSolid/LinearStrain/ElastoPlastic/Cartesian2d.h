@@ -49,17 +49,12 @@ double    ndim = 2.;
 class Material
 {
 private:
-
   double              m_K;        // bulk  modulus
   double              m_G;        // shear modulus
   std::vector<double> m_epsy;     // yield strains
   bool                m_elastic;  // material is elastic or not
 
 public:
-
-  // constructor / destructor
- ~Material(){};
-  Material(){};
   Material(double K, double G, const std::vector<double> &epsy={}, bool init_elastic=true);
 
   // compute stress at "Eps"

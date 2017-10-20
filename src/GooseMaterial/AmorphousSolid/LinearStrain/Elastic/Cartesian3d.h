@@ -46,15 +46,10 @@ double    ndim = 3.;
 class Material
 {
 private:
-
   double m_K; // bulk  modulus
   double m_G; // shear modulus
 
 public:
-
-  // constructor / destructor
- ~Material(){};
-  Material(){};
   Material(double K, double G);
 
   // compute stress at "Eps"

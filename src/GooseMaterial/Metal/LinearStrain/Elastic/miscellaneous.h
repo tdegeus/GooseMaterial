@@ -23,6 +23,8 @@ Suggested references
 
 #include "../../../Macros.h"
 
+// -------------------------------------------------------------------------------------------------
+
 namespace GooseMaterial {
 namespace Metal {
 namespace LinearStrain {
@@ -77,9 +79,6 @@ std::tuple<double,double> ConvertParameters (
 
 // =================================================================================================
 
-} // namespace ...
-} // namespace ...
-} // namespace ...
-} // namespace ...
+}}}} // namespace GooseMaterial::Metal::LinearStrain::Elastic
 
 #endif

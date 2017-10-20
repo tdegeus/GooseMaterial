@@ -29,7 +29,7 @@ Suggested references
 
 #include "../../../Macros.h"
 
-#warning "GooseMaterial/AmorphousSolid/LinearStrain/ElasticLiquid/Cartesian3d.h : first usage, careful check then remove this message"
+// -------------------------------------------------------------------------------------------------
 
 namespace GooseMaterial {
 namespace AmorphousSolid {
@@ -37,10 +37,11 @@ namespace LinearStrain {
 namespace ElasticLiquid {
 namespace Cartesian3d {
 
-namespace cm = cppmat::cartesian3d;
+// -------------------------------------------------------------------------------------------------
 
-using T2s = cm::tensor2s<double>;
-using T2d = cm::tensor2d<double>;
+namespace cm  = cppmat::cartesian3d;
+using     T2s = cm::tensor2s<double>;
+using     T2d = cm::tensor2d<double>;
 
 // ============================================ OVERVIEW ===========================================
 
@@ -63,8 +64,6 @@ private:
   double m_sigm_n;    // hydrostatic stress at previous time-step
 
 public:
- ~Material(){};
-  Material(){};
   Material(double K, double G, double sigy, double Tdamp, double Tfluid);
 
   // constitutive response: 'sig ( epsdot, dt )' as a function of the history
@@ -159,10 +158,6 @@ T2s Material::stress(const T2s &epsdot, double dt)
 
 // =================================================================================================
 
-} // namespace ..
-} // namespace ..
-} // namespace ..
-} // namespace ..
-} // namespace ..
+}}}}} // namespace GooseMaterial::AmorphousSolid::LinearStrain::ElasticLiquid::Cartesian3d
 
 #endif

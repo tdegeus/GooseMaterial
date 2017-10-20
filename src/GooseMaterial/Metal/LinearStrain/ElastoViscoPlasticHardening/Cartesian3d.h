@@ -27,7 +27,7 @@ Suggested references
 
 #include "../../../Macros.h"
 
-#warning "GooseMaterial/Metal/LinearStrain/ElastoViscoPlasticHardening/Cartesian3d.h : first usage, careful check then remove this message"
+// -------------------------------------------------------------------------------------------------
 
 namespace GooseMaterial {
 namespace Metal {
@@ -35,18 +35,18 @@ namespace LinearStrain {
 namespace ElastoViscoPlasticHardening {
 namespace Cartesian3d {
 
-namespace cm = cppmat::cartesian3d;
+// -------------------------------------------------------------------------------------------------
 
-using T2s = cm::tensor2s<double>;
-using T2d = cm::tensor2d<double>;
-using T4  = cm::tensor4 <double>;
+namespace cm  = cppmat::cartesian3d;
+using     T2s = cm::tensor2s<double>;
+using     T2d = cm::tensor2d<double>;
+using     T4  = cm::tensor4 <double>;
 
 // ============================================ OVERVIEW ===========================================
 
 class Material
 {
 private:
-
   double m_K;      // material parameter : bulk  modulus
   double m_G;      // material parameter : shear modulus
   double m_gamma0; // material parameter : reference plastic strain rate
@@ -68,12 +68,7 @@ private:
   std::tuple<double,double> plastic_multiplier(double phi, double sig_eq, double dt);
 
 public:
-
-  // constructor / destructor
- ~Material(){};
-  Material(){};
-  Material(
-    double K, double G, double gamma0, double n, double sigy0, double H, double m=1. );
+  Material(double K, double G, double gamma0, double n, double sigy0, double H, double m=1.);
 
   // compute stress(+tangent) at "eps", depending on the history stored in this class
   T2s                stress        (const T2s &eps, const double dt);
@@ -276,10 +271,6 @@ std::tuple<double,double> Material::plastic_multiplier(
 
 // =================================================================================================
 
-} // namespace ...
-} // namespace ...
-} // namespace ...
-} // namespace ...
-} // namespace ...
+}}}}} // namespace GooseMaterial::Metal::LinearStrain::ElastoViscoPlasticHardening::Cartesian3d
 
 #endif
