@@ -65,6 +65,7 @@ private:
   double plastic_multiplier(double sig_eq, double dt);
 
 public:
+  Material(){};
   Material(double K, double G, double sig0, double gamma0, double m=1.);
 
   // compute stress(+tangent) at "eps", depending on the history stored in this class

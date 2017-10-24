@@ -64,6 +64,7 @@ private:
   double m_sigm_n;    // hydrostatic stress at previous time-step
 
 public:
+  Material(){};
   Material(double K, double G, double sigy, double Tdamp, double Tfluid);
 
   // constitutive response: 'sig ( epsdot, dt )' as a function of the history

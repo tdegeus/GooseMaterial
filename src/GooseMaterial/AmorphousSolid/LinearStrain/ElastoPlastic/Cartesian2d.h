@@ -55,6 +55,7 @@ private:
   bool                m_elastic;  // material is elastic or not
 
 public:
+  Material(){};
   Material(double K, double G, const std::vector<double> &epsy={}, bool init_elastic=true);
 
   // compute stress at "Eps"

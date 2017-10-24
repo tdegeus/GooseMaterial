@@ -50,6 +50,7 @@ private:
   double m_G; // shear modulus
 
 public:
+  Material(){};
   Material(double K, double G);
 
   // compute stress at "Eps"

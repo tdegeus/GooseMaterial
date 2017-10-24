@@ -54,6 +54,7 @@ private:
   V                   m_n;        // normal of the weak layer
 
 public:
+  Material(){};
   Material(double K, double G, const V &n, const std::vector<double> &epsy={}, bool init_elastic=true);
 
   // compute stress at "Eps"

@@ -51,6 +51,7 @@ private:
   std::tuple<T4,T2s> compute(const T2s &eps, bool tangent);
 
 public:
+  Material(){};
   Material(double K, double G);
 
   // compute stress(+tangent) at "eps"

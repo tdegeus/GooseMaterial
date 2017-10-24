@@ -68,6 +68,7 @@ private:
   std::tuple<double,double> plastic_multiplier(double phi, double sig_eq, double dt);
 
 public:
+  Material(){};
   Material(double K, double G, double gamma0, double n, double sigy0, double H, double m=1.);
 
   // compute stress(+tangent) at "eps", depending on the history stored in this class
