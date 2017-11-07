@@ -7,9 +7,6 @@ Description
 
 Elastic plastic material for amorphous solids.
 
-N.B. The elastic part of this model is also implemented in:
-"AmorphousSolid/LinearStrain/Elastic/Cartesian2d.h"
-
 Suggested references
 --------------------
 
@@ -18,8 +15,8 @@ Suggested references
 
 ================================================================================================= */
 
-#ifndef GOOSEMATERIAL_AMORPHOUSSOLID_LINEARSTRAIN_ELASTOPLASTIC_CARTESIAN2D_H
-#define GOOSEMATERIAL_AMORPHOUSSOLID_LINEARSTRAIN_ELASTOPLASTIC_CARTESIAN2D_H
+#ifndef GOOSEMATERIAL_AMORPHOUSSOLID_LINEARSTRAIN_ELASTOPLASTIC_PLANARSHEAR_CARTESIAN2D_H
+#define GOOSEMATERIAL_AMORPHOUSSOLID_LINEARSTRAIN_ELASTOPLASTIC_PLANARSHEAR_CARTESIAN2D_H
 
 #define _USE_MATH_DEFINES // to use "M_PI" from "math.h"
 
@@ -33,11 +30,13 @@ namespace GooseMaterial {
 namespace AmorphousSolid {
 namespace LinearStrain {
 namespace ElastoPlastic {
+namespace PlanarShear {
 namespace Cartesian2d {
 
 // -------------------------------------------------------------------------------------------------
 
 namespace cm   = cppmat::cartesian2d;
+using     V    = cm::vector  <double>;
 using     T2s  = cm::tensor2s<double>;
 using     T2d  = cm::tensor2d<double>;
 double    ndim = 2.;
@@ -50,23 +49,32 @@ private:
   double              m_K;    // bulk  modulus
   double              m_G;    // shear modulus
   std::vector<double> m_epsy; // yield strains
+  V                   m_n;    // normal of the weak layer
 
 public:
   Material(){};
-  Material(double K, double G, const std::vector<double> &epsy={}, bool init_elastic=true);
+  Material(double K, double G, const V &n, const std::vector<double> &epsy={}, bool init_elastic=true);
 
   // compute stress or the energy at "Eps"
   T2s    stress(const T2s &Eps);
   double energy(const T2s &Eps);
   // find the index of the current yield strain, return the yield strain at this index
-  size_t find  (double epsd);
+  size_t find  (double epss);
   double eps_y (size_t i   );
 };
 
 // ===================================== IMPLEMENTATION : CORE =====================================
 
-Material::Material(double K, double G, const std::vector<double> &epsy, bool init_elastic)
+Material::Material(double K, double G, const V &n, const std::vector<double> &epsy, bool init_elastic)
 {
+  // check input - normal of the weak layer
+  if ( n.norm() <= 0. )
+    throw std::runtime_error("Normal vector cannot be null vector");
+
+  // copy input - normal of the weak layer
+  m_n  = n;
+  m_n.setUnitLength();
+
   // copy input - elastic moduli
   m_K = K;
   m_G = G;
@@ -108,10 +116,10 @@ double Material::eps_y(size_t i)
 
 // -------------------------------------------------------------------------------------------------
 
-size_t Material::find(double epsd)
+size_t Material::find(double epss)
 {
   // check extremes
-  if ( epsd < m_epsy.front() or epsd >= m_epsy.back() )
+  if ( epss < m_epsy.front() or epss >= m_epsy.back() )
     throw std::runtime_error("Insufficient 'eps_y'");
 
   // set initial search bounds and index
@@ -125,12 +133,12 @@ size_t Material::find(double epsd)
   while ( true )
   {
     // check if found, unroll once to speed-up
-    if ( epsd >= m_epsy[i-1] and epsd < m_epsy[i  ] ) return i-1;
-    if ( epsd >= m_epsy[i  ] and epsd < m_epsy[i+1] ) return i;
-    if ( epsd >= m_epsy[i+1] and epsd < m_epsy[i+2] ) return i+1;
+    if ( epss >= m_epsy[i-1] and epss < m_epsy[i  ] ) return i-1;
+    if ( epss >= m_epsy[i  ] and epss < m_epsy[i+1] ) return i;
+    if ( epss >= m_epsy[i+1] and epss < m_epsy[i+2] ) return i+1;
 
     // correct the left- and right-bound
-    if ( epsd >= m_epsy[i] ) l = i;
+    if ( epss >= m_epsy[i] ) l = i;
     else                     r = i;
 
     // set new search index
@@ -147,17 +155,25 @@ T2s Material::stress(const T2s &Eps)
   T2d    I    = cm::identity2();
   double epsm = Eps.trace()/ndim;
   T2s    Epsd = Eps - epsm*I;
-  double epsd = std::sqrt(.5*Epsd.ddot(Epsd));
 
-  // no deviatoric strain -> return stress tensor with only hydrostatic part
-  if ( epsd <= 0. ) return (m_K*epsm) * I;
+  // get strain vector, and its equivalent project on the plane
+  V sn = Epsd.dot(m_n);               sn.setUnitLength();
+  V s  = sn - ( sn.dot(m_n) ) * m_n;  s .setUnitLength();
+
+  // decompose deviatoric strain in a planar part and a non-planar part
+  double epss = cm::dot(s.dot(Epsd),m_n);
+  T2s    Epss = epss * ( s.dyadic(m_n) + m_n.dyadic(s) ).astensor2s();
+  T2s    Epsn = Epsd - Epss;
+
+  // planar equivalent strain zero -> only hydrostatic and non-planar elastic deviatoric stress
+  if ( epss <= 0. ) return (m_K*epsm) * I + m_G * Epsn;
 
   // read current yield strains
-  size_t i       = find(epsd);
+  size_t i       = find(epss);
   double eps_min = ( m_epsy[i+1] + m_epsy[i] ) / 2.;
 
   // return full strain tensor
-  return (m_K*epsm)*I + ( m_G * (1.-eps_min/epsd) ) * Epsd;
+  return (m_K*epsm)*I + m_G*Epsn + ( m_G * (1.-eps_min/epss) ) * Epss   ;
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -168,25 +184,35 @@ double Material::energy(const T2s &Eps)
   T2d    I    = cm::identity2();
   double epsm = Eps.trace()/ndim;
   T2s    Epsd = Eps - epsm*I;
-  double epsd = std::sqrt(.5*Epsd.ddot(Epsd));
 
-  // energy for the hydrostatic part
-  double U = ndim/2. * m_K * std::pow(epsm,2.);
+  // get strain vector, and its equivalent project on the plane
+  V sn = Epsd.dot(m_n);               sn.setUnitLength();
+  V s  = sn - ( sn.dot(m_n) ) * m_n;  s .setUnitLength();
 
-  // read current yield strain
-  size_t i       = find(epsd);
+  // decompose deviatoric strain in a planar part and a non-planar part
+  double epss = cm::dot(s.dot(Epsd),m_n);
+  T2s    Epss = epss * ( s.dyadic(m_n) + m_n.dyadic(s) ).astensor2s();
+  T2s    Epsn = Epsd - Epss;
+  double epsn = std::sqrt(.5*Epsn.ddot(Epsn));
+
+  // hydrostatic and normal parts of the energy
+  double U  = ndim/2. * m_K * std::pow(epsm,2.);
+  double Vn =           m_G * std::pow(epsn,2.);
+
+  // read current yield strains
+  size_t i       = find(epss);
   double eps_min = ( m_epsy[i+1] + m_epsy[i] ) / 2.;
   double deps_y  = ( m_epsy[i+1] - m_epsy[i] ) / 2.;
 
-  // deviatoric part of the energy
-  double V = m_G * ( std::pow(epsd-eps_min,2.) - std::pow(deps_y,2.) );
+  // shear part of the energy
+  double Vs = m_G * ( std::pow(epss-eps_min,2.) - std::pow(deps_y,2.) );
 
   // return total energy
-  return U + V;
+  return U + Vn + Vs;
 }
 
 // =================================================================================================
 
-}}}}} // namespace ...
+}}}}}} // namespace ...
 
 #endif

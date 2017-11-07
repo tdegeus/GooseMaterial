@@ -27,8 +27,6 @@ Suggested references
 #include <math.h>
 #include <cppmat/tensor3.h>
 
-#include "../../../Macros.h"
-
 // -------------------------------------------------------------------------------------------------
 
 namespace GooseMaterial {
@@ -49,41 +47,20 @@ double    ndim = 3.;
 class Material
 {
 private:
-  double              m_K;        // bulk  modulus
-  double              m_G;        // shear modulus
-  std::vector<double> m_epsy;     // yield strains
-  bool                m_elastic;  // material is elastic or not
+  double              m_K;    // bulk  modulus
+  double              m_G;    // shear modulus
+  std::vector<double> m_epsy; // yield strains
 
 public:
   Material(){};
   Material(double K, double G, const std::vector<double> &epsy={}, bool init_elastic=true);
 
-  // compute stress at "Eps"
-  T2s stress(const T2s &Eps);
-
-  // post-process functions
-  // - return is material is elastic or not
-  bool   elastic();
-  // - find the index of the current yield strain (below "eps_d")
-  size_t find(double epsd);
-  size_t find(const T2s &Eps);
-  // - return yield strain "i"
-  double eps_y(size_t i);
-  // - return (hydrostatic/deviatoric) equivalent stress/strain
-  double eps_eq(const T2s &Eps);
-  double eps_m (const T2s &Eps);
-  double eps_d (const T2s &Eps);
-  double sig_eq(const T2s &Sig);
-  double sig_m (const T2s &Sig);
-  double sig_d (const T2s &Sig);
-  // - return the strain energy (or its hydrostatic or deviatoric component)
-  double energy  (double epsm, double epsd);
-  double energy_m(double epsm);
-  double energy_d(double epsd);
-  double energy  (const T2s &Eps);
-  double energy_m(const T2s &Eps);
-  double energy_d(const T2s &Eps);
-
+  // compute stress or the energy at "Eps"
+  T2s    stress(const T2s &Eps);
+  double energy(const T2s &Eps);
+  // find the index of the current yield strain, return the yield strain at this index
+  size_t find  (double epsd);
+  double eps_y (size_t i   );
 };
 
 // ===================================== IMPLEMENTATION : CORE =====================================
@@ -98,15 +75,6 @@ Material::Material(double K, double G, const std::vector<double> &epsy, bool ini
   std::vector<double> vec = epsy;
   // sort input
   std::sort( vec.begin() , vec.end() );
-
-  // elastic : no yield strains
-  if ( vec.size() == 0 ) {
-    m_elastic = true;
-    return;
-  }
-
-  // set plastic
-  m_elastic = false;
 
   // check to add item to have an initial elastic response
   if ( init_elastic )
@@ -129,6 +97,13 @@ Material::Material(double K, double G, const std::vector<double> &epsy, bool ini
   // check the number of yield strains
   if ( m_epsy.size() < 2 )
     throw std::runtime_error("Specify at least two yield strains 'eps_y'");
+}
+
+// -------------------------------------------------------------------------------------------------
+
+double Material::eps_y(size_t i)
+{
+  return m_epsy[i];
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -156,7 +131,7 @@ size_t Material::find(double epsd)
 
     // correct the left- and right-bound
     if ( epsd >= m_epsy[i] ) l = i;
-    else                      r = i;
+    else                     r = i;
 
     // set new search index
     i = ( r + l ) / 2;
@@ -172,145 +147,46 @@ T2s Material::stress(const T2s &Eps)
   T2d    I    = cm::identity2();
   double epsm = Eps.trace()/ndim;
   T2s    Epsd = Eps - epsm*I;
-  double epsd = std::pow( .5*Epsd.ddot(Epsd) , 0.5 );
+  double epsd = std::sqrt(.5*Epsd.ddot(Epsd));
 
-  // elastic: return full stress tensor
-  if ( m_elastic  ) return ( m_K * epsm ) * I + m_G * Epsd;
-
-  // zero equivalent strain -> return stress tensor with only hydrostatic part
-  if ( epsd <= 0. ) return ( m_K * epsm ) * I;
+  // no deviatoric strain -> return stress tensor with only hydrostatic part
+  if ( epsd <= 0. ) return (m_K*epsm) * I;
 
   // read current yield strains
   size_t i       = find(epsd);
   double eps_min = ( m_epsy[i+1] + m_epsy[i] ) / 2.;
-  double deps_y  = ( m_epsy[i+1] - m_epsy[i] ) / 2.;
 
   // return full strain tensor
-  return (m_K*epsm)*I + ((m_G/epsd)*(deps_y/M_PI)*sin(M_PI/deps_y*(epsd-eps_min)))*Epsd;
-}
-
-// ================================= IMPLEMENTATION : POST-PROCESS =================================
-
-bool Material::elastic()
-{
-  return m_elastic;
-}
-
-// -------------------------------------------------------------------------------------------------
-
-size_t Material::find(const T2s &Eps)
-{
-  return find(eps_d(Eps));
-}
-
-// -------------------------------------------------------------------------------------------------
-
-double Material::eps_y(size_t i)
-{
-  return m_epsy[i];
-}
-
-// -------------------------------------------------------------------------------------------------
-
-double Material::eps_eq(const T2s &Eps)
-{
-  return std::pow( .5*Eps.ddot(Eps) , 0.5 );
-}
-
-// -------------------------------------------------------------------------------------------------
-
-double Material::eps_m(const T2s &Eps)
-{
-  return Eps.trace()/ndim;
-}
-
-// -------------------------------------------------------------------------------------------------
-
-double Material::eps_d(const T2s &Eps)
-{
-  T2d    I    = cm::identity2();
-  double epsm = Eps.trace()/ndim;
-  T2s    Epsd = Eps - epsm*I;
-
-  return std::pow( .5*Epsd.ddot(Epsd) , 0.5 );
-}
-
-// -------------------------------------------------------------------------------------------------
-
-double Material::sig_eq(const T2s &Sig)
-{
-  return std::pow( .5*Sig.ddot(Sig) , 0.5 );
-}
-
-// -------------------------------------------------------------------------------------------------
-
-double Material::sig_m(const T2s &Sig)
-{
-  return Sig.trace()/ndim;
-}
-
-// -------------------------------------------------------------------------------------------------
-
-double Material::sig_d(const T2s &Sig)
-{
-  T2d    I    = cm::identity2();
-  double sigm = Sig.trace()/ndim;
-  T2s    Sigd = Sig - sigm*I;
-
-  return std::pow( .5*Sigd.ddot(Sigd) , 0.5 );
-}
-
-// -------------------------------------------------------------------------------------------------
-
-double Material::energy_m(double epsm)
-{
-  return ndim/2. * m_K * std::pow( epsm , 2. );
-}
-
-// -------------------------------------------------------------------------------------------------
-
-double Material::energy_m(const T2s &Eps)
-{
-  return energy_m(eps_m(Eps));
-}
-
-// -------------------------------------------------------------------------------------------------
-
-double Material::energy_d(double epsd)
-{
-  if ( m_elastic  ) return m_G * std::pow( epsd , 2. );
-  if ( epsd <= 0. ) return 0.0;
-
-  size_t i       = find(epsd);
-  double eps_min = ( m_epsy[i+1] + m_epsy[i] ) / 2.;
-  double deps_y  = ( m_epsy[i+1] - m_epsy[i] ) / 2.;
-
-  return -2. * m_G * std::pow( deps_y/M_PI , 2. ) * ( 1. + cos( M_PI/deps_y * (epsd-eps_min) ) );
-}
-
-// -------------------------------------------------------------------------------------------------
-
-double Material::energy_d(const T2s &Eps)
-{
-  return energy_d(eps_d(Eps));
-}
-
-// -------------------------------------------------------------------------------------------------
-
-double Material::energy(double epsm, double epsd)
-{
-  return energy_m(epsm) + energy_d(epsd);
+  return (m_K*epsm)*I + ( m_G * (1.-eps_min/epsd) ) * Epsd;
 }
 
 // -------------------------------------------------------------------------------------------------
 
 double Material::energy(const T2s &Eps)
 {
-  return energy_m(eps_m(Eps)) + energy_d(eps_d(Eps));
+  // decompose strain: hydrostatic part, deviatoric part
+  T2d    I    = cm::identity2();
+  double epsm = Eps.trace()/ndim;
+  T2s    Epsd = Eps - epsm*I;
+  double epsd = std::sqrt(.5*Epsd.ddot(Epsd));
+
+  // energy for the hydrostatic part
+  double U = ndim/2. * m_K * std::pow(epsm,2.);
+
+  // read current yield strain
+  size_t i       = find(epsd);
+  double eps_min = ( m_epsy[i+1] + m_epsy[i] ) / 2.;
+  double deps_y  = ( m_epsy[i+1] - m_epsy[i] ) / 2.;
+
+  // deviatoric part of the energy
+  double V = m_G * ( std::pow(epsd-eps_min,2.) - std::pow(deps_y,2.) );
+
+  // return total energy
+  return U + V;
 }
 
 // =================================================================================================
 
-}}}}} // namespace GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3d
+}}}}} // namespace ...
 
 #endif

@@ -49,19 +49,30 @@ set(PKGCONFIG_INSTALL_DIR
 
 # list all header files
 set(GOOSEMATERIAL_HEADERS
+  GooseMaterial/GooseMaterial.h
   GooseMaterial/Macros.h
+  GooseMaterial/AmorphousSolid/LinearStrain/Elastic.h
   GooseMaterial/AmorphousSolid/LinearStrain/Elastic/Cartesian2d.h
   GooseMaterial/AmorphousSolid/LinearStrain/Elastic/Cartesian3d.h
+  GooseMaterial/AmorphousSolid/LinearStrain/ElasticLiquid.h
   GooseMaterial/AmorphousSolid/LinearStrain/ElasticLiquid/Cartesian3d.h
+  GooseMaterial/AmorphousSolid/LinearStrain/ElastoPlastic.h
   GooseMaterial/AmorphousSolid/LinearStrain/ElastoPlastic/Cartesian2d.h
   GooseMaterial/AmorphousSolid/LinearStrain/ElastoPlastic/Cartesian3d.h
-  GooseMaterial/AmorphousSolid/LinearStrain/ElastoPlastic/Cartesian2dPlanarShear.h
-  GooseMaterial/AmorphousSolid/LinearStrain/ElastoPlastic/Cartesian3dPlanarShear.h
+  GooseMaterial/AmorphousSolid/LinearStrain/ElastoPlastic/PlanarShear_Cartesian2d.h
+  GooseMaterial/AmorphousSolid/LinearStrain/ElastoPlastic/PlanarShear_Cartesian3d.h
+  GooseMaterial/AmorphousSolid/LinearStrain/ElastoPlastic/Smooth_Cartesian2d.h
+  GooseMaterial/AmorphousSolid/LinearStrain/ElastoPlastic/Smooth_Cartesian3d.h
+  GooseMaterial/AmorphousSolid/LinearStrain/ElastoPlastic/Smooth_PlanarShear_Cartesian2d.h
+  GooseMaterial/AmorphousSolid/LinearStrain/ElastoPlastic/Smooth_PlanarShear_Cartesian3d.h
   GooseMaterial/Metal/LinearStrain/Elastic.h
   GooseMaterial/Metal/LinearStrain/Elastic/Cartesian3d.h
   GooseMaterial/Metal/LinearStrain/Elastic/miscellaneous.h
+  GooseMaterial/Metal/LinearStrain/ElastoPlastic.h
   GooseMaterial/Metal/LinearStrain/ElastoPlastic/Cartesian3d.h
+  GooseMaterial/Metal/LinearStrain/ElastoViscoPlastic.h
   GooseMaterial/Metal/LinearStrain/ElastoViscoPlastic/Cartesian3d.h
+  GooseMaterial/Metal/LinearStrain/ElastoViscoPlasticHardening.h
   GooseMaterial/Metal/LinearStrain/ElastoViscoPlasticHardening/Cartesian3d.h
   GooseMaterial/Metal/LinearStrain/NonLinearElastic.h
   GooseMaterial/Metal/LinearStrain/NonLinearElastic/Cartesian3d.h

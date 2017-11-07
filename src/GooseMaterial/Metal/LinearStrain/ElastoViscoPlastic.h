@@ -4,10 +4,9 @@
 
 ================================================================================================= */
 
-#ifndef GOOSEMATERIAL_METAL_LINEARSTRAIN_ELASTIC_H
-#define GOOSEMATERIAL_METAL_LINEARSTRAIN_ELASTIC_H
+#ifndef GOOSEMATERIAL_METAL_ELASTOVISCOPLASTIC_ELASTIC_H
+#define GOOSEMATERIAL_METAL_ELASTOVISCOPLASTIC_ELASTIC_H
 
-#include "Elastic/Cartesian3d.h"
-#include "Elastic/miscellaneous.h"
+#include "ElastoViscoPlastic/Cartesian3d.h"
 
 #endif

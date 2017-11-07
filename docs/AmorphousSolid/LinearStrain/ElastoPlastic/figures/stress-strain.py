@@ -1,82 +1,90 @@
 
-import GooseTensor as gt
-import GooseSolid  as gs
-import numpy as np
+import GooseTensor       as gt
+import GooseMaterial     as gm
+import numpy             as np
 import matplotlib.pyplot as plt
 
 plt.style.use(['goose','goose-latex','goose-tick-lower'])
 
 # --------------------------------------------------------------------------------------------------
 
-mat = gs.ElasticPlasticPotential( 1. , 1. , [ -1. , 1. , 1.5 , 3. , 6. , 10.1 ] , False )
+fig = plt.figure(figsize=(14,12))
+fig.set_tight_layout(True)
+
+# --------------------------------------------------------------------------------------------------
+
+mat = gm.AmorphousSolid.LinearStrain.ElastoPlastic.Cartesian2d.Material( 1. , 1. , [ -1. , 1. , 1.5 , 3. , 6. , 10.1 ] , False )
 
 Eps = np.array([
-  [ 0. , 1. , 0. ],
-  [ 1. , 0. , 0. ],
-  [ 0. , 0. , 0. ],
+  [ 0. , 1. ],
+  [ 1. , 0. ],
 ])
 
 ninc   = 20000
-eps_eq = np.zeros((ninc))
-sig_eq = np.zeros((ninc))
+eps_xy = np.zeros((ninc))
+sig_xy = np.zeros((ninc))
+energy = np.zeros((ninc))
 
-for i,d in enumerate(np.linspace(0,10.*np.sqrt(3.)/2.,ninc)):
+for i,d in enumerate(np.linspace(0,10.,ninc)):
 
   eps       = d * Eps
+  energy[i] = mat.energy(eps)
   sig       = mat.stress(eps)
-  sig_eq[i] = np.sqrt(3./2.*gt.ddot22(sig,sig))
-  eps_eq[i] = np.sqrt(2./3.*gt.ddot22(eps,eps))
+  sig_xy[i] = sig[0,1]
+  eps_xy[i] = eps[0,1]
 
-fig,ax = plt.subplots()
+ax = fig.add_subplot(2,2,1)
 
-ax.plot(eps_eq,sig_eq)
+ax.plot(eps_xy,sig_xy)
 
-plt.xlabel(r'$\varepsilon_\mathrm{eq}$')
+plt.xlabel(r'$\varepsilon_\mathrm{xy}$')
+plt.ylabel(r'$\sigma_\mathrm{xy}$')
 
-plt.ylabel(r'$\sigma_\mathrm{eq}$')
+ax = fig.add_subplot(2,2,2)
 
-ax.xaxis.set_ticks([0])
-ax.yaxis.set_ticks([0])
+ax.plot(eps_xy,energy)
+
+plt.xlabel(r'$\varepsilon_\mathrm{xy}$')
+plt.ylabel(r'$E$')
+
+# --------------------------------------------------------------------------------------------------
+
+mat = gm.AmorphousSolid.LinearStrain.ElastoPlastic.Smooth.Cartesian2d.Material( 1. , 1. , [ -1. , 1. , 1.5 , 3. , 6. , 10.1 ] , False )
+
+Eps = np.array([
+  [ 0. , 1. ],
+  [ 1. , 0. ],
+])
+
+ninc   = 20000
+eps_xy = np.zeros((ninc))
+sig_xy = np.zeros((ninc))
+energy = np.zeros((ninc))
+
+for i,d in enumerate(np.linspace(0,10.,ninc)):
+
+  eps       = d * Eps
+  energy[i] = mat.energy(eps)
+  sig       = mat.stress(eps)
+  sig_xy[i] = sig[0,1]
+  eps_xy[i] = eps[0,1]
+
+ax = fig.add_subplot(2,2,3)
+
+ax.plot(eps_xy,sig_xy)
+
+plt.xlabel(r'$\varepsilon_\mathrm{xy}$')
+plt.ylabel(r'$\sigma_\mathrm{xy}$')
+
+ax = fig.add_subplot(2,2,4)
+
+ax.plot(eps_xy,energy)
+
+plt.xlabel(r'$\varepsilon_\mathrm{xy}$')
+plt.ylabel(r'$E$')
+
+# --------------------------------------------------------------------------------------------------
 
 plt.savefig('stress-strain.svg')
 plt.show()
-
-
-# --------------------------------------------------------------------------------------------------
-
-mat = gs.ElasticPlasticPotential( 1. , 1. , [ -1. , 1. , 1.5 , 3. , 6. , 10.1 ] , True )
-
-Eps = np.array([
-  [ 0. , 1. , 0. ],
-  [ 1. , 0. , 0. ],
-  [ 0. , 0. , 0. ],
-])
-
-ninc   = 20000
-eps_eq = np.zeros((ninc))
-sig_eq = np.zeros((ninc))
-
-for i,d in enumerate(np.linspace(0,10.*np.sqrt(3.)/2.,ninc)):
-
-  eps       = d * Eps
-  sig       = mat.stress(eps)
-  sig_eq[i] = np.sqrt(3./2.*gt.ddot22(sig,sig))
-  eps_eq[i] = np.sqrt(2./3.*gt.ddot22(eps,eps))
-
-fig,ax = plt.subplots()
-
-ax.plot(eps_eq,sig_eq)
-
-plt.xlabel(r'$\varepsilon_\mathrm{eq}$')
-
-plt.ylabel(r'$\sigma_\mathrm{eq}$')
-
-ax.xaxis.set_ticks([0])
-ax.yaxis.set_ticks([0])
-
-plt.savefig('stress-strain-smooth.svg')
-plt.show()
-
-
-# --------------------------------------------------------------------------------------------------
 

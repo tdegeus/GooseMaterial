@@ -24,8 +24,6 @@ Suggested references
 #include <math.h>
 #include <cppmat/tensor3.h>
 
-#include "../../../Macros.h"
-
 // -------------------------------------------------------------------------------------------------
 
 namespace GooseMaterial {
@@ -53,25 +51,9 @@ public:
   Material(){};
   Material(double K, double G);
 
-  // compute stress at "Eps"
-  T2s stress(const T2s &Eps);
-
-  // post-process functions
-  // - return (hydrostatic/deviatoric) equivalent stress/strain
-  double eps_eq(const T2s &Eps);
-  double eps_m (const T2s &Eps);
-  double eps_d (const T2s &Eps);
-  double sig_eq(const T2s &Sig);
-  double sig_m (const T2s &Sig);
-  double sig_d (const T2s &Sig);
-  // - return the strain energy (or its hydrostatic or deviatoric component)
-  double energy  (double epsm, double epsd);
-  double energy_m(double epsm);
-  double energy_d(double epsd);
-  double energy  (const T2s &Eps);
-  double energy_m(const T2s &Eps);
-  double energy_d(const T2s &Eps);
-
+  // compute stress or the energy at "Eps"
+  T2s    stress(const T2s &Eps);
+  double energy(const T2s &Eps);
 };
 
 // ===================================== IMPLEMENTATION : CORE =====================================
@@ -96,100 +78,26 @@ T2s Material::stress(const T2s &Eps)
   return ( m_K * epsm ) * I + m_G * Epsd;
 }
 
-// ================================= IMPLEMENTATION : POST-PROCESS =================================
-
-double Material::eps_eq(const T2s &Eps)
-{
-  return std::pow( .5*Eps.ddot(Eps) , 0.5 );
-}
-
-// -------------------------------------------------------------------------------------------------
-
-double Material::eps_m(const T2s &Eps)
-{
-  return Eps.trace()/ndim;
-}
-
-// -------------------------------------------------------------------------------------------------
-
-double Material::eps_d(const T2s &Eps)
-{
-  T2d    I    = cm::identity2();
-  double epsm = Eps.trace()/ndim;
-  T2s    Epsd = Eps - epsm*I;
-
-  return std::pow( .5*Epsd.ddot(Epsd) , 0.5 );
-}
-
-// -------------------------------------------------------------------------------------------------
-
-double Material::sig_eq(const T2s &Sig)
-{
-  return std::pow( .5*Sig.ddot(Sig) , 0.5 );
-}
-
-// -------------------------------------------------------------------------------------------------
-
-double Material::sig_m(const T2s &Sig)
-{
-  return Sig.trace()/ndim;
-}
-
-// -------------------------------------------------------------------------------------------------
-
-double Material::sig_d(const T2s &Sig)
-{
-  T2d    I    = cm::identity2();
-  double sigm = Sig.trace()/ndim;
-  T2s    Sigd = Sig - sigm*I;
-
-  return std::pow( .5*Sigd.ddot(Sigd) , 0.5 );
-}
-
-// -------------------------------------------------------------------------------------------------
-
-double Material::energy_m(double epsm)
-{
-  return ndim/2. * m_K * std::pow( epsm , 2. );
-}
-
-// -------------------------------------------------------------------------------------------------
-
-double Material::energy_m(const T2s &Eps)
-{
-  return energy_m(eps_m(Eps));
-}
-
-// -------------------------------------------------------------------------------------------------
-
-double Material::energy_d(double epsd)
-{
-  return m_G * std::pow( epsd , 2. );
-}
-
-// -------------------------------------------------------------------------------------------------
-
-double Material::energy_d(const T2s &Eps)
-{
-  return energy_d(eps_d(Eps));
-}
-
-// -------------------------------------------------------------------------------------------------
-
-double Material::energy(double epsm, double epsd)
-{
-  return energy_m(epsm) + energy_d(epsd);
-}
-
 // -------------------------------------------------------------------------------------------------
 
 double Material::energy(const T2s &Eps)
 {
-  return energy_m(eps_m(Eps)) + energy_d(eps_d(Eps));
+  // decompose strain: hydrostatic part, deviatoric part
+  T2d    I    = cm::identity2();
+  double epsm = Eps.trace()/ndim;
+  T2s    Epsd = Eps - epsm*I;
+  double epsd = std::sqrt(.5*Epsd.ddot(Epsd));
+
+  // hydrostatic and deviatoric part of the energy
+  double U = ndim/2. * m_K * std::pow(epsm,2.);
+  double V =           m_G * std::pow(epsd,2.);
+
+  // return total strain energy
+  return U + V;
 }
 
 // =================================================================================================
 
-}}}}} // namespace GooseMaterial::AmorphousSolid::LinearStrain::Elastic::Cartesian3d
+}}}}} // namespace ...
 
 #endif

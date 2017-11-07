@@ -8,7 +8,7 @@ Description
 Elastic plastic material for amorphous solids.
 
 N.B. The elastic part of this model is also implemented in:
-"AmorphousSolid/LinearStrain/Elastic/Cartesian2d.h"
+"AmorphousSolid/LinearStrain/Elastic/Cartesian3d.h"
 
 Suggested references
 --------------------
@@ -18,14 +18,14 @@ Suggested references
 
 ================================================================================================= */
 
-#ifndef GOOSEMATERIAL_AMORPHOUSSOLID_LINEARSTRAIN_ELASTOPLASTIC_CARTESIAN2D_H
-#define GOOSEMATERIAL_AMORPHOUSSOLID_LINEARSTRAIN_ELASTOPLASTIC_CARTESIAN2D_H
+#ifndef GOOSEMATERIAL_AMORPHOUSSOLID_LINEARSTRAIN_ELASTOPLASTIC_SMOOTH_CARTESIAN3D_H
+#define GOOSEMATERIAL_AMORPHOUSSOLID_LINEARSTRAIN_ELASTOPLASTIC_SMOOTH_CARTESIAN3D_H
 
 #define _USE_MATH_DEFINES // to use "M_PI" from "math.h"
 
 #include <tuple>
 #include <math.h>
-#include <cppmat/tensor2.h>
+#include <cppmat/tensor3.h>
 
 // -------------------------------------------------------------------------------------------------
 
@@ -33,14 +33,15 @@ namespace GooseMaterial {
 namespace AmorphousSolid {
 namespace LinearStrain {
 namespace ElastoPlastic {
-namespace Cartesian2d {
+namespace Smooth {
+namespace Cartesian3d {
 
 // -------------------------------------------------------------------------------------------------
 
-namespace cm   = cppmat::cartesian2d;
+namespace cm   = cppmat::cartesian3d;
 using     T2s  = cm::tensor2s<double>;
 using     T2d  = cm::tensor2d<double>;
-double    ndim = 2.;
+double    ndim = 3.;
 
 // ============================================ OVERVIEW ===========================================
 
@@ -155,9 +156,10 @@ T2s Material::stress(const T2s &Eps)
   // read current yield strains
   size_t i       = find(epsd);
   double eps_min = ( m_epsy[i+1] + m_epsy[i] ) / 2.;
+  double deps_y  = ( m_epsy[i+1] - m_epsy[i] ) / 2.;
 
   // return full strain tensor
-  return (m_K*epsm)*I + ( m_G * (1.-eps_min/epsd) ) * Epsd;
+  return (m_K*epsm)*I + ((m_G/epsd)*(deps_y/M_PI)*sin(M_PI/deps_y*(epsd-eps_min)))*Epsd;
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -179,7 +181,7 @@ double Material::energy(const T2s &Eps)
   double deps_y  = ( m_epsy[i+1] - m_epsy[i] ) / 2.;
 
   // deviatoric part of the energy
-  double V = m_G * ( std::pow(epsd-eps_min,2.) - std::pow(deps_y,2.) );
+  double V = -2.*m_G * std::pow(deps_y/M_PI,2.) * ( 1. + cos( M_PI/deps_y * (epsd-eps_min) ) );
 
   // return total energy
   return U + V;
@@ -187,6 +189,6 @@ double Material::energy(const T2s &Eps)
 
 // =================================================================================================
 
-}}}}} // namespace ...
+}}}}}} // namespace ...
 
 #endif

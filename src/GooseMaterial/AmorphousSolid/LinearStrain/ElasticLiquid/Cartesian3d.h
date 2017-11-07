@@ -27,8 +27,6 @@ Suggested references
 #include <tuple>
 #include <cppmat/tensor3.h>
 
-#include "../../../Macros.h"
-
 // -------------------------------------------------------------------------------------------------
 
 namespace GooseMaterial {
@@ -39,9 +37,10 @@ namespace Cartesian3d {
 
 // -------------------------------------------------------------------------------------------------
 
-namespace cm  = cppmat::cartesian3d;
-using     T2s = cm::tensor2s<double>;
-using     T2d = cm::tensor2d<double>;
+namespace cm   = cppmat::cartesian3d;
+using     T2s  = cm::tensor2s<double>;
+using     T2d  = cm::tensor2d<double>;
+double    ndim = 3.;
 
 // ============================================ OVERVIEW ===========================================
 
@@ -67,8 +66,8 @@ public:
   Material(){};
   Material(double K, double G, double sigy, double Tdamp, double Tfluid);
 
-  // constitutive response: 'sig ( epsdot, dt )' as a function of the history
-  T2s  stress(const T2s &epsdot, const double dt);
+  // constitutive response as a function of the history
+  T2s  stress(const T2s &Epsdot, const double dt);
 
   // update history
   void increment();
@@ -116,28 +115,28 @@ void Material::setNextSigy(double next)
 
 // -------------------------------------------------------------------------------------------------
 
-T2s Material::stress(const T2s &epsdot, double dt)
+T2s Material::stress(const T2s &Epsdot, double dt)
 {
-  double epsdotm,sigeq;
-  T2s epsdotd;
-  T2d I;
-
   // set time
-  m_T = m_T_n+dt;
+  m_T = m_T_n + dt;
 
   // decompose the strain in a hydrostatic and a deviatoric part
-  I       = cm::identity2();
-  epsdotm = epsdot.trace()/3.;
-  epsdotd = epsdot - epsdotm*I;
+  T2d    I       = cm::identity2();
+  double epsdotm = Epsdot.trace()/ndim;
+  T2s    Epsdotd = Epsdot - epsdotm*I;
 
   // compute the elastic stress (trial state)
-  m_sigd  = m_sigd_n + dt*2.0*m_G*epsdotd;
-  m_sigm  = m_sigm_n + dt*3.0*m_K*epsdotm;
+  m_sigd = m_sigd_n + (dt*m_G) * Epsdotd;
+  m_sigm = m_sigm_n + (dt*m_K) * epsdotm;
 
   // if elastic -> determine whether to yield, based on the trial state
-  if ( m_elas ) {
-    sigeq = std::pow( 1.5 * m_sigd.ddot(m_sigd) , 0.5 );
-    if ( sigeq >= m_sigy ) {
+  if ( m_elas )
+  {
+    // - equivalent stress
+    double sigeq = std::sqrt(.5*m_sigd.ddot(m_sigd));
+    // - compare to yield stress
+    if ( sigeq >= m_sigy )
+    {
       m_elas     = false;       // switch to plastic response
       m_Tyield_n = m_T;         // store current time, end yield at "m_Tyield_n + m_Tfluid"
       m_sigy     = m_sigy_next; // set next yield stress: will play a role once elastic again
@@ -154,11 +153,11 @@ T2s Material::stress(const T2s &epsdot, double dt)
     m_sigd *= m_Tdamp/(m_Tdamp+dt);
 
   // return total stress tensor
-  return m_sigd+m_sigm*I;
+  return m_sigm*I + m_sigd;
 }
 
 // =================================================================================================
 
-}}}}} // namespace GooseMaterial::AmorphousSolid::LinearStrain::ElasticLiquid::Cartesian3d
+}}}}} // namespace ...
 
 #endif

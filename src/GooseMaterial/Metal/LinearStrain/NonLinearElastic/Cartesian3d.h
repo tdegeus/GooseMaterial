@@ -23,8 +23,6 @@ Suggested references
 #include <tuple>
 #include <cppmat/tensor3.h>
 
-#include "../../../Macros.h"
-
 // -------------------------------------------------------------------------------------------------
 
 namespace GooseMaterial {

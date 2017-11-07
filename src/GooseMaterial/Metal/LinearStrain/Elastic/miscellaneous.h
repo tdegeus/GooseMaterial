@@ -21,8 +21,6 @@ Suggested references
 
 #include <tuple>
 
-#include "../../../Macros.h"
-
 // -------------------------------------------------------------------------------------------------
 
 namespace GooseMaterial {

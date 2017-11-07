@@ -31,21 +31,30 @@ The following materials have been implemented:
 *   [GooseMaterial::Metal::LinearStrain::ElastoViscoPlasticHardening](./docs/Metal/LinearStrain/ElastoViscoPlasticHardening/readme.pdf)
 *   [GooseMaterial::Metal::LinearStrain::ElastoViscoPlastic](./docs/Metal/LinearStrain/ElastoViscoPlastic/readme.pdf)
 *   [GooseMaterial::AmorphousSolid::LinearStrain::ElasticLiquid](./docs/AmorphousSolid/LinearStrain/ElasticLiquid/readme.pdf)
+*   [GooseMaterial::AmorphousSolid::LinearStrain::Elastic](./docs/AmorphousSolid/LinearStrain/ElastoPlastic/readme.pdf) (simplification of the ElastoPlastic model below)
+     - [GooseMaterial::AmorphousSolid::LinearStrain::Elastic::Cartesian3d::Material](./src/GooseMaterial/AmorphousSolid/LinearStrain/Elastic/Cartesian3d.h)
+     - [GooseMaterial::AmorphousSolid::LinearStrain::Elastic::Cartesian2d::Material](./src/GooseMaterial/AmorphousSolid/LinearStrain/Elastic/Cartesian2d.h)
 *   [GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic](./docs/AmorphousSolid/LinearStrain/ElastoPlastic/readme.pdf)
      - [GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3d::Material](./src/GooseMaterial/AmorphousSolid/LinearStrain/ElastoPlastic/Cartesian3d.h)
      - [GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2d::Material](./src/GooseMaterial/AmorphousSolid/LinearStrain/ElastoPlastic/Cartesian2d.h)
      - [GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian2dPlanarShear::Material](./src/GooseMaterial/AmorphousSolid/LinearStrain/ElastoPlastic/Cartesian2dPlanarShear.h)
+     - [GooseMaterial::AmorphousSolid::LinearStrain::ElastoPlastic::Cartesian3dPlanarShear::Material](./src/GooseMaterial/AmorphousSolid/LinearStrain/ElastoPlastic/Cartesian3dPlanarShear.h)
 
 ## Installation
 
 This library is header only, so in principle one does not need to install anything to be able to use it in C++. However it might be a good idea to copy the header to the appropriate location on the system, and to configure `pkg-config`. The steps to follow are identical to those of [cppmat](http://cppmat.geus.me/en/latest/compile.html). The most common thing to do is:
 
 ```bash
-cd /path/to/GooseMaterial
-mkdir src
-mkdir build
-cd build
+# create a build directory if needed
+mkdir /path/to/GooseMaterial/src/build
+
+# proceed to build directory
+cd /path/to/GooseMaterial/src/build
+
+# modify ".." to your need, e.g. "/path/to/GooseMaterial/src"
 cmake ..
+
+# 'install' the header configuration files (just copying of files)
 make install
 ```
 
@@ -118,15 +127,26 @@ Or one can use
 clang++ -I/path/to/cppmat -I/path/to/GooseMaterial -std=c++14 -o example example_name.cpp
 ```
 
+To compile with CMake, include the following lines in your `CMakeLists.txt`
+
+```cmake
+find_package(PkgConfig)
+
+pkg_check_modules(GOOSEMATERIAL REQUIRED GooseMaterial)
+include_directories(${GOOSEMATERIAL_INCLUDE_DIRS})
+```
+
 ## Python
 
 The materials also have a Python interface. To use it just run
 
 ```bash
+cd /path/to/GooseMaterial/python
+
 python3 setup.py build
 python3 setup.py install
 ```
 
-where one has to replace the executable ``python3`` with ones favorite Python version (e.g. ``python``).
+where one has to replace the executable ``python3`` with ones favorite Python version (e.g. ``python``). Note that the latter commands copies the relevant files to the correct location, where Python can find them.
 
 
