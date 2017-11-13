@@ -1,6 +1,6 @@
 
 #include <cppmat/cppmat.h>
-#include <cppmat/pybind11_cppmat.h>
+#include <cppmat/pybind11.h>
 
 #include "../src/GooseMaterial/GooseMaterial.h"
 
