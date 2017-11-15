@@ -236,7 +236,7 @@ double Material::plastic_multiplier(double sig_eq, double dt)
     R  = dgamma - m_gamma0 * dt * std::pow( (sig_eq-3.*m_G*dgamma)/m_sig0 , 1./m_m);
 
     // - derivative of the residual
-    dR = 1. + 3.*m_G*m_gamma0*dt/m_m * std::pow( (sig_eq-3.*m_G*dgamma)/m_sig0 , 1./m_m-1.);
+    dR = 1. + 3.*m_G*m_gamma0*dt/(m_sig0*m_m) * std::pow( (sig_eq-3.*m_G*dgamma)/m_sig0 , 1./m_m-1.);
 
     // - update plastic multiplier
     dgamma -= R/dR;
