@@ -40,7 +40,6 @@ namespace Cartesian3d {
 namespace cm   = cppmat::cartesian3d;
 using     T2s  = cm::tensor2s<double>;
 using     T2d  = cm::tensor2d<double>;
-double    ndim = 3.;
 
 // ============================================ OVERVIEW ===========================================
 
@@ -65,7 +64,7 @@ public:
 
 // ===================================== IMPLEMENTATION : CORE =====================================
 
-Material::Material(double K, double G, const std::vector<double> &epsy, bool init_elastic)
+inline Material::Material(double K, double G, const std::vector<double> &epsy, bool init_elastic)
 {
   // copy input - elastic moduli
   m_K = K;
@@ -101,14 +100,14 @@ Material::Material(double K, double G, const std::vector<double> &epsy, bool ini
 
 // -------------------------------------------------------------------------------------------------
 
-double Material::eps_y(size_t i)
+inline double Material::eps_y(size_t i)
 {
   return m_epsy[i];
 }
 
 // -------------------------------------------------------------------------------------------------
 
-size_t Material::find(double epsd)
+inline size_t Material::find(double epsd)
 {
   // check extremes
   if ( epsd < m_epsy.front() or epsd >= m_epsy.back() )
@@ -141,11 +140,11 @@ size_t Material::find(double epsd)
 
 // -------------------------------------------------------------------------------------------------
 
-T2s Material::stress(const T2s &Eps)
+inline T2s Material::stress(const T2s &Eps)
 {
   // decompose strain: hydrostatic part, deviatoric part
   T2d    I    = cm::identity2();
-  double epsm = Eps.trace()/ndim;
+  double epsm = Eps.trace()/3.;
   T2s    Epsd = Eps - epsm*I;
   double epsd = std::sqrt(.5*Epsd.ddot(Epsd));
 
@@ -162,16 +161,16 @@ T2s Material::stress(const T2s &Eps)
 
 // -------------------------------------------------------------------------------------------------
 
-double Material::energy(const T2s &Eps)
+inline double Material::energy(const T2s &Eps)
 {
   // decompose strain: hydrostatic part, deviatoric part
   T2d    I    = cm::identity2();
-  double epsm = Eps.trace()/ndim;
+  double epsm = Eps.trace()/3.;
   T2s    Epsd = Eps - epsm*I;
   double epsd = std::sqrt(.5*Epsd.ddot(Epsd));
 
   // energy for the hydrostatic part
-  double U = ndim/2. * m_K * std::pow(epsm,2.);
+  double U = 3./2. * m_K * std::pow(epsm,2.);
 
   // read current yield strain
   size_t i       = find(epsd);

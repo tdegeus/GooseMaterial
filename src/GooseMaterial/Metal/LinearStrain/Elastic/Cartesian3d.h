@@ -60,13 +60,13 @@ public:
 
 // ========================================= IMPLEMENTATION ========================================
 
-Material::Material( double K, double G ) : m_K(K), m_G(G)
+inline Material::Material( double K, double G ) : m_K(K), m_G(G)
 {
 }
 
 // -------------------------------------------------------------------------------------------------
 
-T2s  Material::stress(const T2s &eps)
+inline T2s  Material::stress(const T2s &eps)
 {
   // second order identity tensor
   T2d    I    = cm::identity2();
@@ -85,7 +85,7 @@ T2s  Material::stress(const T2s &eps)
 
 // -------------------------------------------------------------------------------------------------
 
-std::tuple<T4,T2s> Material::tangent_stress(const T2s &eps)
+inline std::tuple<T4,T2s> Material::tangent_stress(const T2s &eps)
 {
   // stress
   // ------
@@ -119,6 +119,6 @@ std::tuple<T4,T2s> Material::tangent_stress(const T2s &eps)
 
 // =================================================================================================
 
-}}}}} // namespace GooseMaterial::Metal::LinearStrain::Elastic::Cartesian3d {
+}}}}} // namespace ...
 
 #endif

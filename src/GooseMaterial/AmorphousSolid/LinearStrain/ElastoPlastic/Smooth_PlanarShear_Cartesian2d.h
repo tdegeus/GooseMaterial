@@ -40,7 +40,6 @@ namespace cm   = cppmat::cartesian2d;
 using     V    = cm::vector  <double>;
 using     T2s  = cm::tensor2s<double>;
 using     T2d  = cm::tensor2d<double>;
-double    ndim = 2.;
 
 // ============================================ OVERVIEW ===========================================
 
@@ -66,7 +65,7 @@ public:
 
 // ===================================== IMPLEMENTATION : CORE =====================================
 
-Material::Material(double K, double G, const V &n, const std::vector<double> &epsy, bool init_elastic)
+inline Material::Material(double K, double G, const V &n, const std::vector<double> &epsy, bool init_elastic)
 {
   // check input - normal of the weak layer
   if ( n.norm() <= 0. )
@@ -110,14 +109,14 @@ Material::Material(double K, double G, const V &n, const std::vector<double> &ep
 
 // -------------------------------------------------------------------------------------------------
 
-double Material::eps_y(size_t i)
+inline double Material::eps_y(size_t i)
 {
   return m_epsy[i];
 }
 
 // -------------------------------------------------------------------------------------------------
 
-size_t Material::find(double epss)
+inline size_t Material::find(double epss)
 {
   // check extremes
   if ( epss < m_epsy.front() or epss >= m_epsy.back() )
@@ -150,11 +149,11 @@ size_t Material::find(double epss)
 
 // -------------------------------------------------------------------------------------------------
 
-T2s Material::stress(const T2s &Eps)
+inline T2s Material::stress(const T2s &Eps)
 {
   // decompose strain: hydrostatic part, deviatoric part
   T2d    I    = cm::identity2();
-  double epsm = Eps.trace()/ndim;
+  double epsm = Eps.trace()/2.;
   T2s    Epsd = Eps - epsm*I;
 
   // get strain vector, and its equivalent project on the plane
@@ -180,11 +179,11 @@ T2s Material::stress(const T2s &Eps)
 
 // -------------------------------------------------------------------------------------------------
 
-double Material::energy(const T2s &Eps)
+inline double Material::energy(const T2s &Eps)
 {
   // decompose strain: hydrostatic part, deviatoric part
   T2d    I    = cm::identity2();
-  double epsm = Eps.trace()/ndim;
+  double epsm = Eps.trace()/2.;
   T2s    Epsd = Eps - epsm*I;
 
   // get strain vector, and its equivalent project on the plane
@@ -198,8 +197,8 @@ double Material::energy(const T2s &Eps)
   double epsn = std::sqrt(.5*Epsn.ddot(Epsn));
 
   // hydrostatic and normal parts of the energy
-  double U  = ndim/2. * m_K * std::pow(epsm,2.);
-  double Vn =           m_G * std::pow(epsn,2.);
+  double U  = m_K * std::pow(epsm,2.);
+  double Vn = m_G * std::pow(epsn,2.);
 
   // read current yield strains
   size_t i       = find(epss);

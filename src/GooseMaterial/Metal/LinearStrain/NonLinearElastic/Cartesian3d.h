@@ -63,14 +63,14 @@ public:
 
 // ========================================= IMPLEMENTATION ========================================
 
-Material::Material( double K, double sig0, double eps0, double m ) :
+inline Material::Material( double K, double sig0, double eps0, double m ) :
   m_K(K), m_sig0(sig0), m_eps0(eps0), m_n(m)
 {
 }
 
 // -------------------------------------------------------------------------------------------------
 
-T2s  Material::stress(const T2s &eps)
+inline T2s  Material::stress(const T2s &eps)
 {
   double epsm,sigm,epseq;
   T2s epsd;
@@ -98,7 +98,7 @@ T2s  Material::stress(const T2s &eps)
 
 // -------------------------------------------------------------------------------------------------
 
-std::tuple<T4,T2s> Material::tangent_stress(const T2s &eps)
+inline std::tuple<T4,T2s> Material::tangent_stress(const T2s &eps)
 {
   double epsm,sigm,epseq;
   T2s epsd,sig;
@@ -148,6 +148,6 @@ std::tuple<T4,T2s> Material::tangent_stress(const T2s &eps)
 
 // =================================================================================================
 
-}}}}} // namespace GooseMaterial::Metal::LinearStrain::NonLinearElastic::Cartesian3d
+}}}}} // namespace ...
 
 #endif

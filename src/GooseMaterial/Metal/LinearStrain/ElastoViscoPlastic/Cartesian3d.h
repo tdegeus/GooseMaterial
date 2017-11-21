@@ -77,7 +77,7 @@ public:
 
 // ========================================= IMPLEMENTATION ========================================
 
-Material::Material(
+inline Material::Material(
   double K, double G, double sig0, double gamma0, double m ) :
   m_K(K), m_G(G), m_sig0(sig0), m_gamma0(gamma0), m_m(m)
 {
@@ -92,7 +92,7 @@ Material::Material(
 
 // -------------------------------------------------------------------------------------------------
 
-void Material::increment()
+inline void Material::increment()
 {
   m_eps_n  = m_eps ;
   m_epse_n = m_epse;
@@ -101,7 +101,7 @@ void Material::increment()
 
 // -------------------------------------------------------------------------------------------------
 
-T2s  Material::stress(const T2s &eps, const double dt)
+inline T2s Material::stress(const T2s &eps, const double dt)
 {
   double epse_m,sig_m,sig_eq,dgamma;
   T2s epse_d,sig_d;
@@ -144,7 +144,7 @@ T2s  Material::stress(const T2s &eps, const double dt)
 
 // -------------------------------------------------------------------------------------------------
 
-std::tuple<T4,T2s> Material::tangent_stress(const T2s &eps, const double dt)
+inline std::tuple<T4,T2s> Material::tangent_stress(const T2s &eps, const double dt)
 {
   double epse_m,sig_m,sig_eq,dgamma;
   T2s epse_d,sig_d,sig,N;
@@ -213,7 +213,7 @@ std::tuple<T4,T2s> Material::tangent_stress(const T2s &eps, const double dt)
 
 // -------------------------------------------------------------------------------------------------
 
-double Material::plastic_multiplier(double sig_eq, double dt)
+inline double Material::plastic_multiplier(double sig_eq, double dt)
 {
   // linear stress sensitivity ( m == 1 )
   // ------------------------------------
@@ -260,6 +260,6 @@ double Material::plastic_multiplier(double sig_eq, double dt)
 
 // =================================================================================================
 
-}}}}} // namespace GooseMaterial::Metal::LinearStrain::ElastoViscoPlastic::Cartesian3d
+}}}}} // namespace ...
 
 #endif

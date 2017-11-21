@@ -37,7 +37,6 @@ namespace Cartesian2d {
 namespace cm   = cppmat::cartesian2d;
 using     T2s  = cm::tensor2s<double>;
 using     T2d  = cm::tensor2d<double>;
-double    ndim = 2.;
 
 // ============================================ OVERVIEW ===========================================
 
@@ -58,7 +57,7 @@ public:
 
 // ===================================== IMPLEMENTATION : CORE =====================================
 
-Material::Material(double K, double G)
+inline Material::Material(double K, double G)
 {
   // copy input - elastic moduli
   m_K = K;
@@ -67,11 +66,11 @@ Material::Material(double K, double G)
 
 // -------------------------------------------------------------------------------------------------
 
-T2s Material::stress(const T2s &Eps)
+inline T2s Material::stress(const T2s &Eps)
 {
   // decompose strain: hydrostatic part, deviatoric part
   T2d    I    = cm::identity2();
-  double epsm = Eps.trace()/ndim;
+  double epsm = Eps.trace()/2.;
   T2s    Epsd = Eps - epsm*I;
 
   // return stress tensor
@@ -80,17 +79,17 @@ T2s Material::stress(const T2s &Eps)
 
 // -------------------------------------------------------------------------------------------------
 
-double Material::energy(const T2s &Eps)
+inline double Material::energy(const T2s &Eps)
 {
   // decompose strain: hydrostatic part, deviatoric part
   T2d    I    = cm::identity2();
-  double epsm = Eps.trace()/ndim;
+  double epsm = Eps.trace()/2.;
   T2s    Epsd = Eps - epsm*I;
   double epsd = std::sqrt(.5*Epsd.ddot(Epsd));
 
   // hydrostatic and deviatoric part of the energy
-  double U = ndim/2. * m_K * std::pow(epsm,2.);
-  double V =           m_G * std::pow(epsd,2.);
+  double U = m_K * std::pow(epsm,2.);
+  double V = m_G * std::pow(epsd,2.);
 
   // return total strain energy
   return U + V;

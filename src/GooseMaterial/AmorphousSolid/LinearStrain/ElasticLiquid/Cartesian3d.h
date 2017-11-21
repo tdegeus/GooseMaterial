@@ -40,7 +40,6 @@ namespace Cartesian3d {
 namespace cm   = cppmat::cartesian3d;
 using     T2s  = cm::tensor2s<double>;
 using     T2d  = cm::tensor2d<double>;
-double    ndim = 3.;
 
 // ============================================ OVERVIEW ===========================================
 
@@ -78,7 +77,7 @@ public:
 
 // ========================================= IMPLEMENTATION ========================================
 
-Material::Material(
+inline Material::Material(
   double K, double G, double sigy, double Tdamp, double Tfluid ) :
   m_K(K), m_G(G), m_sigy(sigy), m_Tdamp(Tdamp), m_Tfluid(Tfluid)
 {
@@ -99,7 +98,7 @@ Material::Material(
 
 // -------------------------------------------------------------------------------------------------
 
-void Material::increment()
+inline void Material::increment()
 {
   m_sigd_n = m_sigd;
   m_sigm_n = m_sigm;
@@ -108,21 +107,21 @@ void Material::increment()
 
 // -------------------------------------------------------------------------------------------------
 
-void Material::setNextSigy(double next)
+inline void Material::setNextSigy(double next)
 {
   m_sigy_next = next;
 }
 
 // -------------------------------------------------------------------------------------------------
 
-T2s Material::stress(const T2s &Epsdot, double dt)
+inline T2s Material::stress(const T2s &Epsdot, double dt)
 {
   // set time
   m_T = m_T_n + dt;
 
   // decompose the strain in a hydrostatic and a deviatoric part
   T2d    I       = cm::identity2();
-  double epsdotm = Epsdot.trace()/ndim;
+  double epsdotm = Epsdot.trace()/3.;
   T2s    Epsdotd = Epsdot - epsdotm*I;
 
   // compute the elastic stress (trial state)

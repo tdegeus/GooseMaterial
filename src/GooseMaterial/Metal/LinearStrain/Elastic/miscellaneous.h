@@ -30,12 +30,12 @@ namespace Elastic {
 
 // ============================================ OVERVIEW ===========================================
 
-std::tuple<double,double> ConvertParameters (
+inline std::tuple<double,double> ConvertParameters (
   std::string in, double ipar1, double ipar2, std::string out );
 
 // ========================================= IMPLEMENTATION ========================================
 
-std::tuple<double,double> ConvertParameters (
+inline std::tuple<double,double> ConvertParameters (
   std::string in, double ipar1, double ipar2, std::string out )
 {
   double E,nu,K,G;
@@ -77,6 +77,6 @@ std::tuple<double,double> ConvertParameters (
 
 // =================================================================================================
 
-}}}} // namespace GooseMaterial::Metal::LinearStrain::Elastic
+}}}} // namespace ...
 
 #endif
