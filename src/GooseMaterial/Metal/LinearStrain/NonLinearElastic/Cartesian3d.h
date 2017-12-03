@@ -21,7 +21,7 @@ Suggested references
 #define GOOSEMATERIAL_METAL_LINEARSTRAIN_NONLINEARELASTIC_CARTESIAN3D_H
 
 #include <tuple>
-#include <cppmat/tensor3.h>
+#include <cppmat/cppmat.h>
 
 // -------------------------------------------------------------------------------------------------
 
@@ -78,7 +78,7 @@ inline T2s  Material::stress(const T2s &eps)
   T2s sigd(0.0);
 
   // second order identity tensor
-  I     = cm::identity2();
+  I     = cm::identity2<double>();
 
   // decompose strain: hydrostatic part, deviatoric part, equivalent strain
   epsm  = eps.trace() / 3.;
@@ -109,7 +109,7 @@ inline std::tuple<T4,T2s> Material::tangent_stress(const T2s &eps)
   // ------
 
   // second order identity tensor
-  I     = cm::identity2();
+  I     = cm::identity2<double>();
 
   // decompose strain: hydrostatic part, deviatoric part, equivalent strain
   epsm  = eps.trace() / 3.;
@@ -130,8 +130,8 @@ inline std::tuple<T4,T2s> Material::tangent_stress(const T2s &eps)
   // -------
 
   // unit tensors: II = dyadic(I,I) and deviatoric unit tensor I4d (A_d = I4d : A)
-  T4 I4d = cm::identity4d();
-  T4 II  = cm::identityII();
+  T4 I4d = cm::identity4d<double>();
+  T4 II  = cm::identity4II<double>();
 
   // hydrostatic part
   T4 K4  = m_K * II;

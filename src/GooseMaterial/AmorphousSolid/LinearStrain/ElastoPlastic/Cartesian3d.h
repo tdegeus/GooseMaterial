@@ -25,7 +25,7 @@ Suggested references
 
 #include <tuple>
 #include <math.h>
-#include <cppmat/tensor3.h>
+#include <cppmat/cppmat.h>
 
 // -------------------------------------------------------------------------------------------------
 
@@ -143,7 +143,7 @@ inline size_t Material::find(double epsd)
 inline T2s Material::stress(const T2s &Eps)
 {
   // decompose strain: hydrostatic part, deviatoric part
-  T2d    I    = cm::identity2();
+  T2d    I    = cm::identity2<double>();
   double epsm = Eps.trace()/3.;
   T2s    Epsd = Eps - epsm*I;
   double epsd = std::sqrt(.5*Epsd.ddot(Epsd));
@@ -164,7 +164,7 @@ inline T2s Material::stress(const T2s &Eps)
 inline double Material::energy(const T2s &Eps)
 {
   // decompose strain: hydrostatic part, deviatoric part
-  T2d    I    = cm::identity2();
+  T2d    I    = cm::identity2<double>();
   double epsm = Eps.trace()/3.;
   T2s    Epsd = Eps - epsm*I;
   double epsd = std::sqrt(.5*Epsd.ddot(Epsd));

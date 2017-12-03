@@ -20,7 +20,7 @@ Suggested references
 #define GOOSEMATERIAL_METAL_LINEARSTRAIN_ELASTIC_CARTESIAN3D_H
 
 #include <tuple>
-#include <cppmat/tensor3.h>
+#include <cppmat/cppmat.h>
 
 // -------------------------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@ inline Material::Material( double K, double G ) : m_K(K), m_G(G)
 inline T2s  Material::stress(const T2s &eps)
 {
   // second order identity tensor
-  T2d    I    = cm::identity2();
+  T2d    I    = cm::identity2<double>();
 
   // decompose strain: hydrostatic part, deviatoric part
   double epsm = eps.trace() / 3.;
@@ -91,7 +91,7 @@ inline std::tuple<T4,T2s> Material::tangent_stress(const T2s &eps)
   // ------
 
   // second order identity tensor
-  T2d    I    = cm::identity2();
+  T2d    I    = cm::identity2<double>();
 
   // decompose strain: hydrostatic part, deviatoric part
   double epsm = eps.trace() / 3.;
@@ -108,8 +108,8 @@ inline std::tuple<T4,T2s> Material::tangent_stress(const T2s &eps)
   // -------
 
   // unit tensors: II = dyadic(I,I) and deviatoric unit tensor I4d (A_d = I4d : A)
-  T4 I4d = cm::identity4d();
-  T4 II  = cm::identityII();
+  T4 I4d = cm::identity4d<double>();
+  T4 II  = cm::identity4II<double>();
 
   // initialize tangent as the elasticity tensor
   T4 K4  = m_K * II + ( 2. * m_G ) * I4d;

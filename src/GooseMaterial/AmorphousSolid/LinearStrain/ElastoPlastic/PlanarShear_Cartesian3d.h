@@ -22,7 +22,7 @@ Suggested references
 
 #include <tuple>
 #include <math.h>
-#include <cppmat/tensor3.h>
+#include <cppmat/cppmat.h>
 
 // -------------------------------------------------------------------------------------------------
 
@@ -151,7 +151,7 @@ inline size_t Material::find(double epss)
 inline T2s Material::stress(const T2s &Eps)
 {
   // decompose strain: hydrostatic part, deviatoric part
-  T2d    I    = cm::identity2();
+  T2d    I    = cm::identity2<double>();
   double epsm = Eps.trace()/3.;
   T2s    Epsd = Eps - epsm*I;
 
@@ -161,7 +161,7 @@ inline T2s Material::stress(const T2s &Eps)
 
   // decompose deviatoric strain in a planar part and a non-planar part
   double epss = cm::dot(s.dot(Epsd),m_n);
-  T2s    Epss = epss * ( s.dyadic(m_n) + m_n.dyadic(s) ).astensor2s();
+  T2s    Epss = epss * ( s.dyadic(m_n) + m_n.dyadic(s) ).cast<T2s>();
   T2s    Epsn = Epsd - Epss;
 
   // planar equivalent strain zero -> only hydrostatic and non-planar elastic deviatoric stress
@@ -180,7 +180,7 @@ inline T2s Material::stress(const T2s &Eps)
 inline double Material::energy(const T2s &Eps)
 {
   // decompose strain: hydrostatic part, deviatoric part
-  T2d    I    = cm::identity2();
+  T2d    I    = cm::identity2<double>();
   double epsm = Eps.trace()/3.;
   T2s    Epsd = Eps - epsm*I;
 
@@ -190,7 +190,7 @@ inline double Material::energy(const T2s &Eps)
 
   // decompose deviatoric strain in a planar part and a non-planar part
   double epss = cm::dot(s.dot(Epsd),m_n);
-  T2s    Epss = epss * ( s.dyadic(m_n) + m_n.dyadic(s) ).astensor2s();
+  T2s    Epss = epss * ( s.dyadic(m_n) + m_n.dyadic(s) ).cast<T2s>();
   T2s    Epsn = Epsd - Epss;
   double epsn = std::sqrt(.5*Epsn.ddot(Epsn));
 

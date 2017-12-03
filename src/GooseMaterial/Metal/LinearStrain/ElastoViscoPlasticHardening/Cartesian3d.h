@@ -23,7 +23,7 @@ Suggested references
 
 #include <assert.h>
 #include <tuple>
-#include <cppmat/tensor3.h>
+#include <cppmat/cppmat.h>
 
 // -------------------------------------------------------------------------------------------------
 
@@ -111,7 +111,7 @@ inline T2s  Material::stress(const T2s &eps, const double dt)
   T2d I;
 
   // second order identity tensor
-  I      = cm::identity2();
+  I      = cm::identity2<double>();
 
   // trial strain: copy total strain, set trial elastic strain and trial accumulated plastic strain
   m_eps  = eps;
@@ -161,7 +161,7 @@ inline std::tuple<T4,T2s> Material::tangent_stress(const T2s &eps,
   // ------
 
   // second order identity tensor
-  I      = cm::identity2();
+  I      = cm::identity2<double>();
 
   // trial strain: copy total strain, set trial elastic strain and trial accumulated plastic strain
   m_eps  = eps;
@@ -201,8 +201,8 @@ inline std::tuple<T4,T2s> Material::tangent_stress(const T2s &eps,
   // -------
 
   // unit tensors: II = dyadic(I,I) and deviatoric unit tensor I4d (A_d = I4d : A)
-  T4 I4d = cm::identity4d();
-  T4 II  = cm::identityII();
+  T4 I4d = cm::identity4d<double>();
+  T4 II  = cm::identity4II<double>();
 
   // initialize tangent as the elasticity tensor
   T4 K4  = m_K * II + 2. * m_G * I4d;

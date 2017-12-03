@@ -25,7 +25,7 @@ Suggested references
 #define GOOSEMATERIAL_AMORPHOUSSOLID_LINEARSTRAIN_ELASTICLIQUID_CARTESIAN3D_H
 
 #include <tuple>
-#include <cppmat/tensor3.h>
+#include <cppmat/cppmat.h>
 
 // -------------------------------------------------------------------------------------------------
 
@@ -120,7 +120,7 @@ inline T2s Material::stress(const T2s &Epsdot, double dt)
   m_T = m_T_n + dt;
 
   // decompose the strain in a hydrostatic and a deviatoric part
-  T2d    I       = cm::identity2();
+  T2d    I       = cm::identity2<double>();
   double epsdotm = Epsdot.trace()/3.;
   T2s    Epsdotd = Epsdot - epsdotm*I;
 
