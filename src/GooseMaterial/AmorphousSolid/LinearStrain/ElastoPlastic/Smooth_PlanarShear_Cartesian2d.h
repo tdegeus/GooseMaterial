@@ -21,6 +21,7 @@ Suggested references
 #define _USE_MATH_DEFINES // to use "M_PI" from "math.h"
 
 #include <tuple>
+#include <stdexcept>
 #include <math.h>
 #include <cppmat/cppmat.h>
 
